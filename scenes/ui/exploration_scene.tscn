@@ -1,0 +1,118 @@
+[gd_scene load_steps=4 format=3 uid="uid://exploration_scene"]
+
+[ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/ExplorationScene.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q2q2q2" path="res://assets/Hero.png" id="3"]
+
+[node name="ExplorationScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1")
+script = ExtResource("2")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="WorldArea" type="Panel" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayerSprite" type="TextureRect" parent="Background/WorldArea"]
+layout_mode = 0
+offset_left = 368.0
+offset_top = 268.0
+offset_right = 432.0
+offset_bottom = 332.0
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AreaLabel" type="Label" parent="Background/WorldArea"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 20.0
+offset_right = 100.0
+offset_bottom = 50.0
+grow_horizontal = 2
+text = "Forest Clearing"
+horizontal_alignment = 1
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopBar" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 40.0
+grow_horizontal = 2
+
+[node name="PlayerStats" type="Label" parent="UI/TopBar"]
+layout_mode = 2
+text = "Hero (Lv.1) - HP: 100/100 - Gold: 0"
+
+[node name="StepsLabel" type="Label" parent="UI/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Steps: 0"
+
+[node name="BottomBar" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -60.0
+grow_horizontal = 2
+
+[node name="ActionButtons" type="HBoxContainer" parent="UI/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="ExploreButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+layout_mode = 2
+text = "Explore"
+
+[node name="RestButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+layout_mode = 2
+text = "Rest"
+
+[node name="InventoryButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+layout_mode = 2
+text = "Inventory"
+
+[node name="MenuButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+layout_mode = 2
+text = "Menu"
+
+[node name="EncounterChanceLabel" type="Label" parent="UI/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Encounter chance: Low"
+
+[connection signal="pressed" from="UI/BottomBar/ActionButtons/ExploreButton" to="." method="_on_explore_pressed"]
+[connection signal="pressed" from="UI/BottomBar/ActionButtons/RestButton" to="." method="_on_rest_pressed"]
+[connection signal="pressed" from="UI/BottomBar/ActionButtons/InventoryButton" to="." method="_on_inventory_pressed"]
+[connection signal="pressed" from="UI/BottomBar/ActionButtons/MenuButton" to="." method="_on_menu_pressed"]

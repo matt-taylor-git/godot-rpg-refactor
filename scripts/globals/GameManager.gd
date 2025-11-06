@@ -111,6 +111,11 @@ func new_game(player_name: String, character_class: String = "Hero"):
 	game_start_time = Time.get_unix_time_from_system()
 
 	game_data.current_scene = "exploration"
+	game_data.exploration_state = {
+	"steps_taken": 0,
+	"encounter_chance": 2.0,
+	"steps_since_last_encounter": 0
+	}
 	emit_signal("game_started")
 
 	# Trigger initial story event
@@ -129,6 +134,11 @@ func load_game(save_slot: int):
 		game_data.player = Player.new()
 		game_data.player.from_dict(loaded_data.player)
 		game_data.current_scene = loaded_data.get("current_scene", "main_menu")
+		game_data.exploration_state = loaded_data.get("exploration_state", {
+			"steps_taken": 0,
+			"encounter_chance": 2.0,
+			"steps_since_last_encounter": 0
+		})
 
 		# Restore combat state
 		var combat_state = loaded_data.get("combat_state", {})
@@ -172,6 +182,7 @@ func save_game(save_slot: int):
 		game_data.save_slots[save_slot] = {
 			"player": game_data.player.to_dict(),
 			"current_scene": game_data.current_scene,
+			"exploration_state": game_data.get("exploration_state", {}),
 			"combat_state": {
 				"current_monster": current_monster.to_dict() if current_monster else null,
 				"in_combat": in_combat,
@@ -225,6 +236,11 @@ func start_combat():
 	game_data.combat_state.combat_log = combat_log
 
 	emit_signal("combat_started", current_monster.name)
+
+	# Change to combat scene if not already there
+	if get_tree().current_scene.name != "CombatScene":
+		get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
+
 	return combat_log
 
 func player_attack() -> String:
@@ -416,6 +432,12 @@ func get_playtime_minutes() -> int:
 	var current_time = Time.get_unix_time_from_system()
 	var seconds = current_time - game_start_time
 	return int(seconds / 60)
+
+func get_exploration_state() -> Dictionary:
+	return game_data.get("exploration_state", {})
+
+func set_exploration_state(state: Dictionary):
+	game_data.exploration_state = state
 
 func can_use_skill(skill_index: int) -> bool:
 	if not game_data.player or skill_index < 0 or skill_index >= game_data.player.skills.size():

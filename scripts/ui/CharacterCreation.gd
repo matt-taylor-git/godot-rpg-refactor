@@ -10,7 +10,7 @@ extends Control
 
 # Class sprite mappings
 @onready var class_sprites = {
-	"Hero": preload("res://assets/hero.png"),
+	"Hero": preload("res://assets/Hero.png"),
 	"Warrior": preload("res://assets/warrior.png"),
 	"Mage": preload("res://assets/mage.png"),
 	"Rogue": preload("res://assets/rogue.png")
@@ -41,30 +41,30 @@ func _ready():
 	_on_class_selected("Hero")
 	_update_start_button()
 
-func _on_name_input_changed(new_text: String):
+func _on_name_input_changed(new_text):
 	character_name = new_text.strip_edges()
 	_update_start_button()
 
 func _update_start_button():
-	start_game_button.disabled = character_name.length() < 2 or selected_class == ""
+	start_game_button.disabled = character_name.length() < 2 or selected_class.length() == 0
 
-func _on_class_selected(class_name: String):
-	selected_class = class_name
+func _on_class_selected(selected_name):
+	selected_class = selected_name
 
 	# Update sprite
-	if class_sprites.has(class_name):
-		character_sprite.texture = class_sprites[class_name]
+	if class_sprites.has(selected_name):
+		character_sprite.texture = class_sprites[selected_name]
 
 	# Update stats display
-	if class_stats.has(class_name):
-		var stats = class_stats[class_name]
+	if class_stats.has(selected_name):
+		var stats = class_stats[selected_name]
 		stats_text.text = "Attack: %d\nDefense: %d\nDexterity: %d\nHealth: %d" % [
 			stats.attack, stats.defense, stats.dexterity, stats.health
 		]
 
 	# Update skills display
-	if class_skills.has(class_name):
-		var skills = class_skills[class_name]
+	if class_skills.has(selected_name):
+		var skills = class_skills[selected_name]
 		skills_text.text = "\n".join(skills)
 	else:
 		skills_text.text = "None"
@@ -88,19 +88,12 @@ func _on_start_game_pressed():
 	if character_name.length() >= 2 and selected_class != "":
 		print("Starting game with character: ", character_name, " (", selected_class, ")")
 
-		# Animate out
-		var tween = create_tween()
-		tween.set_parallel(true)
-		tween.tween_property(self, "modulate:a", 0.0, 0.5)
-
-		# Wait for animation
-		await tween.finished
-
 		# Start the game with the selected character
 		GameManager.new_game(character_name, selected_class)
 
-		# For now, just print - actual scene transition will be handled by MainMenu
-		print("Character created successfully! Ready for adventure.")
+		# Go to exploration immediately
+		print("Character created successfully! Entering exploration.")
+		get_tree().change_scene_to_file("res://scenes/ui/exploration_scene.tscn")
 
 func _on_back_pressed():
 	print("Back to main menu")

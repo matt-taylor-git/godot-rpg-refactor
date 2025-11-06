@@ -51,9 +51,6 @@ func _animate_button_press(button: Button):
 
 func _on_new_game_pressed():
 	print("New Game pressed")
-	_animate_button_press(new_game_button)
-	await get_tree().create_timer(0.2).timeout
-
 	GameManager.start_new_game()
 	_change_scene("character_creation")
 
@@ -85,7 +82,11 @@ func _on_save_slot_selected(slot_number: int):
 	print("Loading from slot ", slot_number)
 	var success = GameManager.load_game(slot_number)
 	if success:
-		_change_scene("exploration")  # Or whatever the loaded scene should be
+		# Determine which scene to go to based on game state
+		if GameManager.in_combat:
+			get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
+		else:
+			get_tree().change_scene_to_file("res://scenes/ui/exploration_scene.tscn")
 	else:
 		print("Failed to load game from slot ", slot_number)
 		# Could show error message
@@ -94,18 +95,13 @@ func _on_save_slot_cancelled():
 	print("Save slot selection cancelled")
 
 func _change_scene(scene_name: String):
-	# Animate menu out before changing scene
-	_animate_menu_out()
-	await get_tree().create_timer(0.3).timeout
-
-	# Change to the appropriate scene
+	# Change to the appropriate scene immediately (skip animation in headless mode)
+	print("Changing to scene: ", scene_name)
 	match scene_name:
 		"character_creation":
 			get_tree().change_scene_to_file("res://scenes/ui/character_creation.tscn")
 		"exploration":
-			# For now, just print since exploration scene doesn't exist yet
-			print("Would change to exploration scene")
-			print("Game state updated - ready for exploration")
+			get_tree().change_scene_to_file("res://scenes/ui/exploration_scene.tscn")
 		_:
 			print("Unknown scene: ", scene_name)
 
