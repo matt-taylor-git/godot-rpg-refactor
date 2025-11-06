@@ -1,0 +1,17 @@
+# Build directory
+build/
+
+# Qt Creator
+*.pro.user
+*.pro.user.*
+
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.bak

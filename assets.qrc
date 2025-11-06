@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<RCC version="1.0">
+<qresource prefix="/">
+<file>assets/styles.qss</file>
+    <file>assets/character_creation_bg.png.png</file>
+    <file>assets/goblin_t.png</file>
+    <file>assets/goblin.png</file>
+    <file>assets/golem.png</file>
+    <file>assets/Hero.png</file>
+    <file>assets/iron_sword_t.png</file>
+    <file>assets/iron_sword.png</file>
+    <file>assets/mage.png</file>
+    <file>assets/magic_sword_t.png</file>
+    <file>assets/magic_sword.png</file>
+    <file>assets/orc.png</file>
+    <file>assets/rogue.png</file>
+    <file>assets/splash_screen.png</file>
+    <file>assets/bandit.png</file>
+    <file>assets/boss.png</file>
+    <file>assets/final_boss.png</file>
+    <file>assets/skeleton.png</file>
+    <file>assets/slime.png</file>
+    <file>assets/spider.png</file>
+    <file>assets/warrior.png</file>
+    <file>assets/wolf.png</file>
+</qresource>
+</RCC>

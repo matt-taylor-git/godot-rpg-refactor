@@ -1,0 +1,221 @@
+# PyRPG Qt Notification/Toast Patterns - Quick Reference
+
+existing_notifications:
+  
+  quest_updates:
+    pattern: "Modal Dialog with celebration header and rewards list"
+    file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/components/QuestCompletionDialog.cpp"
+    implementation: |
+      - Uses QDialog with setModal(true)
+      - Shows "🎉 QUEST COMPLETE! 🎉" header
+      - Displays EXP, Gold, Items rewards
+      - Styled with Theme constants
+      - Requires user interaction to dismiss
+    non_intrusive_level: "⭐⭐ Medium (Blocks gameplay)"
+    line_numbers: "1-131"
+  
+  level_up:
+    pattern: "Conditional embedded widget in CombatResultDialog"
+    file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/components/CombatResultDialog.cpp"
+    implementation: |
+      - Shows "⭐ LEVEL UP! ⭐" with 20pt bold font
+      - Blue background (Theme::PRIMARY)
+      - Positioned above rewards section
+      - Only displays if leveledUp parameter is true
+      - Part of modal combat result dialog
+    non_intrusive_level: "⭐⭐ Low (Expected, not disruptive)"
+    line_numbers: "39-51"
+
+  combat_messages:
+    component: "LogDisplay - Custom scrollable log widget"
+    file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/components/LogDisplay.h"
+    implementation: |
+      - Scrollable QWidget with max entry limit (default 20)
+      - Uses QScrollArea with theme-consistent styling
+      - Color-coded message types with left borders
+      - Message types: info, success, warning, error, combat, [lore]
+      - Auto-scrolls to newest entries
+      - Each entry has 3px left border with type-specific color
+    styling:
+      info: "Theme::MUTED_FOREGROUND (gray)"
+      success: "#28a745 (green)"
+      warning: "#ffc107 (yellow)"
+      error: "Theme::DESTRUCTIVE (red)"
+      combat: "Theme::PRIMARY (blue)"
+      lore: "Currently uses default, suggested: #9d4edd (purple)"
+    usage_location: "CombatPage.addLogEntry()"
+    non_intrusive_level: "⭐⭐⭐⭐⭐ Very High (Passive, no interaction)"
+    line_numbers: "header: 1-52, implementation: 94-116"
+
+  lore_discovery_current:
+    pattern: "Combat log entry (RECOMMENDED FOR LORE)"
+    file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/MainWindow.cpp"
+    signal_chain: |
+      CodexManager::unlockEntry()
+        -> emits: CodexManager::loreUnlocked(entryId, title)
+        -> connected to: MainWindow::handleLoreUnlocked()
+        -> calls: m_combatPage->addLogEntry("New Codex Entry: ...", "lore")
+    implementation_code: |
+      void MainWindow::handleLoreUnlocked(const QString &entryId, const QString &title)
+      {
+          m_combatPage->addLogEntry(QString("New Codex Entry: %1").arg(title), "lore");
+      }
+    strengths:
+      - Non-blocking gameplay
+      - Already fully integrated with signals/slots
+      - Theme-consistent with existing patterns
+      - Chronological appearance in log
+      - Scalable for multiple discoveries
+      - Immersive (no modal interruption)
+    weaknesses:
+      - Lore message type not visually distinct (no dedicated color)
+    status: "✅ Working, ready for enhancement"
+    non_intrusive_level: "⭐⭐⭐⭐⭐ Very High (OPTIMAL)"
+    line_numbers: "753-757"
+
+  victory_screen:
+    pattern: "Full-screen modal with statistics grid"
+    file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/views/VictoryScreen.cpp"
+    implementation: |
+      - QDialog modal (800x600 minimum)
+      - Header: "🏆 VICTORY! 🏆" with gradient and glow
+      - 2x3 grid of styled statistics cards
+      - Shows: Level, Playtime, Kills, Deaths, Gold, Quests
+      - Two buttons: Continue Playing, Return to Main Menu
+      - Keyboard shortcuts: Space/Enter, Esc
+    non_intrusive_level: "⭐⭐ Low (Full-screen, requires dismissal)"
+    line_numbers: "1-245"
+
+  menu_overlay:
+    pattern: "Animated semi-transparent overlay with tabbed content"
+    file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/components/MenuOverlay.cpp"
+    implementation: |
+      - QWidget with WA_TranslucentBackground attribute
+      - Opacity animation: 200ms fade in/out using QPropertyAnimation
+      - Semi-transparent black background (70% opacity)
+      - Content: Tabbed interface (Inventory, Stats, Shop, Save/Load)
+      - Dismissible: ESC key or click outside
+      - Restores focus to previous widget on close
+    non_intrusive_level: "⭐⭐⭐ Medium (Overlay with semi-transparent bg)"
+    line_numbers: "1-392"
+
+recommended_for_lore_discovery:
+  
+  pattern: "LogDisplay combat log widget"
+  
+  reasoning: |
+    1. Non-intrusive: Doesn't block gameplay or require interaction
+    2. Already integrated: Signal-to-slot chain already exists in codebase
+    3. Theme-consistent: Uses existing color system (Theme:: constants)
+    4. Discoverable: Appears chronologically for player review
+    5. Context-appropriate: Players naturally check combat log during exploration
+    6. Scalable: Handles many discoveries without UI congestion
+    7. Immersive: Maintains narrative flow without modal dialogs
+    
+  files_to_reference:
+    - file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/components/LogDisplay.h"
+      purpose: "Core LogDisplay implementation"
+      lines: "1-52"
+    
+    - file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/components/LogDisplay.cpp"
+      purpose: "addEntry() method and color logic"
+      lines: "94-116 (addEntry), 17-25 (getBorderColor)"
+    
+    - file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/MainWindow.cpp"
+      purpose: "Lore unlock handler - currently uses log"
+      lines: "753-757"
+    
+    - file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/game/CodexManager.h"
+      purpose: "Signal definition"
+      lines: "32-33"
+    
+    - file: "/Users/matt.taylor/codeprojects/pyrpg/take2/cpp-qt-rpg/src/game/CodexManager.cpp"
+      purpose: "Unlock logic that emits signal"
+      lines: "39-52"
+
+  enhancement_recommendation: |
+    Current: "lore" message type uses default color (falls back to MUTED_FOREGROUND)
+    
+    Solution: Add dedicated lore color to LogEntry::getBorderColor()
+    
+    Location: LogDisplay.cpp, lines 17-25
+    Change:
+      if (messageType == "lore") return QColor("#9d4edd");  // Purple
+    
+    Optional: Add emoji prefix
+      m_combatPage->addLogEntry(QString("📖 New Codex Entry: %1").arg(title), "lore");
+
+qt_patterns_found:
+  
+  QMessageBox:
+    usage: "❌ Not used"
+    reason: "App uses custom dialogs for consistency with theme system"
+  
+  Custom_QDialog_Subclasses:
+    usage: "✅ Primary method"
+    implementations:
+      - "QuestCompletionDialog - quest rewards"
+      - "CombatResultDialog - combat results and level-up"
+      - "StoryEventDialog - narrative events"
+      - "DialogueView - NPC dialogue"
+      - "VictoryScreen - game completion"
+    styling: "All use Theme:: color constants"
+    blocking: "All are modal (block gameplay)"
+
+  Custom_QWidget_Overlays:
+    usage: "✅ Secondary method for non-modal overlays"
+    implementations:
+      - "MenuOverlay - animated tabbed menu"
+      - "ItemSelectionOverlay - item grid selection"
+    animation: "QPropertyAnimation for smooth transitions"
+    blocking: "MenuOverlay is semi-modal (can click outside)"
+
+  StatusBar:
+    usage: "❌ Not used"
+    reason: "Full QStackedWidget page-based navigation; no app-level status bar"
+
+  LogDisplay_Widget:
+    usage: "✅ New pattern for passive logging"
+    purpose: "Non-blocking message display with color coding"
+    integration: "Used in CombatPage for combat/lore/event messages"
+    theme: "Full Theme:: integration"
+
+pattern_comparison_table:
+  header: "Pattern | Type | Intrusive | Blocking | Theme | Location"
+  separator: "--------|------|-----------|----------|-------|----------"
+  rows:
+    - "Quest Completion | Modal | ⭐⭐ | Yes | Consistent | QuestCompletionDialog"
+    - "Level Up | Modal | ⭐⭐ | Yes | Consistent | CombatResultDialog"
+    - "Combat Log | Widget | ⭐⭐⭐⭐⭐ | No | Consistent | LogDisplay/CombatPage"
+    - "**LORE DISCOVERY** | **Widget** | **⭐⭐⭐⭐⭐** | **No** | **Consistent** | **LogDisplay**"
+    - "Victory Screen | Modal | ⭐⭐ | Yes | Consistent | VictoryScreen"
+    - "Menu Overlay | Overlay | ⭐⭐⭐ | Semi | Consistent | MenuOverlay"
+
+implementation_checklist:
+  phase_1_add_lore_color:
+    - "[ ] Modify LogDisplay.cpp getBorderColor() to handle 'lore' type"
+    - "[ ] Choose color (suggested: #9d4edd purple or accent)"
+    - "[ ] Update LogEntry header comments with message type documentation"
+
+  phase_2_testing:
+    - "[ ] Trigger lore discovery during gameplay"
+    - "[ ] Verify log entry appears with correct color"
+    - "[ ] Test multiple rapid discoveries"
+    - "[ ] Verify scroll behavior with many entries"
+
+  phase_3_optional_enhancements:
+    - "[ ] Add emoji prefix to lore entries (e.g., '📖')"
+    - "[ ] Consider toast notification for rare discoveries"
+    - "[ ] Add lore discovery sound effect"
+    - "[ ] Track new/unread lore entries for main menu badge"
+
+  phase_4_documentation:
+    - "[ ] Document lore message type in code comments"
+    - "[ ] Update CLAUDE.md with LogDisplay usage guide"
+    - "[ ] Create lore discovery flow diagram"
+
+summary:
+  best_for_lore: "LogDisplay combat log - Already integrated, non-blocking, theme-consistent"
+  status: "✅ Ready to use / Ready for enhancement"
+  effort_to_enhance: "Low - Just add color handling in LogDisplay.cpp"
+  immediate_benefit: "Deploy as-is; enhancement adds visual distinction"

@@ -1,0 +1,196 @@
+/* ui/styles.qss */
+
+/* Global Styles */
+QMainWindow, QWidget {
+    background-color: #1a1826; /* BACKGROUND */
+    color: #f1f0f2; /* FOREGROUND */
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* Buttons - Unified styling with variants */
+QPushButton {
+    color: #f1f0f2; /* FOREGROUND */
+    background-color: #221e30; /* CARD */
+    border: 1px solid #3e3754; /* BORDER */
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: "Inter", "Segoe UI", sans-serif;
+    min-width: 80px;
+    min-height: 32px;
+}
+
+QPushButton:hover {
+    background-color: #352e4d; /* SECONDARY */
+    border-color: #8c52ff; /* ACCENT */
+}
+
+QPushButton:pressed {
+    background-color: #2d283d; /* MUTED */
+}
+
+QPushButton:disabled {
+    background-color: #2d283d; /* MUTED */
+    color: #9a96a5; /* MUTED_FOREGROUND */
+    border-color: #3e3754; /* BORDER */
+}
+
+/* Primary Action Button */
+QPushButton#primary {
+    background-color: #dc3545; /* PRIMARY */
+    color: #f9f8fa; /* PRIMARY_FOREGROUND */
+    border: none;
+    font-weight: bold;
+}
+
+QPushButton#primary:hover {
+    background-color: #c82333; /* Darker PRIMARY */
+}
+
+/* Destructive Action Button */
+QPushButton#destructive {
+    background-color: #d23a1a; /* DESTRUCTIVE */
+    color: #f1f0f2; /* DESTRUCTIVE_FOREGROUND */
+    border: none;
+}
+
+QPushButton#destructive:hover {
+    background-color: #b83418; /* Darker DESTRUCTIVE */
+}
+
+
+/* GroupBox / Cards */
+QGroupBox {
+    color: #f1f0f2; /* FOREGROUND */
+    border: 1px solid #3e3754; /* BORDER */
+    border-radius: 8px;
+    margin-top: 1ex;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 15px;
+    background-color: #221e30; /* CARD */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 10px;
+    color: #f1f0f2; /* FOREGROUND */
+    background-color: #221e30; /* CARD */
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+/* TextEdit for Logs */
+QTextEdit {
+    background-color: #221e30; /* CARD */
+    color: #f1f0f2; /* FOREGROUND */
+    border: 1px solid #3e3754; /* BORDER */
+    border-radius: 8px;
+    padding: 10px;
+    selection-background-color: #352e4d; /* SECONDARY */
+}
+
+/* Progress Bars */
+QProgressBar {
+    border: 1px solid #3e3754; /* BORDER */
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    background-color: #2d283d; /* MUTED */
+    color: #f1f0f2; /* FOREGROUND */
+    height: 24px;
+}
+
+QProgressBar::chunk {
+    background-color: #dc3545; /* PRIMARY */
+    border-radius: 7px;
+}
+
+/* Labels */
+QLabel {
+    color: #f1f0f2; /* FOREGROUND */
+    font-size: 14px;
+    background-color: transparent;
+    border: none;
+}
+
+/* LineEdit */
+QLineEdit {
+    background-color: #1a1826; /* BACKGROUND */
+    color: #f1f0f2; /* FOREGROUND */
+    border: 1px solid #3e3754; /* BORDER */
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+QLineEdit:focus {
+    border-color: #dc3545; /* RING */
+}
+
+/* Tab Widget */
+QTabWidget::pane {
+    border: none;
+    background-color: #1a1826; /* BACKGROUND */
+}
+
+QTabBar::tab {
+    background-color: #221e30; /* CARD */
+    color: #9a96a5; /* MUTED_FOREGROUND */
+    padding: 12px 24px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 2px;
+}
+
+QTabBar::tab:hover {
+    background-color: #2d283d; /* MUTED */
+    color: #f1f0f2; /* FOREGROUND */
+}
+
+QTabBar::tab:selected {
+    background-color: #1a1826; /* BACKGROUND */
+    color: #dc3545; /* PRIMARY */
+    border-bottom-color: #dc3545; /* PRIMARY */
+}
+
+/* ScrollArea */
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #221e30; /* CARD */
+    width: 12px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:vertical {
+    background: #3e3754; /* BORDER */
+    min-height: 20px;
+    border-radius: 5px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background: #221e30; /* CARD */
+    height: 10px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:horizontal {
+    background: #3e3754; /* BORDER */
+    min-width: 20px;
+    border-radius: 5px;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
