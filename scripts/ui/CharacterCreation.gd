@@ -1,0 +1,116 @@
+extends Control
+
+# CharacterCreation - Character creation scene with class selection and customization
+
+@onready var name_input = $VBoxContainer/Content/LeftPanel/NameSection/NameInput
+@onready var character_sprite = $VBoxContainer/Content/RightPanel/PreviewSection/CharacterSprite
+@onready var stats_text = $VBoxContainer/Content/RightPanel/StatsSection/StatsText
+@onready var skills_text = $VBoxContainer/Content/RightPanel/StatsSection/SkillsText
+@onready var start_game_button = $VBoxContainer/Footer/StartGameButton
+
+# Class sprite mappings
+@onready var class_sprites = {
+	"Hero": preload("res://assets/hero.png"),
+	"Warrior": preload("res://assets/warrior.png"),
+	"Mage": preload("res://assets/mage.png"),
+	"Rogue": preload("res://assets/rogue.png")
+}
+
+# Class stats
+var class_stats = {
+	"Hero": {"attack": 12, "defense": 6, "dexterity": 6, "health": 100},
+	"Warrior": {"attack": 15, "defense": 8, "dexterity": 4, "health": 100},
+	"Mage": {"attack": 8, "defense": 4, "dexterity": 5, "health": 100},
+	"Rogue": {"attack": 10, "defense": 5, "dexterity": 8, "health": 100}
+}
+
+# Class skills (display names)
+var class_skills = {
+	"Hero": ["Slash", "Heal"],
+	"Warrior": ["Slash", "Charge"],
+	"Mage": ["Fireball", "Lightning"],
+	"Rogue": ["Stealth", "Backstab"]
+}
+
+var selected_class = ""
+var character_name = ""
+
+func _ready():
+	print("CharacterCreation ready")
+	# Set default selection to Hero
+	_on_class_selected("Hero")
+	_update_start_button()
+
+func _on_name_input_changed(new_text: String):
+	character_name = new_text.strip_edges()
+	_update_start_button()
+
+func _update_start_button():
+	start_game_button.disabled = character_name.length() < 2 or selected_class == ""
+
+func _on_class_selected(class_name: String):
+	selected_class = class_name
+
+	# Update sprite
+	if class_sprites.has(class_name):
+		character_sprite.texture = class_sprites[class_name]
+
+	# Update stats display
+	if class_stats.has(class_name):
+		var stats = class_stats[class_name]
+		stats_text.text = "Attack: %d\nDefense: %d\nDexterity: %d\nHealth: %d" % [
+			stats.attack, stats.defense, stats.dexterity, stats.health
+		]
+
+	# Update skills display
+	if class_skills.has(class_name):
+		var skills = class_skills[class_name]
+		skills_text.text = "\n".join(skills)
+	else:
+		skills_text.text = "None"
+
+	_update_start_button()
+
+# Individual class button handlers for consistency
+func _on_hero_selected():
+	_on_class_selected("Hero")
+
+func _on_warrior_selected():
+	_on_class_selected("Warrior")
+
+func _on_mage_selected():
+	_on_class_selected("Mage")
+
+func _on_rogue_selected():
+	_on_class_selected("Rogue")
+
+func _on_start_game_pressed():
+	if character_name.length() >= 2 and selected_class != "":
+		print("Starting game with character: ", character_name, " (", selected_class, ")")
+
+		# Animate out
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(self, "modulate:a", 0.0, 0.5)
+
+		# Wait for animation
+		await tween.finished
+
+		# Start the game with the selected character
+		GameManager.new_game(character_name, selected_class)
+
+		# For now, just print - actual scene transition will be handled by MainMenu
+		print("Character created successfully! Ready for adventure.")
+
+func _on_back_pressed():
+	print("Back to main menu")
+
+	# Animate out
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(self, "modulate:a", 0.0, 0.3)
+
+	await tween.finished
+
+	# Go back to main menu
+	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")

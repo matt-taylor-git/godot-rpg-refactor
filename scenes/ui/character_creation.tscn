@@ -1,0 +1,165 @@
+[gd_scene load_steps=8 format=3 uid="uid://character_creation"]
+
+[ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/CharacterCreation.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q2" path="res://assets/hero.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q3" path="res://assets/warrior.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q4" path="res://assets/mage.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q5" path="res://assets/rogue.png" id="6"]
+
+[node name="CharacterCreation" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1")
+script = ExtResource("2")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Create Your Character"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="Content" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 40
+
+[node name="LeftPanel" type="VBoxContainer" parent="VBoxContainer/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="NameSection" type="VBoxContainer" parent="VBoxContainer/Content/LeftPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="VBoxContainer/Content/LeftPanel/NameSection"]
+layout_mode = 2
+text = "Character Name:"
+
+[node name="NameInput" type="LineEdit" parent="VBoxContainer/Content/LeftPanel/NameSection"]
+layout_mode = 2
+placeholder_text = "Enter your character's name"
+max_length = 20
+
+[node name="ClassSection" type="VBoxContainer" parent="VBoxContainer/Content/LeftPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="ClassLabel" type="Label" parent="VBoxContainer/Content/LeftPanel/ClassSection"]
+layout_mode = 2
+text = "Choose Your Class:"
+
+[node name="ClassButtons" type="VBoxContainer" parent="VBoxContainer/Content/LeftPanel/ClassSection"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="HeroButton" type="Button" parent="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons"]
+layout_mode = 2
+text = "Hero"
+
+[node name="WarriorButton" type="Button" parent="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons"]
+layout_mode = 2
+text = "Warrior"
+
+[node name="MageButton" type="Button" parent="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons"]
+layout_mode = 2
+text = "Mage"
+
+[node name="RogueButton" type="Button" parent="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons"]
+layout_mode = 2
+text = "Rogue"
+
+[node name="RightPanel" type="VBoxContainer" parent="VBoxContainer/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="PreviewSection" type="VBoxContainer" parent="VBoxContainer/Content/RightPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="PreviewLabel" type="Label" parent="VBoxContainer/Content/RightPanel/PreviewSection"]
+layout_mode = 2
+text = "Preview:"
+
+[node name="CharacterSprite" type="TextureRect" parent="VBoxContainer/Content/RightPanel/PreviewSection"]
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StatsSection" type="VBoxContainer" parent="VBoxContainer/Content/RightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StatsLabel" type="Label" parent="VBoxContainer/Content/RightPanel/StatsSection"]
+layout_mode = 2
+text = "Base Stats:"
+
+[node name="StatsText" type="Label" parent="VBoxContainer/Content/RightPanel/StatsSection"]
+layout_mode = 2
+text = "Attack: 12
+Defense: 6
+Dexterity: 6
+Health: 100"
+autowrap_mode = 1
+
+[node name="SkillsLabel" type="Label" parent="VBoxContainer/Content/RightPanel/StatsSection"]
+layout_mode = 2
+text = "Starting Skills:"
+
+[node name="SkillsText" type="Label" parent="VBoxContainer/Content/RightPanel/StatsSection"]
+layout_mode = 2
+text = "None"
+autowrap_mode = 1
+
+[node name="Footer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 20
+
+[node name="BackButton" type="Button" parent="VBoxContainer/Footer"]
+layout_mode = 2
+text = "Back to Menu"
+
+[node name="StartGameButton" type="Button" parent="VBoxContainer/Footer"]
+layout_mode = 2
+text = "Start Adventure!"
+disabled = true
+
+[connection signal="text_changed" from="VBoxContainer/Content/LeftPanel/NameSection/NameInput" to="." method="_on_name_input_changed"]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton" to="." method="_on_class_selected" binds=["Hero"]]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton" to="." method="_on_class_selected" binds=["Warrior"]]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton" to="." method="_on_class_selected" binds=["Mage"]]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton" to="." method="_on_class_selected" binds=["Rogue"]]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton" to="." method="_on_hero_selected"]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton" to="." method="_on_warrior_selected"]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton" to="." method="_on_mage_selected"]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton" to="." method="_on_rogue_selected"]
+[connection signal="pressed" from="VBoxContainer/Footer/BackButton" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/Footer/StartGameButton" to="." method="_on_start_game_pressed"]

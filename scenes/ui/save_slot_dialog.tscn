@@ -1,0 +1,77 @@
+[gd_scene load_steps=4 format=3 uid="uid://save_slot_dialog"]
+
+[ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/SaveSlotDialog.gd" id="2"]
+
+[node name="SaveSlotDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1")
+script = ExtResource("2")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DialogPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="DialogPanel/VBoxContainer"]
+layout_mode = 2
+text = "Select Save Slot"
+horizontal_alignment = 1
+
+[node name="SlotContainer" type="VBoxContainer" parent="DialogPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+
+[node name="Slot1Button" type="Button" parent="DialogPanel/VBoxContainer/SlotContainer"]
+layout_mode = 2
+text = "Slot 1: [Empty]"
+
+[node name="Slot2Button" type="Button" parent="DialogPanel/VBoxContainer/SlotContainer"]
+layout_mode = 2
+text = "Slot 2: [Empty]"
+
+[node name="Slot3Button" type="Button" parent="DialogPanel/VBoxContainer/SlotContainer"]
+layout_mode = 2
+text = "Slot 3: [Empty]"
+
+[node name="CancelButton" type="Button" parent="DialogPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Cancel"
+
+[connection signal="pressed" from="DialogPanel/VBoxContainer/SlotContainer/Slot1Button" to="." method="_on_slot_selected" binds=[1]]
+[connection signal="pressed" from="DialogPanel/VBoxContainer/SlotContainer/Slot2Button" to="." method="_on_slot_selected" binds=[2]]
+[connection signal="pressed" from="DialogPanel/VBoxContainer/SlotContainer/Slot3Button" to="." method="_on_slot_selected" binds=[3]]
+[connection signal="pressed" from="DialogPanel/VBoxContainer/CancelButton" to="." method="_on_cancel_pressed"]
