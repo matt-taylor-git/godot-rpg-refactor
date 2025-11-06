@@ -238,7 +238,7 @@ func start_combat():
 	emit_signal("combat_started", current_monster.name)
 
 	# Change to combat scene if not already there
-	if get_tree().current_scene.name != "CombatScene":
+	if get_tree() and get_tree().current_scene and get_tree().current_scene.name != "CombatScene":
 		get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
 
 	return combat_log

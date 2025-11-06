@@ -1,0 +1,99 @@
+[gd_scene load_steps=4 format=3 uid="uid://shop_dialog"]
+
+[ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/ShopDialog.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q2q2q2" path="res://assets/Hero.png" id="3"]
+
+[node name="ShopDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DialogPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -275.0
+offset_right = 400.0
+offset_bottom = 275.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="DialogPanel/VBoxContainer"]
+layout_mode = 2
+text = "Shop - Welcome Traveler!"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+
+[node name="PlayerGold" type="Label" parent="DialogPanel/VBoxContainer"]
+layout_mode = 2
+text = "Your Gold: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+
+[node name="Content" type="HBoxContainer" parent="DialogPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="ShopItems" type="VBoxContainer" parent="DialogPanel/VBoxContainer/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ShopTitle" type="Label" parent="DialogPanel/VBoxContainer/Content/ShopItems"]
+layout_mode = 2
+text = "Available Items:"
+theme_override_font_sizes/font_size = 18
+
+[node name="ShopList" type="VBoxContainer" parent="DialogPanel/VBoxContainer/Content/ShopItems"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+
+[node name="PlayerItems" type="VBoxContainer" parent="DialogPanel/VBoxContainer/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="InventoryTitle" type="Label" parent="DialogPanel/VBoxContainer/Content/PlayerItems"]
+layout_mode = 2
+text = "Your Inventory:"
+theme_override_font_sizes/font_size = 18
+
+[node name="InventoryList" type="VBoxContainer" parent="DialogPanel/VBoxContainer/Content/PlayerItems"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+
+[node name="CloseButton" type="Button" parent="DialogPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Close Shop"
+
+[connection signal="pressed" from="DialogPanel/VBoxContainer/CloseButton" to="." method="_on_close_pressed"]

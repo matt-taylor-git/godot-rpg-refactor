@@ -80,6 +80,48 @@ func remove_item(index: int) -> Resource:
 		return item
 	return null
 
+func equip_item(item: Resource, slot: String) -> bool:
+	if not item or not item.can_equip():
+		return false
+
+	# Unequip current item in that slot if any
+	if equipment.has(slot) and equipment[slot]:
+		# Try to add the old item back to inventory
+		if not add_item(equipment[slot]):
+			return false  # No room in inventory
+
+	# Equip the new item
+	equipment[slot] = item
+
+	# Apply stat bonuses
+	attack += item.attack_bonus
+	defense += item.defense_bonus
+	max_health += item.health_bonus
+	health += item.health_bonus  # Also heal for the bonus
+
+	return true
+
+func unequip_item(slot: String) -> Resource:
+	if equipment.has(slot) and equipment[slot]:
+		var item = equipment[slot]
+		equipment[slot] = null
+
+		# Remove stat bonuses
+		attack -= item.attack_bonus
+		defense -= item.defense_bonus
+		max_health -= item.health_bonus
+		health = min(health, max_health)  # Don't go over max health
+
+		return item
+	return null
+
+func _serialize_equipment() -> Dictionary:
+	var serialized = {}
+	for slot in equipment.keys():
+		var item = equipment[slot]
+		serialized[slot] = item.to_dict() if item else null
+	return serialized
+
 func to_dict() -> Dictionary:
 	return {
 		"name": name,
@@ -92,7 +134,7 @@ func to_dict() -> Dictionary:
 		"defense": defense,
 		"dexterity": dexterity,
 		"inventory": inventory.map(func(item): return item.to_dict() if item else null),
-		"equipment": equipment,
+		"equipment": _serialize_equipment(),
 		"skills": skills.map(func(skill): return skill.to_dict() if skill else null),
 		"gold": gold
 	}

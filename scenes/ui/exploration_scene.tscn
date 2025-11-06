@@ -103,6 +103,10 @@ text = "Rest"
 layout_mode = 2
 text = "Inventory"
 
+[node name="ShopButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+layout_mode = 2
+text = "Shop"
+
 [node name="MenuButton" type="Button" parent="UI/BottomBar/ActionButtons"]
 layout_mode = 2
 text = "Menu"
@@ -115,4 +119,5 @@ text = "Encounter chance: Low"
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/ExploreButton" to="." method="_on_explore_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/RestButton" to="." method="_on_rest_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/InventoryButton" to="." method="_on_inventory_pressed"]
+[connection signal="pressed" from="UI/BottomBar/ActionButtons/ShopButton" to="." method="_on_shop_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/MenuButton" to="." method="_on_menu_pressed"]

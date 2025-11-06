@@ -132,8 +132,16 @@ func _on_rest_pressed():
 	print("Rested and recovered %d HP. Encounter chance reset." % heal_amount)
 
 func _on_inventory_pressed():
-	# TODO: Open inventory dialog
-	print("Inventory not implemented yet")
+	# Open inventory dialog
+	var inventory_dialog = preload("res://scenes/ui/inventory_dialog.tscn").instantiate()
+	add_child(inventory_dialog)
+	print("Inventory dialog opened")
+
+func _on_shop_pressed():
+	# Open shop dialog
+	var shop_dialog = preload("res://scenes/ui/shop_dialog.tscn").instantiate()
+	add_child(shop_dialog)
+	print("Shop dialog opened")
 
 func _on_menu_pressed():
 	# Return to main menu
