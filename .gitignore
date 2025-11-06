@@ -15,3 +15,30 @@ build/
 # Temporary files
 *.tmp
 *.bak
+
+# Godot
+*.import
+.godot/
+!.godot/.gdignore
+!addons/
+!addons/gut/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Testing
+Testing/
+
+# Vim
+*.swp
+*.swo
+
+# Emacs
+*~
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
