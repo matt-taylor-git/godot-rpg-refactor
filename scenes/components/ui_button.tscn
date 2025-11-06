@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://banlt66gdvndq"]
+
+[ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
+[ext_resource type="Script" path="res://scripts/components/UIButton.gd" id="2"]
+
+[node name="UIButton" type="Button"]
+theme = ExtResource("1")
+script = ExtResource("2")

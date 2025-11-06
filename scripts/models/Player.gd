@@ -47,7 +47,24 @@ func heal(amount: int) -> void:
 
 func add_experience(amount: int) -> void:
 	experience += amount
-	# TODO: Level up logic
+	_check_level_up()
+
+func _check_level_up() -> void:
+	var exp_needed = get_exp_for_level(level + 1)
+	while experience >= exp_needed and level < 100:  # Cap at level 100
+		level += 1
+		# Increase stats on level up
+		max_health += 10
+		health = max_health  # Full heal on level up
+		attack += 2
+		defense += 1
+		dexterity += 1
+
+		exp_needed = get_exp_for_level(level + 1)
+
+func get_exp_for_level(target_level: int) -> int:
+	# Simple exponential formula: 100 * level^1.5
+	return int(100 * pow(target_level, 1.5))
 
 func add_item(item: Resource) -> bool:
 	for i in range(inventory.size()):
