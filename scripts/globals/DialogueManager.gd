@@ -60,6 +60,31 @@ func load_dialogues() -> void:
 					{"text": "Goodbye.", "action": "end"}
 				]
 			}
+		},
+		"knight_commander": {
+			"greeting": {
+				"text": "Hail, brave adventurer! I am Sir Aldric, Commander of the Royal Guard.",
+				"options": [
+					{"text": "Tell me about the dark threat.", "next": "dark_threat"},
+					{"text": "I seek a worthy challenge.", "next": "challenge"},
+					{"text": "Farewell.", "action": "end"}
+				]
+			},
+			"dark_threat": {
+				"text": "A great darkness has been stirring in the ancient crypt beneath the castle. We fear an ancient evil awakens.",
+				"options": [
+					{"text": "I will stop this evil.", "action": "accept_quest", "quest_type": "explore_cave"},
+					{"text": "That is beyond my abilities.", "next": "greeting"},
+					{"text": "Farewell.", "action": "end"}
+				]
+			},
+			"challenge": {
+				"text": "Hmmm, a warrior of spirit! Perhaps you are ready for the trials ahead.",
+				"options": [
+					{"text": "What trials?", "next": "dark_threat"},
+					{"text": "Farewell.", "action": "end"}
+				]
+			}
 		}
 	}
 
@@ -105,9 +130,16 @@ func handle_action(action: String, option_data: Dictionary) -> void:
 			if option_data.has("quest_type"):
 				var quest = QuestFactory.create_quest(option_data.quest_type, GameManager.get_player().level)
 				QuestManager.accept_quest(quest)
-				show_dialogue("quest_accepted")
+				# Look for a quest_accepted dialogue node, otherwise end
+				if current_dialogue.has("quest_accepted"):
+					show_dialogue("quest_accepted")
+				else:
+					end_dialogue()
 		"show_shop":
 			# This would trigger shop UI
+			end_dialogue()
+		_:
+			# Unknown action, continue
 			end_dialogue()
 
 func end_dialogue() -> void:

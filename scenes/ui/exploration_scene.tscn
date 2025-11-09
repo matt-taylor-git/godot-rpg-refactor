@@ -107,6 +107,18 @@ text = "Inventory"
 layout_mode = 2
 text = "Shop"
 
+[node name="QuestLogButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+layout_mode = 2
+text = "Quests"
+
+[node name="TalkButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+layout_mode = 2
+text = "Talk"
+
+[node name="CodexButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+layout_mode = 2
+text = "Codex"
+
 [node name="MenuButton" type="Button" parent="UI/BottomBar/ActionButtons"]
 layout_mode = 2
 text = "Menu"
@@ -120,4 +132,7 @@ text = "Encounter chance: Low"
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/RestButton" to="." method="_on_rest_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/InventoryButton" to="." method="_on_inventory_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/ShopButton" to="." method="_on_shop_pressed"]
+[connection signal="pressed" from="UI/BottomBar/ActionButtons/QuestLogButton" to="." method="_on_quest_log_pressed"]
+[connection signal="pressed" from="UI/BottomBar/ActionButtons/TalkButton" to="." method="_on_talk_pressed"]
+[connection signal="pressed" from="UI/BottomBar/ActionButtons/CodexButton" to="." method="_on_codex_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/MenuButton" to="." method="_on_menu_pressed"]

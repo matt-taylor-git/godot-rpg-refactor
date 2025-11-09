@@ -37,6 +37,17 @@ func complete_quest(quest) -> void:
 
 	emit_signal("quest_completed", quest.title)
 	print("Completed quest: ", quest.title)
+	
+	# Show completion dialog
+	_show_quest_completion_dialog(quest)
+
+func _show_quest_completion_dialog(quest) -> void:
+	# Try to find the current scene to add dialog to
+	var current_scene = get_tree().current_scene
+	if current_scene:
+		var dialog = preload("res://scenes/ui/quest_completion_dialog.tscn").instantiate()
+		dialog.set_quest(quest)
+		current_scene.add_child(dialog)
 
 func update_quest_progress(quest, amount: int = 1) -> void:
 	if quest not in active_quests:

@@ -52,6 +52,10 @@ func _process(delta):
 
 func _input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		# Don't move if clicking on UI buttons
+		var hovered = get_viewport().gui_get_hovered_control()
+		if hovered and hovered is Button:
+			return
 		# Click to move
 		target_position = event.position
 		is_moving = true
@@ -112,6 +116,10 @@ func _on_explore_pressed():
 	# Manual exploration - take multiple steps
 	for i in range(5):
 		_take_step()
+	
+	# Randomly offer a quest during exploration
+	if randf() < 0.3:  # 30% chance to get a quest
+		_offer_random_quest()
 
 func _on_rest_pressed():
 	if not GameManager.get_player():
@@ -143,6 +151,28 @@ func _on_shop_pressed():
 	add_child(shop_dialog)
 	print("Shop dialog opened")
 
+func _on_quest_log_pressed():
+	# Open quest log dialog
+	var quest_log_dialog = preload("res://scenes/ui/quest_log_dialog.tscn").instantiate()
+	add_child(quest_log_dialog)
+	print("Quest log dialog opened")
+
+func _on_talk_pressed():
+	# Open dialogue scene with a random NPC
+	var npcs = ["village_elder", "merchant", "knight_commander"]
+	var random_npc = npcs[randi() % npcs.size()]
+	
+	var dialogue_scene = preload("res://scenes/ui/dialogue_scene.tscn").instantiate()
+	add_child(dialogue_scene)
+	dialogue_scene.start_dialogue(random_npc)
+	print("Started dialogue with: ", random_npc)
+
+func _on_codex_pressed():
+	# Open codex dialog
+	var codex_dialog = preload("res://scenes/ui/codex_dialog.tscn").instantiate()
+	add_child(codex_dialog)
+	print("Codex dialog opened")
+
 func _on_menu_pressed():
 	# Return to main menu
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
@@ -163,6 +193,16 @@ func _save_exploration_state():
 func _on_game_loaded():
 	_load_exploration_state()
 	_update_ui()
+
+func _offer_random_quest():
+	# Create and offer a random quest
+	var player_level = 1
+	if GameManager.get_player():
+		player_level = GameManager.get_player().level
+	
+	var quest = QuestFactory.get_random_quest(player_level)
+	QuestManager.accept_quest(quest)
+	print("Offered quest: ", quest.title)
 
 # Save exploration state (could be added to GameManager later)
 func get_exploration_data():

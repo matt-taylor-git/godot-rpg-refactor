@@ -57,9 +57,7 @@ func _update_ui():
 
 func _append_to_log(message: String):
 	combat_log.text += "\n" + message
-	# Scroll to bottom - wait one frame if possible, otherwise scroll immediately
-	if get_tree():
-		await get_tree().process_frame
+	# Scroll to bottom
 	combat_log.scroll_to_line(combat_log.get_line_count() - 1)
 
 func _on_combat_started(monster_name_param: String):
