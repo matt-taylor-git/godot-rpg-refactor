@@ -15,6 +15,10 @@ signal monster_attacked(damage: int)
 signal player_leveled_up(new_level: int)
 signal loot_dropped(item_name: String)
 
+# Boss-specific signals
+signal boss_phase_changed(phase: int, description: String)
+signal boss_defeated()
+
 var current_scene: String = ""
 var game_data = {}
 
@@ -243,6 +247,36 @@ func start_combat():
 
 	return combat_log
 
+func start_boss_combat(level: int = 1) -> String:
+	if not game_data.player:
+		return "No player data"
+
+	# Create the final boss
+	current_monster = MonsterFactory.create_final_boss(level)
+
+	in_combat = true
+	combat_log = "Combat started! " + current_monster.get_phase_description() + "\n" + current_monster.name + " (Level " + str(current_monster.level) + ") appears!"
+
+	game_data.combat_state.current_monster = current_monster.to_dict()
+	game_data.combat_state.in_combat = true
+	game_data.combat_state.combat_log = combat_log
+
+	emit_signal("combat_started", current_monster.name)
+
+	# Change to combat scene if not already there
+	if get_tree() and get_tree().current_scene and get_tree().current_scene.name != "CombatScene":
+		get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
+
+	return combat_log
+
+func is_boss_combat() -> bool:
+	return current_monster is FinalBoss
+
+func get_boss_phase() -> int:
+	if is_boss_combat():
+		return current_monster.current_phase
+	return -1
+
 func player_attack() -> String:
 	if not in_combat or not current_monster or not game_data.player:
 		return "Not in combat"
@@ -259,10 +293,20 @@ func player_attack() -> String:
 	else:
 		attack_msg = "You attack for " + str(damage) + " damage!"
 
+	# Check for boss phase transition
+	if is_boss_combat() and current_monster.health > 0:
+		if current_monster.check_phase_transition():
+			var new_phase = current_monster.current_phase
+			var phase_desc = current_monster.get_phase_description()
+			attack_msg += "\n[color=red]" + current_monster.name + " has transitioned to Phase " + str(new_phase) + "! " + phase_desc + "[/color]"
+			emit_signal("boss_phase_changed", new_phase, phase_desc)
+
 	if current_monster.health <= 0:
 		current_monster.health = 0
 		attack_msg += " " + current_monster.name + " defeated!"
 		_give_combat_rewards()
+		if is_boss_combat():
+			emit_signal("boss_defeated")
 
 	combat_log = attack_msg
 	game_data.combat_state.combat_log = combat_log
@@ -308,17 +352,61 @@ func monster_attack() -> String:
 	if not in_combat or not current_monster or not game_data.player:
 		return "Not in combat"
 
-	var damage = _calculate_damage(current_monster.attack, current_monster.level, game_data.player.get_defense_power())
+	var attack_msg = ""
+	var total_damage = 0
 
-	game_data.player.take_damage(damage)
-	combat_log = current_monster.name + " attacks for " + str(damage) + " damage!"
+	# Handle boss abilities
+	if is_boss_combat():
+		var boss = current_monster as FinalBoss
+		var action = boss.get_ai_action()
+		
+		match action:
+			"power_strike":
+				var damage = _calculate_damage(int(boss.attack * 1.5), boss.level, game_data.player.get_defense_power())
+				game_data.player.take_damage(damage)
+				total_damage = damage
+				attack_msg = "[color=orange]" + boss.name + " uses Power Strike for " + str(damage) + " damage![/color]"
+			
+			"dark_curse":
+				attack_msg = "[color=purple]" + boss.name + " casts Dark Curse! Your attack power is reduced![/color]"
+				# TODO: Implement status effect system
+			
+			"whirlwind":
+				var damage1 = _calculate_damage(int(boss.attack * 0.8), boss.level, game_data.player.get_defense_power())
+				var damage2 = _calculate_damage(int(boss.attack * 0.8), boss.level, game_data.player.get_defense_power())
+				total_damage = damage1 + damage2
+				game_data.player.take_damage(total_damage)
+				attack_msg = "[color=orange]" + boss.name + " uses Whirlwind! " + str(damage1) + " + " + str(damage2) + " damage![/color]"
+			
+			"last_stand":
+				attack_msg = "[color=yellow]" + boss.name + " takes a defensive stance![/color]"
+				# TODO: Implement defense boost
+			
+			"realm_collapse":
+				var damage = _calculate_damage(int(boss.attack * 2.0), boss.level, game_data.player.get_defense_power())
+				game_data.player.take_damage(damage)
+				total_damage = damage
+				attack_msg = "[color=red]" + boss.name + " unleashes Realm Collapse for " + str(damage) + " massive damage![/color]"
+			
+			_:  # Regular attack
+				var damage = _calculate_damage(current_monster.attack, current_monster.level, game_data.player.get_defense_power())
+				game_data.player.take_damage(damage)
+				total_damage = damage
+				attack_msg = current_monster.name + " attacks for " + str(damage) + " damage!"
+	else:
+		# Regular monster attack
+		var damage = _calculate_damage(current_monster.attack, current_monster.level, game_data.player.get_defense_power())
+		game_data.player.take_damage(damage)
+		total_damage = damage
+		attack_msg = current_monster.name + " attacks for " + str(damage) + " damage!"
 
 	if game_data.player.health <= 0:
-		combat_log += " You are defeated!"
+		attack_msg += " You are defeated!"
 
+	combat_log = attack_msg
 	game_data.combat_state.combat_log = combat_log
 
-	emit_signal("monster_attacked", damage)
+	emit_signal("monster_attacked", total_damage)
 
 	_check_combat_end()
 	return combat_log

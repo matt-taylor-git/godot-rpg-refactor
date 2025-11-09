@@ -28,6 +28,8 @@ func _ready():
 	GameManager.connect("combat_ended", Callable(self, "_on_combat_ended"))
 	GameManager.connect("loot_dropped", Callable(self, "_on_loot_dropped"))
 	GameManager.connect("player_leveled_up", Callable(self, "_on_player_leveled_up"))
+	GameManager.connect("boss_phase_changed", Callable(self, "_on_boss_phase_changed"))
+	GameManager.connect("boss_defeated", Callable(self, "_on_boss_defeated"))
 
 	# Update initial UI
 	_update_ui()
@@ -46,7 +48,12 @@ func _update_ui():
 
 	var monster = GameManager.get_current_monster()
 	if monster:
-		monster_name.text = monster.name + " (Lv." + str(monster.level) + ")"
+		var name_text = monster.name + " (Lv." + str(monster.level) + ")"
+		# Add phase info if it's a boss
+		if GameManager.is_boss_combat():
+			var boss = monster as FinalBoss
+			name_text += " [Phase " + str(boss.current_phase) + "/4]"
+		monster_name.text = name_text
 		monster_health_bar.max_value = monster.max_health
 		monster_health_bar.value = monster.health
 		# TODO: Set monster sprite based on type
@@ -100,6 +107,13 @@ func _on_loot_dropped(item_name: String):
 func _on_player_leveled_up(new_level: int):
 	_append_to_log("[color=blue]Level up! You are now level " + str(new_level) + "![/color]")
 	_update_ui()
+
+func _on_boss_phase_changed(phase: int, description: String):
+	_append_to_log("[color=red]" + description + "[/color]")
+	_update_ui()
+
+func _on_boss_defeated():
+	_append_to_log("[color=gold]THE DARK OVERLORD HAS BEEN DEFEATED![/color]")
 
 func _on_attack_pressed():
 	if not GameManager.in_combat:

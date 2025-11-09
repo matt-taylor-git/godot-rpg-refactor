@@ -60,3 +60,8 @@ static func create_monster(monster_type: String, level: int = 1) -> Monster:
 static func get_random_monster_type() -> String:
 	var types = ["goblin", "orc", "skeleton"]
 	return types[randi() % types.size()]
+
+static func create_final_boss(level: int = 1) -> FinalBoss:
+	var boss = FinalBoss.new()
+	boss.set_stats_for_level(level)
+	return boss
