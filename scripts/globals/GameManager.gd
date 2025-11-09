@@ -289,7 +289,7 @@ func start_boss_combat(level: int = 1) -> String:
 	return combat_log
 
 func is_boss_combat() -> bool:
-	return current_monster is FinalBoss
+	return current_monster != null and current_monster.get_script().get_class_name() == "FinalBoss"
 
 func get_boss_phase() -> int:
 	if is_boss_combat():
@@ -376,36 +376,35 @@ func monster_attack() -> String:
 
 	# Handle boss abilities
 	if is_boss_combat():
-		var boss = current_monster as FinalBoss
-		var action = boss.get_ai_action()
+		var action = current_monster.get_ai_action()
 		
 		match action:
 			"power_strike":
-				var damage = _calculate_damage(int(boss.attack * 1.5), boss.level, game_data.player.get_defense_power())
+				var damage = _calculate_damage(int(current_monster.attack * 1.5), current_monster.level, game_data.player.get_defense_power())
 				game_data.player.take_damage(damage)
 				total_damage = damage
-				attack_msg = "[color=orange]" + boss.name + " uses Power Strike for " + str(damage) + " damage![/color]"
+				attack_msg = "[color=orange]" + current_monster.name + " uses Power Strike for " + str(damage) + " damage![/color]"
 			
 			"dark_curse":
-				attack_msg = "[color=purple]" + boss.name + " casts Dark Curse! Your attack power is reduced![/color]"
+				attack_msg = "[color=purple]" + current_monster.name + " casts Dark Curse! Your attack power is reduced![/color]"
 				# TODO: Implement status effect system
 			
 			"whirlwind":
-				var damage1 = _calculate_damage(int(boss.attack * 0.8), boss.level, game_data.player.get_defense_power())
-				var damage2 = _calculate_damage(int(boss.attack * 0.8), boss.level, game_data.player.get_defense_power())
+				var damage1 = _calculate_damage(int(current_monster.attack * 0.8), current_monster.level, game_data.player.get_defense_power())
+				var damage2 = _calculate_damage(int(current_monster.attack * 0.8), current_monster.level, game_data.player.get_defense_power())
 				total_damage = damage1 + damage2
 				game_data.player.take_damage(total_damage)
-				attack_msg = "[color=orange]" + boss.name + " uses Whirlwind! " + str(damage1) + " + " + str(damage2) + " damage![/color]"
+				attack_msg = "[color=orange]" + current_monster.name + " uses Whirlwind! " + str(damage1) + " + " + str(damage2) + " damage![/color]"
 			
 			"last_stand":
-				attack_msg = "[color=yellow]" + boss.name + " takes a defensive stance![/color]"
+				attack_msg = "[color=yellow]" + current_monster.name + " takes a defensive stance![/color]"
 				# TODO: Implement defense boost
 			
 			"realm_collapse":
-				var damage = _calculate_damage(int(boss.attack * 2.0), boss.level, game_data.player.get_defense_power())
+				var damage = _calculate_damage(int(current_monster.attack * 2.0), current_monster.level, game_data.player.get_defense_power())
 				game_data.player.take_damage(damage)
 				total_damage = damage
-				attack_msg = "[color=red]" + boss.name + " unleashes Realm Collapse for " + str(damage) + " massive damage![/color]"
+				attack_msg = "[color=red]" + current_monster.name + " unleashes Realm Collapse for " + str(damage) + " massive damage![/color]"
 			
 			_:  # Regular attack
 				var damage = _calculate_damage(current_monster.attack, current_monster.level, game_data.player.get_defense_power())

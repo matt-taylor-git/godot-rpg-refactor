@@ -61,7 +61,9 @@ static func get_random_monster_type() -> String:
 	var types = ["goblin", "orc", "skeleton"]
 	return types[randi() % types.size()]
 
-static func create_final_boss(level: int = 1) -> FinalBoss:
-	var boss = FinalBoss.new()
+static func create_final_boss(level: int = 1) -> Monster:
+	# Use late binding to avoid forward reference issues
+	var FinalBossClass = load("res://scripts/models/FinalBoss.gd")
+	var boss = FinalBossClass.new()
 	boss.set_stats_for_level(level)
 	return boss

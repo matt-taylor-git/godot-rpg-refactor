@@ -51,8 +51,7 @@ func _update_ui():
 		var name_text = monster.name + " (Lv." + str(monster.level) + ")"
 		# Add phase info if it's a boss
 		if GameManager.is_boss_combat():
-			var boss = monster as FinalBoss
-			name_text += " [Phase " + str(boss.current_phase) + "/4]"
+			name_text += " [Phase " + str(monster.current_phase) + "/4]"
 		monster_name.text = name_text
 		monster_health_bar.max_value = monster.max_health
 		monster_health_bar.value = monster.health
