@@ -186,3 +186,9 @@ func load_codex_state(data: Dictionary) -> void:
 	for entry_id in unlocked_ids:
 		if lore_entries.has(entry_id):
 			unlocked_entries[entry_id] = lore_entries[entry_id]
+
+func get_discovered_lore() -> Array:
+	return unlocked_entries.keys()
+
+func is_lore_discovered(entry_id: String) -> bool:
+	return has_unlocked(entry_id)

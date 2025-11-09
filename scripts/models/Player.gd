@@ -12,6 +12,8 @@ class_name Player
 @export var attack: int = 10
 @export var defense: int = 5
 @export var dexterity: int = 5
+@export var mana: int = 0
+@export var max_mana: int = 0
 
 @export var inventory: Array = []  # Array of Item resources
 @export var equipment: Dictionary = {}  # weapon, armor, etc.
@@ -133,6 +135,8 @@ func to_dict() -> Dictionary:
 		"attack": attack,
 		"defense": defense,
 		"dexterity": dexterity,
+		"mana": mana,
+		"max_mana": max_mana,
 		"inventory": inventory.map(func(item): return item.to_dict() if item else null),
 		"equipment": _serialize_equipment(),
 		"skills": skills.map(func(skill): return skill.to_dict() if skill else null),
@@ -149,6 +153,8 @@ func from_dict(data: Dictionary) -> void:
 	attack = data.get("attack", 10)
 	defense = data.get("defense", 5)
 	dexterity = data.get("dexterity", 5)
+	mana = data.get("mana", 0)
+	max_mana = data.get("max_mana", 0)
 	gold = data.get("gold", 0)
 	
 	# Load inventory

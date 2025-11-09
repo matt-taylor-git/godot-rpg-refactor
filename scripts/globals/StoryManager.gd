@@ -161,3 +161,6 @@ func save_story_state() -> Dictionary:
 func load_story_state(data: Dictionary) -> void:
 	completed_events = data.get("completed_events", [])
 	story_flags = data.get("story_flags", {})
+
+func is_game_started() -> bool:
+	return has_completed_event("tutorial_welcome")

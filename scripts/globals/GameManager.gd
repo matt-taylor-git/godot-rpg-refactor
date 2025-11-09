@@ -19,6 +19,9 @@ signal loot_dropped(item_name: String)
 signal boss_phase_changed(phase: int, description: String)
 signal boss_defeated()
 
+# Victory signal
+signal game_victory()
+
 var current_scene: String = ""
 var game_data = {}
 
@@ -27,6 +30,14 @@ var current_monster: Monster = null
 var in_combat: bool = false
 var combat_log: String = ""
 var game_start_time: float = 0.0
+
+# Statistics tracking
+var stats = {
+	"enemies_defeated": 0,
+	"deaths": 0,
+	"gold_earned": 0,
+	"quests_completed": 0
+}
 
 func _ready():
 	print("GameManager initialized")
@@ -110,6 +121,14 @@ func new_game(player_name: String, character_class: String = "Hero"):
 	current_monster = null
 	in_combat = false
 	combat_log = ""
+
+	# Reset statistics
+	stats = {
+		"enemies_defeated": 0,
+		"deaths": 0,
+		"gold_earned": 0,
+		"quests_completed": 0
+	}
 
 	# Reset game start time for playtime tracking
 	game_start_time = Time.get_unix_time_from_system()
@@ -402,6 +421,7 @@ func monster_attack() -> String:
 
 	if game_data.player.health <= 0:
 		attack_msg += " You are defeated!"
+		stats["deaths"] += 1
 
 	combat_log = attack_msg
 	game_data.combat_state.combat_log = combat_log
@@ -486,6 +506,10 @@ func _give_combat_rewards():
 	# Give gold
 	var gold_gained = current_monster.gold_reward
 	game_data.player.gold += gold_gained
+	
+	# Track statistics
+	stats["enemies_defeated"] += 1
+	stats["gold_earned"] += gold_gained
 
 	# Random loot drop (30% chance)
 	if randf() < 0.3:
@@ -536,3 +560,22 @@ func tick_skill_cooldowns():
 	if game_data.player:
 		for skill in game_data.player.skills:
 			skill.tick_cooldown()
+
+# Statistics getters
+func get_enemies_defeated() -> int:
+	return stats["enemies_defeated"]
+
+func get_deaths() -> int:
+	return stats["deaths"]
+
+func get_gold_earned() -> int:
+	return stats["gold_earned"]
+
+func get_quests_completed() -> int:
+	return stats["quests_completed"]
+
+func set_quests_completed(count: int) -> void:
+	stats["quests_completed"] = count
+
+func trigger_victory() -> void:
+	emit_signal("game_victory")

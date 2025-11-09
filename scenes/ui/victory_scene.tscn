@@ -1,0 +1,174 @@
+[gd_scene load_steps=2 format=3 uid="uid://victory_scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/VictoryScene.gd" id="1"]
+
+[node name="VictoryScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="VictoryHeader" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="VictoryTitle" type="Label" parent="VBoxContainer/VictoryHeader"]
+layout_mode = 2
+text = "🏆 VICTORY! 🏆"
+horizontal_alignment = 1
+custom_minimum_size = Vector2(0, 80)
+theme_override_font_sizes/font_size = 48
+
+[node name="VictoryMessage" type="Label" parent="VBoxContainer/VictoryHeader"]
+layout_mode = 2
+text = "You have defeated the final boss and completed the game!"
+horizontal_alignment = 1
+custom_minimum_size = Vector2(0, 60)
+theme_override_font_sizes/font_size = 24
+text_overrun_behavior = 3
+
+[node name="StatsGrid" type="GridContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+
+[node name="FinalLevelCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 100)
+theme_override_constants/separation = 5
+
+[node name="FinalLevelLabel" type="Label" parent="VBoxContainer/StatsGrid/FinalLevelCard"]
+layout_mode = 2
+text = "Final Level"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+
+[node name="FinalLevelValue" type="Label" parent="VBoxContainer/StatsGrid/FinalLevelCard"]
+layout_mode = 2
+text = "1"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="PlaytimeCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 100)
+theme_override_constants/separation = 5
+
+[node name="PlaytimeLabel" type="Label" parent="VBoxContainer/StatsGrid/PlaytimeCard"]
+layout_mode = 2
+text = "Playtime"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+
+[node name="PlaytimeValue" type="Label" parent="VBoxContainer/StatsGrid/PlaytimeCard"]
+layout_mode = 2
+text = "0m"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="EnemiesCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 100)
+theme_override_constants/separation = 5
+
+[node name="EnemiesLabel" type="Label" parent="VBoxContainer/StatsGrid/EnemiesCard"]
+layout_mode = 2
+text = "Enemies Defeated"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+
+[node name="EnemiesValue" type="Label" parent="VBoxContainer/StatsGrid/EnemiesCard"]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="DeathsCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 100)
+theme_override_constants/separation = 5
+
+[node name="DeathsLabel" type="Label" parent="VBoxContainer/StatsGrid/DeathsCard"]
+layout_mode = 2
+text = "Times Died"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+
+[node name="DeathsValue" type="Label" parent="VBoxContainer/StatsGrid/DeathsCard"]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="GoldCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 100)
+theme_override_constants/separation = 5
+
+[node name="GoldLabel" type="Label" parent="VBoxContainer/StatsGrid/GoldCard"]
+layout_mode = 2
+text = "Gold Earned"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+
+[node name="GoldValue" type="Label" parent="VBoxContainer/StatsGrid/GoldCard"]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="QuestsCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 100)
+theme_override_constants/separation = 5
+
+[node name="QuestsLabel" type="Label" parent="VBoxContainer/StatsGrid/QuestsCard"]
+layout_mode = 2
+text = "Quests Completed"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+
+[node name="QuestsValue" type="Label" parent="VBoxContainer/StatsGrid/QuestsCard"]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="ButtonContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 60)
+theme_override_constants/separation = 20
+
+[node name="MenuButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Return to Main Menu (Esc)"
+custom_minimum_size = Vector2(0, 50)
+
+[node name="ContinueButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Continue Playing (Space/Enter)"
+custom_minimum_size = Vector2(0, 50)
