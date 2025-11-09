@@ -23,11 +23,8 @@ func _init():
 func can_use(user) -> bool:
 	if current_cooldown > 0:
 		return false
-	if mana_cost > 0:
-		if not user.has_meta("mana") and not "mana" in user:
-			return false
-		if user.mana < mana_cost:
-			return false
+	if mana_cost > 0 and user.mana < mana_cost:
+		return false
 	if required_level > user.level:
 		return false
 	if required_class and user.character_class != required_class:
