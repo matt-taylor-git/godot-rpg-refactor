@@ -8,8 +8,10 @@ signal dialogue_ended()
 signal dialogue_updated(text: String, options: Array)
 
 var dialogue_data: Dictionary = {}
-var current_dialogue: Dictionary = {}
+var current_npc: String = ""
+var current_dialogue_node: String = ""
 var current_options: Array = []
+var current_text: String = ""
 
 func _ready():
 	print("DialogueManager initialized")
@@ -92,20 +94,28 @@ func start_dialogue(npc_id: String) -> bool:
 	if not dialogue_data.has(npc_id):
 		return false
 
-	current_dialogue = dialogue_data[npc_id]
+	current_npc = npc_id
+	current_dialogue_node = "greeting"
 	show_dialogue("greeting")
 	emit_signal("dialogue_started", npc_id)
 	return true
 
 func show_dialogue(dialogue_key: String) -> void:
-	if not current_dialogue.has(dialogue_key):
+	if not dialogue_data.has(current_npc):
+		end_dialogue()
+		return
+	
+	var npc_dialogue = dialogue_data[current_npc]
+	if not npc_dialogue.has(dialogue_key):
 		end_dialogue()
 		return
 
-	var dialogue_entry = current_dialogue[dialogue_key]
+	current_dialogue_node = dialogue_key
+	var dialogue_entry = npc_dialogue[dialogue_key]
 	var text = dialogue_entry.get("text", "")
 	var options = dialogue_entry.get("options", [])
 
+	current_text = text
 	current_options = options
 	emit_signal("dialogue_updated", text, options)
 
@@ -131,7 +141,8 @@ func handle_action(action: String, option_data: Dictionary) -> void:
 				var quest = QuestFactory.create_quest(option_data.quest_type, GameManager.get_player().level)
 				QuestManager.accept_quest(quest)
 				# Look for a quest_accepted dialogue node, otherwise end
-				if current_dialogue.has("quest_accepted"):
+				var npc_dialogue = dialogue_data.get(current_npc, {})
+				if npc_dialogue.has("quest_accepted"):
 					show_dialogue("quest_accepted")
 				else:
 					end_dialogue()
@@ -143,15 +154,17 @@ func handle_action(action: String, option_data: Dictionary) -> void:
 			end_dialogue()
 
 func end_dialogue() -> void:
-	current_dialogue.clear()
+	current_npc = ""
+	current_dialogue_node = ""
+	current_text = ""
 	current_options.clear()
 	emit_signal("dialogue_ended")
 
 func get_current_text() -> String:
-	return current_dialogue.get("text", "")
+	return current_text
 
 func get_current_options() -> Array:
 	return current_options
 
 func is_in_dialogue() -> bool:
-	return not current_dialogue.is_empty()
+	return current_npc != ""
