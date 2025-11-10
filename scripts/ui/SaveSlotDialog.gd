@@ -15,6 +15,7 @@ func _ready():
 	modulate.a = 0.0
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, 0.3)
+	tween.finished.connect(func(): tween.kill())
 
 func update_slot_info():
 	# Check each save slot and update button text
@@ -60,6 +61,7 @@ func _on_slot_selected(slot_number: int):
 	# Animate out and emit signal
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.2)
+	tween.finished.connect(func(): tween.kill())
 	await tween.finished
 
 	emit_signal("slot_selected", slot_number)
@@ -69,6 +71,7 @@ func _on_cancel_pressed():
 	# Animate out and emit cancelled signal
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.2)
+	tween.finished.connect(func(): tween.kill())
 	await tween.finished
 
 	emit_signal("cancelled")

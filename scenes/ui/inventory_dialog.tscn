@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/InventoryDialog.gd" id="2"]
-[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q2q2q2" path="res://assets/Hero.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/Hero.png" id="3"]
 
 [node name="InventoryDialog" type="Control"]
 layout_mode = 3

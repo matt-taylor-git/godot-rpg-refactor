@@ -42,7 +42,7 @@ func _setup_categories():
 	
 	if categories.size() > 0:
 		current_category = categories[0]
-		category_tabs.select(0)
+		category_tabs.current_tab = 0
 
 func _update_display():
 	_refresh_entry_list()

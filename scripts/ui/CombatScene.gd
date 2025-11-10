@@ -92,7 +92,7 @@ func _on_combat_ended(player_won: bool):
 	var message = ""
 	if player_won:
 		message = "[color=green]Victory! You defeated the monster![/color]"
-		
+
 		# Check if it was the final boss
 		if GameManager.is_boss_combat():
 			# Show victory screen instead of returning to exploration
@@ -109,7 +109,10 @@ func _on_combat_ended(player_won: bool):
 	else:
 		message = "[color=red]Defeat! You were defeated...[/color]"
 		_append_to_log(message)
-		# TODO: Game over screen
+		# Show game over screen
+		await get_tree().create_timer(2.0).timeout
+		if get_tree():
+			get_tree().change_scene_to_file("res://scenes/ui/game_over_scene.tscn")
 
 
 func _on_loot_dropped(item_name: String):

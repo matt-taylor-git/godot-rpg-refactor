@@ -102,6 +102,7 @@ func _on_back_pressed():
 	var tween = create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(self, "modulate:a", 0.0, 0.3)
+	tween.finished.connect(func(): tween.kill())
 
 	await tween.finished
 

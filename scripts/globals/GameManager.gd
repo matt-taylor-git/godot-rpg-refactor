@@ -289,7 +289,7 @@ func start_boss_combat(level: int = 1) -> String:
 	return combat_log
 
 func is_boss_combat() -> bool:
-	return current_monster != null and current_monster.get_script().get_class_name() == "FinalBoss"
+	return current_monster != null and current_monster.get_script().get_class() == "FinalBoss"
 
 func get_boss_phase() -> int:
 	if is_boss_combat():

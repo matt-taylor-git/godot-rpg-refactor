@@ -27,20 +27,24 @@ func _animate_menu_in():
 	var title_tween = create_tween()
 	title_tween.tween_property(title_label, "modulate:a", 1.0, 0.5)
 	title_tween.parallel().tween_property(title_label, "position:y", title_label.position.y + 50, 0.5)
+	title_tween.finished.connect(func(): title_tween.kill())
 
 	# Button animations with stagger
 	await title_tween.finished
 
-	var button_tween = create_tween()
-	button_tween.tween_property(new_game_button, "modulate:a", 1.0, 0.3)
-	await button_tween.finished
+	var new_game_tween = create_tween()
+	new_game_tween.tween_property(new_game_button, "modulate:a", 1.0, 0.3)
+	new_game_tween.finished.connect(func(): new_game_tween.kill())
+	await new_game_tween.finished
 
-	button_tween = create_tween()
-	button_tween.tween_property(load_game_button, "modulate:a", 1.0, 0.3)
-	await button_tween.finished
+	var load_game_tween = create_tween()
+	load_game_tween.tween_property(load_game_button, "modulate:a", 1.0, 0.3)
+	load_game_tween.finished.connect(func(): load_game_tween.kill())
+	await load_game_tween.finished
 
-	button_tween = create_tween()
-	button_tween.tween_property(exit_button, "modulate:a", 1.0, 0.3)
+	var exit_tween = create_tween()
+	exit_tween.tween_property(exit_button, "modulate:a", 1.0, 0.3)
+	exit_tween.finished.connect(func(): exit_tween.kill())
 
 func _animate_button_press(button: Button):
 	# Quick scale animation for button press
@@ -48,6 +52,7 @@ func _animate_button_press(button: Button):
 	var tween = create_tween()
 	tween.tween_property(button, "scale", original_scale * 0.95, 0.1)
 	tween.tween_property(button, "scale", original_scale, 0.1)
+	tween.finished.connect(func(): tween.kill())
 
 func _on_new_game_pressed():
 	print("New Game pressed")
@@ -113,3 +118,4 @@ func _animate_menu_out():
 	tween.tween_property(new_game_button, "modulate:a", 0.0, 0.3)
 	tween.tween_property(load_game_button, "modulate:a", 0.0, 0.3)
 	tween.tween_property(exit_button, "modulate:a", 0.0, 0.3)
+	tween.finished.connect(func(): tween.kill())

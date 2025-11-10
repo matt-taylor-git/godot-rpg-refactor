@@ -57,8 +57,22 @@ func load_dialogues() -> void:
 			"greeting": {
 				"text": "Welcome to my shop! I have potions, weapons, and all manner of adventuring supplies.",
 				"options": [
-					{"text": "Show me your potions.", "action": "show_shop", "category": "potions"},
-					{"text": "Show me weapons.", "action": "show_shop", "category": "weapons"},
+					{"text": "Tell me about your wares.", "next": "about_wares"},
+					{"text": "Do you have any advice for adventurers?", "next": "advice"},
+					{"text": "Goodbye.", "action": "end"}
+				]
+			},
+			"about_wares": {
+				"text": "I carry healing potions, mana potions, swords, shields, and armor. Everything an adventurer needs! You can browse my selection using the Shop button when you're ready to buy.",
+				"options": [
+					{"text": "Thanks for the information.", "next": "greeting"},
+					{"text": "Goodbye.", "action": "end"}
+				]
+			},
+			"advice": {
+				"text": "Stay on the main roads at night, and always check your gear before heading into caves. Oh, and don't forget to save your game!",
+				"options": [
+					{"text": "Good advice, thanks!", "next": "greeting"},
 					{"text": "Goodbye.", "action": "end"}
 				]
 			}
@@ -146,9 +160,7 @@ func handle_action(action: String, option_data: Dictionary) -> void:
 					show_dialogue("quest_accepted")
 				else:
 					end_dialogue()
-		"show_shop":
-			# This would trigger shop UI
-			end_dialogue()
+
 		_:
 			# Unknown action, continue
 			end_dialogue()
