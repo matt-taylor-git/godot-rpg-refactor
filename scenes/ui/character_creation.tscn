@@ -1,11 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://character_creation"]
+[gd_scene load_steps=4 format=3 uid="uid://b1saih6uqrtd1"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/CharacterCreation.gd" id="2"]
-[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q2" path="res://assets/hero.png" id="3"]
-[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q3" path="res://assets/warrior.png" id="4"]
-[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q4" path="res://assets/mage.png" id="5"]
-[ext_resource type="Texture2D" uid="uid://c2q2q2q2q2q2q2q2q2q5" path="res://assets/rogue.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/hero.png" id="3"]
 
 [node name="CharacterCreation" type="Control"]
 layout_mode = 3
@@ -16,6 +13,15 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1")
 script = ExtResource("2")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0627451, 0.09803922, 0.09803922, 1)
 
 [node name="Background" type="Panel" parent="."]
 layout_mode = 1
@@ -36,9 +42,9 @@ theme_override_constants/separation = 20
 
 [node name="Title" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 32
 text = "Create Your Character"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 32
 
 [node name="Content" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -140,8 +146,8 @@ autowrap_mode = 1
 
 [node name="Footer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
-alignment = 1
 theme_override_constants/separation = 20
+alignment = 1
 
 [node name="BackButton" type="Button" parent="VBoxContainer/Footer"]
 layout_mode = 2
@@ -149,17 +155,17 @@ text = "Back to Menu"
 
 [node name="StartGameButton" type="Button" parent="VBoxContainer/Footer"]
 layout_mode = 2
-text = "Start Adventure!"
 disabled = true
+text = "Start Adventure!"
 
 [connection signal="text_changed" from="VBoxContainer/Content/LeftPanel/NameSection/NameInput" to="." method="_on_name_input_changed"]
-[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton" to="." method="_on_class_selected" binds=["Hero"]]
-[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton" to="." method="_on_class_selected" binds=["Warrior"]]
-[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton" to="." method="_on_class_selected" binds=["Mage"]]
-[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton" to="." method="_on_class_selected" binds=["Rogue"]]
 [connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton" to="." method="_on_hero_selected"]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton" to="." method="_on_class_selected" binds= ["Hero"]]
 [connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton" to="." method="_on_warrior_selected"]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton" to="." method="_on_class_selected" binds= ["Warrior"]]
 [connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton" to="." method="_on_mage_selected"]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton" to="." method="_on_class_selected" binds= ["Mage"]]
 [connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton" to="." method="_on_rogue_selected"]
+[connection signal="pressed" from="VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton" to="." method="_on_class_selected" binds= ["Rogue"]]
 [connection signal="pressed" from="VBoxContainer/Footer/BackButton" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="VBoxContainer/Footer/StartGameButton" to="." method="_on_start_game_pressed"]

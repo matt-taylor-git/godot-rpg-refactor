@@ -1,7 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://combat_scene"]
+[gd_scene load_steps=3 format=3 uid="uid://ck6d6rke5lknx"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
-[ext_resource type="Script" path="res://scripts/ui/CombatScene.gd" id="2"]
+[ext_resource type="Script" uid="uid://cg4ikbac8bt18" path="res://scripts/ui/CombatScene.gd" id="2"]
 
 [node name="CombatScene" type="Control"]
 layout_mode = 3
@@ -12,6 +12,15 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1")
 script = ExtResource("2")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0627451, 0.09803922, 0.09803922, 1)
 
 [node name="Background" type="Panel" parent="."]
 layout_mode = 1
@@ -48,14 +57,13 @@ theme_override_constants/separation = 10
 
 [node name="MonsterName" type="Label" parent="VBoxContainer/MonsterSection/MonsterInfo"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 24
 text = "Monster Name"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 24
 
 [node name="MonsterHealthBar" type="ProgressBar" parent="VBoxContainer/MonsterSection/MonsterInfo"]
 layout_mode = 2
 size_flags_vertical = 3
-max_value = 100.0
 value = 100.0
 show_percentage = false
 
@@ -78,14 +86,13 @@ theme_override_constants/separation = 10
 
 [node name="PlayerName" type="Label" parent="VBoxContainer/PlayerSection/PlayerInfo"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 24
 text = "Player Name"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 24
 
 [node name="PlayerHealthBar" type="ProgressBar" parent="VBoxContainer/PlayerSection/PlayerInfo"]
 layout_mode = 2
 size_flags_vertical = 3
-max_value = 100.0
 value = 100.0
 show_percentage = false
 
