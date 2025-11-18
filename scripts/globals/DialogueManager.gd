@@ -101,7 +101,23 @@ func load_dialogues() -> void:
 					{"text": "Farewell.", "action": "end"}
 				]
 			}
-		}
+		},
+        "quest_giver": {
+            "greeting": {
+                "text": "Hello, traveler. I have a task for you, if you're up for it.",
+                "options": [
+                    {"text": "What is it?", "next": "quest_offer"},
+                    {"text": "I'm not interested.", "action": "end"}
+                ]
+            },
+            "quest_offer": {
+                "text": "Goblins have been attacking our farms. We need someone to clear them out.",
+                "options": [
+                    {"text": "I'll do it.", "action": "accept_quest", "quest_type": "kill_goblins"},
+                    {"text": "Sorry, I can't help.", "action": "end"}
+                ]
+            }
+        }
 	}
 
 func start_dialogue(npc_id: String) -> bool:

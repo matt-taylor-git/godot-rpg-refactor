@@ -2,10 +2,10 @@ extends Control
 
 # MainMenu - Main menu scene with navigation options
 
-@onready var title_label = $VBoxContainer/TitleLabel
-@onready var new_game_button = $VBoxContainer/NewGameButton
-@onready var load_game_button = $VBoxContainer/LoadGameButton
-@onready var exit_button = $VBoxContainer/ExitButton
+@onready var title_label = $CenterContainer/MenuPanel/VBoxContainer/TitleLabel
+@onready var new_game_button = $CenterContainer/MenuPanel/VBoxContainer/NewGameButton
+@onready var load_game_button = $CenterContainer/MenuPanel/VBoxContainer/LoadGameButton
+@onready var exit_button = $CenterContainer/MenuPanel/VBoxContainer/ExitButton
 
 const SAVE_SLOT_DIALOG = preload("res://scenes/ui/save_slot_dialog.tscn")
 
@@ -89,9 +89,9 @@ func _on_save_slot_selected(slot_number: int):
 	if success:
 		# Determine which scene to go to based on game state
 		if GameManager.in_combat:
-			get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
+			GameManager.change_scene("combat_scene")
 		else:
-			get_tree().change_scene_to_file("res://scenes/ui/exploration_scene.tscn")
+			GameManager.change_scene("town_scene")
 	else:
 		print("Failed to load game from slot ", slot_number)
 		# Could show error message
@@ -102,13 +102,7 @@ func _on_save_slot_cancelled():
 func _change_scene(scene_name: String):
 	# Change to the appropriate scene immediately (skip animation in headless mode)
 	print("Changing to scene: ", scene_name)
-	match scene_name:
-		"character_creation":
-			get_tree().change_scene_to_file("res://scenes/ui/character_creation.tscn")
-		"exploration":
-			get_tree().change_scene_to_file("res://scenes/ui/exploration_scene.tscn")
-		_:
-			print("Unknown scene: ", scene_name)
+	GameManager.change_scene(scene_name)
 
 func _animate_menu_out():
 	# Animate everything fading out

@@ -133,7 +133,7 @@ func new_game(player_name: String, character_class: String = "Hero"):
 	# Reset game start time for playtime tracking
 	game_start_time = Time.get_unix_time_from_system()
 
-	game_data.current_scene = "exploration"
+	game_data.current_scene = "town"
 	game_data.exploration_state = {
 	"steps_taken": 0,
 	"encounter_chance": 2.0,
@@ -156,7 +156,7 @@ func load_game(save_slot: int):
 	if loaded_data:
 		game_data.player = Player.new()
 		game_data.player.from_dict(loaded_data.player)
-		game_data.current_scene = loaded_data.get("current_scene", "main_menu")
+		game_data.current_scene = loaded_data.get("current_scene", "town")
 		game_data.exploration_state = loaded_data.get("exploration_state", {
 			"steps_taken": 0,
 			"encounter_chance": 2.0,
@@ -230,9 +230,13 @@ func _save_to_file(save_slot: int):
 
 func change_scene(scene_name: String):
 	print("Changing scene to: ", scene_name)
+	var scene_path = "res://scenes/ui/" + scene_name + ".tscn"
+	if not FileAccess.file_exists(scene_path):
+		print("Error: Scene file not found: ", scene_path)
+		return
 	current_scene = scene_name
 	emit_signal("scene_changed", scene_name)
-	# TODO: Implement actual scene switching logic
+	# Scene change is handled by MainScene via signal
 
 func get_current_scene() -> String:
 	return current_scene
@@ -528,6 +532,12 @@ func _check_combat_end():
 
 	if player_won or player_lost:
 		end_combat()
+
+func go_to_town():
+	change_scene("town_scene")
+
+func go_to_exploration():
+	change_scene("exploration_scene")
 
 # Utility methods
 func get_player() -> Player:

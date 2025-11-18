@@ -1,139 +1,144 @@
 extends Control
 
-# InventoryDialog - Grid-based inventory management interface
+# InventoryDialog - New layout and theme
 
-@onready var inventory_grid = $DialogPanel/VBoxContainer/Content/InventoryGrid
-@onready var item_sprite = $DialogPanel/VBoxContainer/Content/ItemInfo/ItemSprite
-@onready var item_name_label = $DialogPanel/VBoxContainer/Content/ItemInfo/ItemName
-@onready var item_description = $DialogPanel/VBoxContainer/Content/ItemInfo/ItemDescription
-@onready var item_stats = $DialogPanel/VBoxContainer/Content/ItemInfo/ItemStats
-@onready var use_button = $DialogPanel/VBoxContainer/Content/ItemInfo/ActionButtons/UseButton
-@onready var equip_button = $DialogPanel/VBoxContainer/Content/ItemInfo/ActionButtons/EquipButton
-@onready var drop_button = $DialogPanel/VBoxContainer/Content/ItemInfo/ActionButtons/DropButton
+@onready var attack_value = $MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/AttackValue
+@onready var defense_value = $MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DefenseValue
+@onready var dexterity_value = $MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DexterityValue
+
+@onready var weapon_slot = $MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/WeaponSlot
+@onready var armor_slot = $MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/ArmorSlot
+@onready var accessory_slot = $MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/AccessorySlot
+
+@onready var inventory_grid = $MainContainer/RightPanel/InventoryGrid
+@onready var use_button = $MainContainer/RightPanel/ActionButtons/UseButton
+@onready var equip_button = $MainContainer/RightPanel/ActionButtons/EquipButton
+@onready var drop_button = $MainContainer/RightPanel/ActionButtons/DropButton
 
 var selected_item_index = -1
 var selected_item = null
 
 func _ready():
-	print("InventoryDialog ready")
-	_populate_inventory_grid()
-	_update_selected_item_display()
+    print("InventoryDialog ready")
+    _update_character_stats()
+    _update_equipment_display()
+    _populate_inventory_grid()
+    _update_action_buttons()
+
+func _update_character_stats():
+    var player = GameManager.get_player()
+    if not player:
+        return
+
+    attack_value.text = str(player.attack)
+    defense_value.text = str(player.defense)
+    dexterity_value.text = str(player.dexterity)
+
+func _update_equipment_display():
+    var player = GameManager.get_player()
+    if not player:
+        return
+
+    _update_slot_display(weapon_slot, player.equipment.get("weapon"))
+    _update_slot_display(armor_slot, player.equipment.get("armor"))
+    _update_slot_display(accessory_slot, player.equipment.get("accessory"))
+
+func _update_slot_display(slot_node, item):
+    # This is a placeholder. In a real implementation, you'd set the texture of an icon inside the slot.
+    if item:
+        slot_node.get_node("Label").text = item.name
+    else:
+        slot_node.get_node("Label").text = "[Empty]"
+
 
 func _populate_inventory_grid():
-	# Clear existing grid
-	for child in inventory_grid.get_children():
-		child.queue_free()
+    for child in inventory_grid.get_children():
+        child.queue_free()
 
-	var player = GameManager.get_player()
-	if not player:
-		return
+    var player = GameManager.get_player()
+    if not player:
+        return
 
-	# Create inventory slots
-	for i in range(player.inventory.size()):
-		var item = player.inventory[i]
+    for i in range(player.inventory.size()):
+        var item = player.inventory[i]
 
-		var slot_button = Button.new()
-		slot_button.custom_minimum_size = Vector2(60, 60)
-		slot_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		slot_button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+        var slot_button = Button.new()
+        slot_button.custom_minimum_size = Vector2(80, 80)
+        slot_button.theme_type_variation = "ItemSlot"
 
-		if item:
-			slot_button.text = item.name
-			if item.quantity > 1:
-				slot_button.text += " (" + str(item.quantity) + ")"
-		else:
-			slot_button.text = "[Empty]"
-			slot_button.disabled = true
+        if item:
+            slot_button.text = item.name
+            slot_button.tooltip_text = item.description + "\n" + _get_item_stats_text(item)
+        else:
+            slot_button.text = "[Empty]"
+            slot_button.disabled = true
 
-		# Connect to slot selection
-		slot_button.connect("pressed", Callable(self, "_on_slot_pressed").bind(i))
-
-		inventory_grid.add_child(slot_button)
+        slot_button.connect("pressed", Callable(self, "_on_slot_pressed").bind(i))
+        inventory_grid.add_child(slot_button)
 
 func _on_slot_pressed(slot_index: int):
-	selected_item_index = slot_index
-	var player = GameManager.get_player()
-	if player and slot_index < player.inventory.size():
-		selected_item = player.inventory[slot_index]
-	else:
-		selected_item = null
+    selected_item_index = slot_index
+    var player = GameManager.get_player()
+    if player and slot_index < player.inventory.size():
+        selected_item = player.inventory[slot_index]
+    else:
+        selected_item = null
 
-	_update_selected_item_display()
+    _update_action_buttons()
 
-func _update_selected_item_display():
-	if selected_item:
-		item_name_label.text = selected_item.name
-		item_description.text = selected_item.description
+func _update_action_buttons():
+    if selected_item:
+        use_button.disabled = not selected_item.is_consumable()
+        equip_button.disabled = not selected_item.can_equip()
+        drop_button.disabled = false
+    else:
+        use_button.disabled = true
+        equip_button.disabled = true
+        drop_button.disabled = true
 
-		var stats_text = "Value: " + str(selected_item.value) + " gold"
-		if selected_item.attack_bonus > 0:
-			stats_text += "\nAttack: +" + str(selected_item.attack_bonus)
-		if selected_item.defense_bonus > 0:
-			stats_text += "\nDefense: +" + str(selected_item.defense_bonus)
-		if selected_item.health_bonus > 0:
-			stats_text += "\nHealth: +" + str(selected_item.health_bonus)
-		if selected_item.is_consumable():
-			stats_text += "\nHeal: " + str(selected_item.heal_amount) + " HP"
-
-		item_stats.text = stats_text
-
-		# Set sprite (placeholder - would need item sprites)
-		# item_sprite.texture = selected_item.icon_texture
-
-		# Enable appropriate buttons
-		use_button.disabled = not selected_item.is_consumable()
-		equip_button.disabled = not selected_item.can_equip()
-		drop_button.disabled = false
-	else:
-		item_name_label.text = "No item selected"
-		item_description.text = "Select an item to view details"
-		item_stats.text = "Stats:"
-		# item_sprite.texture = null
-
-		use_button.disabled = true
-		equip_button.disabled = true
-		drop_button.disabled = true
+func _get_item_stats_text(item) -> String:
+    var stats_text = "Value: " + str(item.value) + " gold"
+    if item.attack_bonus > 0:
+        stats_text += "\nAttack: +" + str(item.attack_bonus)
+    if item.defense_bonus > 0:
+        stats_text += "\nDefense: +" + str(item.defense_bonus)
+    if item.health_bonus > 0:
+        stats_text += "\nHealth: +" + str(item.health_bonus)
+    if item.is_consumable():
+        stats_text += "\nHeal: " + str(item.heal_amount) + " HP"
+    return stats_text
 
 func _on_use_pressed():
-	if selected_item and selected_item.is_consumable():
-		var player = GameManager.get_player()
-		if player:
-			if selected_item.use(player):
-				print("Used item: " + selected_item.name)
-				if selected_item.quantity <= 0:
-					# Remove item if quantity is 0
-					player.inventory[selected_item_index] = null
-				_populate_inventory_grid()
-				_update_selected_item_display()
-			else:
-				print("Failed to use item")
+    if selected_item and selected_item.is_consumable():
+        var player = GameManager.get_player()
+        if player and selected_item.use(player):
+            if selected_item.quantity <= 0:
+                player.inventory[selected_item_index] = null
+            refresh_inventory()
 
 func _on_equip_pressed():
-	if selected_item and selected_item.can_equip():
-		var player = GameManager.get_player()
-		if player:
-			var equip_slot = selected_item.get_equip_slot()
-			if player.equip_item(selected_item, equip_slot):
-				print("Equipped item: " + selected_item.name)
-				player.inventory[selected_item_index] = null
-				_populate_inventory_grid()
-				_update_selected_item_display()
-			else:
-				print("Failed to equip item")
+    if selected_item and selected_item.can_equip():
+        var player = GameManager.get_player()
+        if player:
+            var old_item = player.unequip_item(selected_item.get_equip_slot())
+            player.equip_item(selected_item, selected_item.get_equip_slot())
+            player.inventory[selected_item_index] = old_item
+            refresh_inventory()
 
 func _on_drop_pressed():
-	if selected_item:
-		var player = GameManager.get_player()
-		if player:
-			player.inventory[selected_item_index] = null
-			print("Dropped item: " + selected_item.name)
-			_populate_inventory_grid()
-			_update_selected_item_display()
+    if selected_item:
+        var player = GameManager.get_player()
+        if player:
+            player.inventory[selected_item_index] = null
+            refresh_inventory()
 
 func _on_close_pressed():
-	queue_free()
+    queue_free()
 
-# Helper method to refresh inventory display
 func refresh_inventory():
-	_populate_inventory_grid()
-	_update_selected_item_display()
+    selected_item = null
+    selected_item_index = -1
+    _update_character_stats()
+    _update_equipment_display()
+    _populate_inventory_grid()
+    _update_action_buttons()

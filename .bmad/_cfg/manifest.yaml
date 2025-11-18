@@ -1,0 +1,12 @@
+installation:
+  version: 6.0.0-alpha.8
+  installDate: '2025-11-12T21:37:50.505Z'
+  lastUpdated: '2025-11-12T21:37:50.505Z'
+modules:
+  - core
+  - bmgd
+  - bmm
+ides:
+  - claude-code
+  - opencode
+  - gemini

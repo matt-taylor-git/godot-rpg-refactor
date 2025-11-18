@@ -67,14 +67,12 @@ func _on_restart_pressed():
 	print("Restarting game")
 	# Start a new game
 	GameManager.start_new_game()
-	if get_tree():
-		get_tree().change_scene_to_file("res://scenes/ui/character_creation.tscn")
+	GameManager.change_scene("character_creation")
 
 func _on_menu_pressed():
 	print("Return to main menu")
 	# Return to main menu
-	if get_tree():
-		get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
+	GameManager.change_scene("main_menu")
 
 func _input(event: InputEvent):
 	if event is InputEventKey and event.pressed:

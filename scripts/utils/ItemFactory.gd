@@ -90,3 +90,12 @@ static func create_random_item(level: int = 1) -> Item:
 			return create_item(consumables[randi() % consumables.size()])
 
 	return create_item("health_potion")  # fallback
+
+static func get_all_items() -> Array:
+	var items = []
+	items.append(create_item("sword"))
+	items.append(create_item("shield"))
+	items.append(create_item("health_potion"))
+	items.append(create_item("mana_potion"))
+	items.append(create_item("gold_coin"))
+	return items

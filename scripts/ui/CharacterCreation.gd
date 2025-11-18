@@ -2,11 +2,11 @@ extends Control
 
 # CharacterCreation - Character creation scene with class selection and customization
 
-@onready var name_input = $VBoxContainer/Content/LeftPanel/NameSection/NameInput
-@onready var character_sprite = $VBoxContainer/Content/RightPanel/PreviewSection/CharacterSprite
-@onready var stats_text = $VBoxContainer/Content/RightPanel/StatsSection/StatsText
-@onready var skills_text = $VBoxContainer/Content/RightPanel/StatsSection/SkillsText
-@onready var start_game_button = $VBoxContainer/Footer/StartGameButton
+@onready var name_input = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/NameSection/NameInput
+@onready var character_sprite = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/PreviewSection/VBoxContainer/CharacterSprite
+@onready var stats_text = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StatsText
+@onready var skills_text = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/SkillsText
+@onready var start_game_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/StartGameButton
 
 # Class sprite mappings
 @onready var class_sprites = {
@@ -93,7 +93,7 @@ func _on_start_game_pressed():
 
 		# Go to exploration immediately
 		print("Character created successfully! Entering exploration.")
-		get_tree().change_scene_to_file("res://scenes/ui/exploration_scene.tscn")
+		GameManager.change_scene("exploration_scene")
 
 func _on_back_pressed():
 	print("Back to main menu")
@@ -107,4 +107,4 @@ func _on_back_pressed():
 	await tween.finished
 
 	# Go back to main menu
-	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
+	GameManager.change_scene("main_menu")

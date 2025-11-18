@@ -1,65 +1,63 @@
-[gd_resource type="Theme" load_steps=12 format=3 uid="uid://b7w5k8j6x2q1a"]
+[gd_resource type="Theme" load_steps=8 format=3 uid="uid://b7w5k8j6x2q1a"]
 
-[ext_resource type="Texture2D" uid="uid://br02qc0oes4vi" path="res://assets/main_panel.png" id="1_yl303"]
-[ext_resource type="FontFile" uid="uid://crdqtr8gc46tf" path="res://assets/Cinzel-VariableFont_wght.ttf" id="2_qosx5"]
+[ext_resource type="FontFile" path="res://assets/Cinzel-VariableFont_wght.ttf" id="1_qosx5"]
+[ext_resource type="Texture2D" path="res://assets/frame_main.png" id="2_frame_main"]
+[ext_resource type="Texture2D" path="res://assets/frame_slot.png" id="3_frame_slot"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_m7jai"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
+texture = ExtResource("2_frame_main")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
 
-[sub_resource type="StyleBoxLine" id="StyleBoxLine_yl303"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_slot"]
+texture = ExtResource("3_frame_slot")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ybqih"]
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_focus"]
+color = Color(0.4, 0.95, 0.84, 1)
+thickness = 2
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wp64m"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jvwhf"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_r625f"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_nvthg"]
-texture = ExtResource("1_yl303")
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_bg"]
-bg_color = Color(0.0627451, 0.09803922, 0.09803922, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.243137, 0.215686, 0.329412, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill"]
-bg_color = Color(0.4, 0.9490196, 0.8352941, 1)
-corner_radius_top_left = 7
-corner_radius_top_right = 7
-corner_radius_bottom_right = 7
-corner_radius_bottom_left = 7
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
 
 [resource]
-default_font = ExtResource("2_qosx5")
+default_font = ExtResource("1_qosx5")
 default_font_size = 22
-Button/colors/font_color = Color(0.76862746, 0.65882355, 0.47843137, 1)
-Button/colors/font_disabled_color = Color(0.76862746, 0.65882355, 0.47843137, 0.33333334)
-Button/colors/font_focus_color = Color(0.941176, 0.941176, 0.94902, 1)
-Button/colors/font_hover_color = Color(0.4, 0.9490196, 0.8352941, 1)
-Button/colors/font_pressed_color = Color(0.4, 0.9490196, 0.8352941, 1)
-Button/constants/h_separation = 2
-Button/constants/icon_max_width = 0
-Button/styles/disabled = SubResource("StyleBoxEmpty_m7jai")
-Button/styles/focus = SubResource("StyleBoxLine_yl303")
-Button/styles/hover = SubResource("StyleBoxEmpty_ybqih")
-Button/styles/normal = SubResource("StyleBoxEmpty_wp64m")
-Button/styles/pressed = SubResource("StyleBoxEmpty_jvwhf")
-Button/styles/primary = SubResource("StyleBoxEmpty_r625f")
-Label/colors/font_color = Color(0.76862746, 0.65882355, 0.47843137, 1)
-Label/colors/font_shadow_color = Color(0, 0, 0, 0.5019608)
-Label/constants/line_spacing = 3
+
+# Colors
+colors/background = Color(0.06, 0.10, 0.10, 1)
+colors/accent = Color(0.77, 0.66, 0.48, 1)
+colors/highlight = Color(0.4, 0.95, 0.84, 1)
+colors/text_shadow = Color(0, 0, 0, 0.5)
+colors/disabled_text = Color(0.77, 0.66, 0.48, 0.33)
+
+# Panel Styles
+Panel/styles/panel = SubResource("StyleBoxTexture_panel")
+ItemSlot/styles/panel = SubResource("StyleBoxTexture_slot")
+
+# Label Styles
+Label/colors/font_color = Color(0.77, 0.66, 0.48, 1)
+Label/colors/font_shadow_color = Color(0, 0, 0, 0.5)
 Label/constants/shadow_as_outline = 1
 Label/constants/shadow_offset_x = 1
 Label/constants/shadow_offset_y = 1
-Panel/styles/panel = SubResource("StyleBoxTexture_nvthg")
-ProgressBar/colors/font_color = Color(0.941176, 0.941176, 0.94902, 1)
-ProgressBar/styles/background = SubResource("StyleBoxFlat_progress_bg")
-ProgressBar/styles/fill = SubResource("StyleBoxFlat_progress_fill")
+
+# Button Styles
+Button/colors/font_color = Color(0.77, 0.66, 0.48, 1)
+Button/colors/font_hover_color = Color(0.4, 0.95, 0.84, 1)
+Button/colors/font_pressed_color = Color(0.4, 0.95, 0.84, 1)
+Button/colors/font_disabled_color = Color(0.77, 0.66, 0.48, 0.33)
+Button/styles/normal = SubResource("StyleBoxEmpty_button")
+Button/styles/hover = SubResource("StyleBoxEmpty_button")
+Button/styles/pressed = SubResource("StyleBoxEmpty_button")
+Button/styles/disabled = SubResource("StyleBoxEmpty_button")
+Button/styles/focus = SubResource("StyleBoxLine_focus")
+
+# Font Sizes
+H1/font_size = 32
+H2/font_size = 26
+Small/font_size = 16

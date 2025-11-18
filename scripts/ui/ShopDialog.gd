@@ -1,127 +1,82 @@
-extends Control
+extends PanelContainer
 
-# ShopDialog - Shop interface for buying and selling items
+# ShopDialog - Updated for new layout and ItemList
 
-@onready var player_gold_label = $DialogPanel/VBoxContainer/PlayerGold
-@onready var shop_list = $DialogPanel/VBoxContainer/Content/ShopItems/ShopList
-@onready var inventory_list = $DialogPanel/VBoxContainer/Content/PlayerItems/InventoryList
+@onready var player_gold_label = $VBoxContainer/PlayerGold
+@onready var shop_list = $VBoxContainer/MainContent/ShopInventory/VBoxContainer/ShopList
+@onready var player_item_list = $VBoxContainer/MainContent/PlayerInventory/VBoxContainer/PlayerItemList
 
-# Shop inventory - items available for purchase
-var shop_items = [
-	{"name": "Health Potion", "price": 20, "item_type": "consumable"},
-	{"name": "Iron Sword", "price": 50, "item_type": "weapon"},
-	{"name": "Wooden Shield", "price": 30, "item_type": "armor"},
-	{"name": "Leather Boots", "price": 25, "item_type": "armor"},
-	{"name": "Magic Ring", "price": 100, "item_type": "accessory"}
-]
+var shop_items = []
 
 func _ready():
-	print("ShopDialog ready")
-	_populate_shop_items()
-	_populate_player_inventory()
-	_update_player_gold()
+    print("ShopDialog ready")
+    _populate_shop_items()
+    _populate_player_inventory()
+    _update_player_gold()
 
 func _update_player_gold():
-	var player = GameManager.get_player()
-	if player:
-		player_gold_label.text = "Your Gold: " + str(player.gold)
+    var player = GameManager.get_player()
+    if player:
+        player_gold_label.text = "Your Gold: " + str(player.gold)
 
 func _populate_shop_items():
-	# Clear existing items
-	for child in shop_list.get_children():
-		child.queue_free()
-
-	# Add shop items
-	for item_data in shop_items:
-		var item_button = Button.new()
-		item_button.text = item_data.name + " - " + str(item_data.price) + " gold"
-		item_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-		# Connect to purchase
-		item_button.connect("pressed", Callable(self, "_on_shop_item_pressed").bind(item_data))
-
-		shop_list.add_child(item_button)
+    shop_list.clear()
+    shop_items = ItemFactory.get_all_items() # Using ItemFactory
+    for item in shop_items:
+        shop_list.add_item(item.name + " - " + str(item.value) + " gold")
 
 func _populate_player_inventory():
-	# Clear existing items
-	for child in inventory_list.get_children():
-		child.queue_free()
+    player_item_list.clear()
+    var player = GameManager.get_player()
+    if not player:
+        return
 
-	var player = GameManager.get_player()
-	if not player:
-		return
+    for item in player.inventory:
+        if item:
+            var sell_price = item.value / 2
+            player_item_list.add_item(item.name + " - Sell: " + str(sell_price) + " gold")
 
-	# Add player inventory items
-	for i in range(player.inventory.size()):
-		var item = player.inventory[i]
-		if item:
-			var item_button = Button.new()
-			var sell_price = item.value / 2  # Sell for half value
-			item_button.text = item.name
-			if item.quantity > 1:
-				item_button.text += " (" + str(item.quantity) + ")"
-			item_button.text += " - Sell: " + str(sell_price) + " gold"
-			item_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+func _on_buy_pressed():
+    var selected_indices = shop_list.get_selected_items()
+    if selected_indices.is_empty():
+        return
 
-			# Connect to sell
-			item_button.connect("pressed", Callable(self, "_on_inventory_item_pressed").bind(i))
+    var selected_index = selected_indices[0]
+    var item_to_buy = shop_items[selected_index]
+    var player = GameManager.get_player()
+    if not player:
+        return
 
-			inventory_list.add_child(item_button)
+    if player.gold >= item_to_buy.value:
+        if player.add_item(item_to_buy):
+            player.gold -= item_to_buy.value
+            _update_and_refresh()
+        else:
+            print("Inventory is full!")
+    else:
+        print("Not enough gold!")
 
-	# If no items, show message
-	if inventory_list.get_child_count() == 0:
-		var no_items_label = Label.new()
-		no_items_label.text = "No items to sell"
-		no_items_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		inventory_list.add_child(no_items_label)
+func _on_sell_pressed():
+    var selected_indices = player_item_list.get_selected_items()
+    if selected_indices.is_empty():
+        return
 
-func _on_shop_item_pressed(item_data: Dictionary):
-	var player = GameManager.get_player()
-	if not player:
-		return
+    var selected_index = selected_indices[0]
+    var player = GameManager.get_player()
+    if not player:
+        return
 
-	# Check if player has enough gold
-	if player.gold >= item_data.price:
-		# Create the item
-		var item = ItemFactory.create_item(item_data.item_type)
-		if item_data.has("name"):
-			item.name = item_data.name
-
-		# Try to add to inventory
-		if player.add_item(item):
-			player.gold -= item_data.price
-			print("Purchased: " + item.name + " for " + str(item_data.price) + " gold")
-			_update_player_gold()
-			_populate_player_inventory()  # Refresh inventory display
-		else:
-			print("Inventory full! Cannot purchase item.")
-	else:
-		print("Not enough gold! Need " + str(item_data.price) + " gold.")
-
-func _on_inventory_item_pressed(slot_index: int):
-	var player = GameManager.get_player()
-	if not player:
-		return
-
-	var item = player.inventory[slot_index]
-	if item:
-		var sell_price = item.value / 2
-
-		# Remove item from inventory
-		player.remove_item(slot_index)
-
-		# Add gold
-		player.gold += sell_price
-
-		print("Sold: " + item.name + " for " + str(sell_price) + " gold")
-		_update_player_gold()
-		_populate_player_inventory()  # Refresh inventory display
+    var item_to_sell = player.inventory[selected_index]
+    if item_to_sell:
+        var sell_price = item_to_sell.value / 2
+        player.remove_item(selected_index)
+        player.gold += sell_price
+        _update_and_refresh()
 
 func _on_close_pressed():
-	queue_free()
+    queue_free()
 
-# Method to set custom shop inventory (for different shop types)
-func set_shop_inventory(items: Array):
-	shop_items = items
-	if is_inside_tree():
-		_populate_shop_items()
+func _update_and_refresh():
+    _update_player_gold()
+    _populate_shop_items()
+    _populate_player_inventory()

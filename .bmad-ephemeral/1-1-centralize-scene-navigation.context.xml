@@ -1,0 +1,160 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1</storyId>
+    <title>Centralize Scene Navigation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-13</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>.bmad-ephemeral/story-scene-navigation-reliability-1.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>all scene changes to use a centralized navigation system</iWant>
+    <soThat>navigation is consistent, trackable, and error-handled</soThat>
+    <tasks>- Fix syntax error in MainMenu.gd _on_save_slot_selected() method (lines 91-95)
+- Update GameManager.gd change_scene() method to add error handling for missing scene files
+- Update CharacterCreation.gd to use GameManager.change_scene() instead of direct calls
+- Update CombatScene.gd to use GameManager.change_scene() instead of direct calls
+- Update ExplorationScene.gd to use GameManager.change_scene() instead of direct calls
+- Update GameOverScene.gd to use GameManager.change_scene() instead of direct calls
+- Update VictoryScene.gd to use GameManager.change_scene() instead of direct calls
+- Update MainScene.gd _change_scene() method to delegate to GameManager
+- Update MainMenu.gd _change_scene() method to delegate to GameManager</tasks>
+  </story>
+
+  <acceptanceCriteria>**Given** the application has multiple scene transition points
+**When** any scene change is initiated
+**Then** GameManager.change_scene() is used with proper error handling
+
+**And** all direct get_tree().change_scene_to_file() calls are replaced
+
+**And** syntax errors in navigation code are fixed</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/tech-spec.md</path>
+        <title>Technical Specification</title>
+        <section>Implementation Details → Source Tree Changes</section>
+        <snippet>Lists all files to modify for centralizing scene navigation, including GameManager.change_scene() method updates and replacing direct scene change calls in UI scripts.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/tech-spec.md</path>
+        <title>Technical Specification</title>
+        <section>Integration Points</section>
+        <snippet>Documents GameManager.change_scene() method, scene_changed signal, and existing scene files that this story will integrate with.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epic Documentation</title>
+        <section>Epic 1: Scene Navigation Reliability</section>
+        <snippet>Defines the goal of ensuring smooth scene transitions and success criteria for navigation flows.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>scripts/globals/GameManager.gd</path>
+        <kind>service</kind>
+        <symbol>change_scene</symbol>
+        <lines>231-235</lines>
+        <reason>Central navigation method that needs error handling for missing scene files</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/BaseUI.gd</path>
+        <kind>component</kind>
+        <symbol>_change_scene</symbol>
+        <lines>101-102</lines>
+        <reason>Example of correct GameManager.change_scene() usage pattern to follow</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/TownScene.gd</path>
+        <kind>component</kind>
+        <symbol>_on_world_map_pressed</symbol>
+        <lines>18</lines>
+        <reason>Another example of proper GameManager.change_scene() integration</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/MainMenu.gd</path>
+        <kind>component</kind>
+        <symbol>_change_scene</symbol>
+        <lines>101-108</lines>
+        <reason>Local helper method that should delegate to GameManager instead of direct scene changes</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/CharacterCreation.gd</path>
+        <kind>component</kind>
+        <symbol>_on_start_game_pressed</symbol>
+        <lines>96,110</lines>
+        <reason>Contains direct get_tree().change_scene_to_file() calls that need to be replaced</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/CombatScene.gd</path>
+        <kind>component</kind>
+        <symbol>_on_combat_ended</symbol>
+        <lines>90,99,152</lines>
+        <reason>Multiple direct scene change calls for victory/defeat transitions</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/ExplorationScene.gd</path>
+        <kind>component</kind>
+        <symbol>_on_main_menu_pressed</symbol>
+        <lines>178</lines>
+        <reason>Direct scene change call to main menu</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/GameOverScene.gd</path>
+        <kind>component</kind>
+        <symbol>_on_restart_pressed</symbol>
+        <lines>71,77</lines>
+        <reason>Direct scene changes for restart and main menu navigation</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/VictoryScene.gd</path>
+        <kind>component</kind>
+        <symbol>_on_continue_pressed</symbol>
+        <lines>70,76</lines>
+        <reason>Direct scene changes for continue and main menu navigation</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/MainScene.gd</path>
+        <kind>component</kind>
+        <symbol>_change_scene</symbol>
+        <lines>18-35</lines>
+        <reason>Local helper that should delegate to GameManager</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <godot>
+        <version>4.5</version>
+        <components>Scene management system, get_tree().change_scene_to_file() method</components>
+      </godot>
+      <internal>
+        <module>GameManager autoload</module>
+        <provides>change_scene() method and scene state tracking</provides>
+      </internal>
+    </dependencies>
+  </artifacts>
+
+  <constraints>Follow existing pattern established in TownScene.gd and BaseUI.gd of using GameManager.change_scene(scene_name) for all navigation. Use snake_case for function names and follow existing error handling patterns. All navigation must go through GameManager.change_scene() with proper error handling for missing scene files.</constraints>
+  <interfaces>
+    <interface>
+      <name>GameManager.change_scene()</name>
+      <kind>function</kind>
+      <signature>func change_scene(scene_name: String) -> void</signature>
+      <path>scripts/globals/GameManager.gd</path>
+    </interface>
+    <interface>
+      <name>GameManager.scene_changed</name>
+      <kind>signal</kind>
+      <signature>signal scene_changed(scene_name: String)</signature>
+      <path>scripts/globals/GameManager.gd</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Use GUT testing framework. Tests should be in tests/godot/ directory. Follow existing test patterns for UI component testing.</standards>
+    <locations>tests/godot/test_navigation.gd (to be created)</locations>
+    <ideas>Test all navigation paths: main menu → character creation → exploration, load game routing, combat victory/defeat transitions. Verify GameManager.change_scene() is called instead of direct get_tree().change_scene_to_file() calls. Test error handling for invalid scene names.</ideas>
+  </tests>
+</story-context>

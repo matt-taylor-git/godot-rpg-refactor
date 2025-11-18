@@ -1,0 +1,84 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>2</storyId>
+    <title>Test Navigation Flows</title>
+    <status>Draft</status>
+    <generatedAt>2025-11-13</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>.bmad-ephemeral/story-scene-navigation-reliability-2.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As a developer</asA>
+    <iWant>I want all navigation paths to work without errors</iWant>
+    <soThat>So that users experience smooth scene transitions</soThat>
+    <tasks>- [ ] Test main menu → character creation → exploration flow
+- [ ] Test load game routing to combat or town scenes based on GameManager.in_combat
+- [ ] Test combat victory transitions to victory scene
+- [ ] Test combat defeat transitions to game over scene
+- [ ] Test exploration navigation (if any additional paths)
+- [ ] Verify all scene changes use GameManager.change_scene()
+- [ ] Test error handling for invalid scene names
+- [ ] Run GUT tests for navigation logic</tasks>
+  </story>
+
+  <acceptanceCriteria>**Given** the application is running
+**When** user navigates through all scene paths
+**Then** no crashes or errors occur during transitions
+
+**And** load game correctly routes to appropriate scenes based on state
+
+**And** combat outcomes properly transition to victory/game over scenes</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact path="docs/tech-spec.md" title="Technical Specification" section="Testing Strategy" snippet="Unit tests for GameManager.change_scene() method with valid and invalid scene names, Integration tests for each navigation path, Manual testing of all scene transitions" />
+      <artifact path="docs/tech-spec.md" title="Technical Specification" section="Implementation Details" snippet="Testing Strategy section with specific navigation testing requirements and acceptance criteria" />
+      <artifact path="docs/epics.md" title="Epics Documentation" section="Epic 1: Scene Navigation Reliability" snippet="Story 1.2 requirements for testing all navigation paths and ensuring error-free transitions" />
+    </docs>
+    <code>
+      <artifact path="scripts/globals/GameManager.gd" kind="controller" symbol="change_scene" lines="231-239" reason="Central navigation method that handles all scene transitions with error handling" />
+      <artifact path="scripts/ui/MainMenu.gd" kind="ui" symbol="_on_save_slot_selected" lines="88-95" reason="Load game logic that routes to combat or town scenes based on GameManager.in_combat state" />
+      <artifact path="scripts/ui/CombatScene.gd" kind="ui" symbol="_on_combat_ended" lines="86-99" reason="Combat victory/defeat transition logic to victory/game over scenes" />
+      <artifact path="scripts/ui/VictoryScene.gd" kind="ui" symbol="_on_continue_pressed" lines="69-74" reason="Victory scene navigation back to exploration or main menu" />
+      <artifact path="scripts/ui/GameOverScene.gd" kind="ui" symbol="_on_restart_pressed" lines="69-75" reason="Game over scene navigation to restart or main menu" />
+      <artifact path="scripts/ui/CharacterCreation.gd" kind="ui" symbol="_on_create_character_pressed" lines="92-96" reason="Character creation navigation to exploration scene" />
+      <artifact path="scripts/ui/ExplorationScene.gd" kind="ui" symbol="_on_back_to_menu_pressed" lines="178" reason="Exploration navigation back to main menu" />
+      <artifact path="scripts/ui/MainScene.gd" kind="ui" symbol="_change_scene" lines="18-19" reason="Main scene navigation helper using GameManager" />
+      <artifact path="tests/godot/test_navigation.gd" kind="test" symbol="test_game_manager_change_scene_exists" lines="3-4" reason="Existing unit test for GameManager.change_scene method" />
+    </code>
+    <dependencies>
+      <godot version="4.5" />
+      <gut path="addons/gut/" version="installed" />
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>All scene changes must use GameManager.change_scene() method for consistency</constraint>
+    <constraint>GameManager.change_scene() must handle invalid scene names gracefully</constraint>
+    <constraint>Load game routing must check GameManager.in_combat to determine destination scene</constraint>
+    <constraint>Combat outcomes must properly transition to victory_scene or game_over_scene</constraint>
+    <constraint>All navigation flows must work without crashes or errors</constraint>
+  </constraints>
+  <interfaces>
+    <interface name="GameManager.change_scene" kind="function" signature="func change_scene(scene_name: String)" path="scripts/globals/GameManager.gd" />
+    <interface name="GameManager.in_combat" kind="property" signature="var in_combat: bool" path="scripts/globals/GameManager.gd" />
+    <interface name="MainMenu._on_save_slot_selected" kind="signal_handler" signature="func _on_save_slot_selected(slot_number: int)" path="scripts/ui/MainMenu.gd" />
+    <interface name="CombatScene._on_combat_ended" kind="signal_handler" signature="func _on_combat_ended(victory: bool)" path="scripts/ui/CombatScene.gd" />
+  </interfaces>
+  <tests>
+    <standards>Framework: GUT (Godot Unit Test) - File naming: func test_*() for test methods - Organization: tests/godot/ directory - Assertions: assert_not_null(), assert_eq(), etc. - Mocking: GUT's double system for dependencies</standards>
+    <locations>tests/godot/test_navigation.gd, tests/godot/test_scene_transitions.gd</locations>
+    <ideas>
+      <idea>Test main menu → character creation → exploration flow without errors</idea>
+      <idea>Test load game routing to combat_scene when GameManager.in_combat = true</idea>
+      <idea>Test load game routing to town_scene when GameManager.in_combat = false</idea>
+      <idea>Test combat victory transitions to victory_scene</idea>
+      <idea>Test combat defeat transitions to game_over_scene</idea>
+      <idea>Test exploration navigation back to main menu</idea>
+      <idea>Test error handling for invalid scene names in GameManager.change_scene()</idea>
+      <idea>Test all scene changes use GameManager.change_scene() method</idea>
+    </ideas>
+  </tests>
+</story-context>

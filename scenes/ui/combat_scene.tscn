@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://ck6d6rke5lknx"]
+[gd_scene load_steps=4 format=3 uid="uid://ck6d6rke5lknx"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" uid="uid://cg4ikbac8bt18" path="res://scripts/ui/CombatScene.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c6g2w3j1x1v2k" path="res://assets/goblin.png" id="3"]
 
 [node name="CombatScene" type="Control"]
 layout_mode = 3
@@ -13,15 +14,6 @@ grow_vertical = 2
 theme = ExtResource("1")
 script = ExtResource("2")
 
-[node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.0627451, 0.09803922, 0.09803922, 1)
-
 [node name="Background" type="Panel" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -30,100 +22,127 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="MainContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 10
 
-[node name="MonsterSection" type="HBoxContainer" parent="VBoxContainer"]
+[node name="ArenaPanel" type="PanelContainer" parent="MainContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+size_flags_stretch_ratio = 0.6
+theme_type_variation = "Panel"
 
-[node name="MonsterSprite" type="TextureRect" parent="VBoxContainer/MonsterSection"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MainContainer/ArenaPanel"]
+layout_mode = 2
+alignment = 1
+
+[node name="PlayerSprite" type="TextureRect" parent="MainContainer/ArenaPanel/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 expand_mode = 1
 stretch_mode = 5
 
-[node name="MonsterInfo" type="VBoxContainer" parent="VBoxContainer/MonsterSection"]
+[node name="MonsterSprite" type="TextureRect" parent="MainContainer/ArenaPanel/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="MonsterName" type="Label" parent="VBoxContainer/MonsterSection/MonsterInfo"]
+[node name="InfoPanel" type="HBoxContainer" parent="MainContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="PlayerInfo" type="PanelContainer" parent="MainContainer/InfoPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = "Panel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer/InfoPanel/PlayerInfo"]
+layout_mode = 2
+
+[node name="PlayerName" type="Label" parent="MainContainer/InfoPanel/PlayerInfo/VBoxContainer"]
+layout_mode = 2
+text = "Player Name"
+horizontal_alignment = 1
+theme_type_variation = "H2"
+
+[node name="PlayerHealthBar" type="ProgressBar" parent="MainContainer/InfoPanel/PlayerInfo/VBoxContainer"]
+layout_mode = 2
+value = 100.0
+
+[node name="MonsterInfo" type="PanelContainer" parent="MainContainer/InfoPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = "Panel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer/InfoPanel/MonsterInfo"]
+layout_mode = 2
+
+[node name="MonsterName" type="Label" parent="MainContainer/InfoPanel/MonsterInfo/VBoxContainer"]
+layout_mode = 2
 text = "Monster Name"
 horizontal_alignment = 1
+theme_type_variation = "H2"
 
-[node name="MonsterHealthBar" type="ProgressBar" parent="VBoxContainer/MonsterSection/MonsterInfo"]
+[node name="MonsterHealthBar" type="ProgressBar" parent="MainContainer/InfoPanel/MonsterInfo/VBoxContainer"]
+layout_mode = 2
+value = 100.0
+
+[node name="BottomPanel" type="HBoxContainer" parent="MainContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-value = 100.0
-show_percentage = false
+size_flags_stretch_ratio = 0.4
+theme_override_constants/separation = 10
 
-[node name="CombatLog" type="RichTextLabel" parent="VBoxContainer"]
+[node name="CombatLogPanel" type="PanelContainer" parent="MainContainer/BottomPanel"]
 layout_mode = 2
-size_flags_vertical = 6
-size_flags_stretch_ratio = 2.0
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.7
+theme_type_variation = "Panel"
+
+[node name="CombatLog" type="RichTextLabel" parent="MainContainer/BottomPanel/CombatLogPanel"]
+layout_mode = 2
 bbcode_enabled = true
 text = "[center]Combat begins![/center]"
 
-[node name="PlayerSection" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 20
-
-[node name="PlayerInfo" type="VBoxContainer" parent="VBoxContainer/PlayerSection"]
+[node name="ActionPanel" type="PanelContainer" parent="MainContainer/BottomPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+size_flags_stretch_ratio = 0.3
+theme_type_variation = "Panel"
 
-[node name="PlayerName" type="Label" parent="VBoxContainer/PlayerSection/PlayerInfo"]
+[node name="ActionButtons" type="GridContainer" parent="MainContainer/BottomPanel/ActionPanel"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Player Name"
-horizontal_alignment = 1
+columns = 2
 
-[node name="PlayerHealthBar" type="ProgressBar" parent="VBoxContainer/PlayerSection/PlayerInfo"]
+[node name="AttackButton" type="Button" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons"]
 layout_mode = 2
-size_flags_vertical = 3
-value = 100.0
-show_percentage = false
+text = "ATTACK"
+theme_type_variation = "Small"
 
-[node name="PlayerStats" type="Label" parent="VBoxContainer/PlayerSection/PlayerInfo"]
+[node name="SkillsButton" type="Button" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons"]
 layout_mode = 2
-text = "Level: 1
-HP: 100/100
-EXP: 0"
+text = "SKILLS"
+theme_type_variation = "Small"
 
-[node name="ActionButtons" type="VBoxContainer" parent="VBoxContainer/PlayerSection"]
+[node name="ItemsButton" type="Button" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 10
+text = "ITEMS"
+theme_type_variation = "Small"
 
-[node name="AttackButton" type="Button" parent="VBoxContainer/PlayerSection/ActionButtons"]
+[node name="RunButton" type="Button" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons"]
 layout_mode = 2
-text = "Attack"
+text = "RUN"
+theme_type_variation = "Small"
 
-[node name="SkillsButton" type="Button" parent="VBoxContainer/PlayerSection/ActionButtons"]
-layout_mode = 2
-text = "Skills"
-
-[node name="ItemsButton" type="Button" parent="VBoxContainer/PlayerSection/ActionButtons"]
-layout_mode = 2
-text = "Items"
-
-[node name="RunButton" type="Button" parent="VBoxContainer/PlayerSection/ActionButtons"]
-layout_mode = 2
-text = "Run"
-
-[connection signal="pressed" from="VBoxContainer/PlayerSection/ActionButtons/AttackButton" to="." method="_on_attack_pressed"]
-[connection signal="pressed" from="VBoxContainer/PlayerSection/ActionButtons/SkillsButton" to="." method="_on_skills_pressed"]
-[connection signal="pressed" from="VBoxContainer/PlayerSection/ActionButtons/ItemsButton" to="." method="_on_items_pressed"]
-[connection signal="pressed" from="VBoxContainer/PlayerSection/ActionButtons/RunButton" to="." method="_on_run_pressed"]
+[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionButtons/AttackButton" to="." method="_on_attack_pressed"]
+[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionButtons/SkillsButton" to="." method="_on_skills_pressed"]
+[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionButtons/ItemsButton" to="." method="_on_items_pressed"]
+[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionButtons/RunButton" to="." method="_on_run_pressed"]

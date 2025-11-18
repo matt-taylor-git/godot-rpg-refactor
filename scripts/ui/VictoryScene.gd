@@ -66,14 +66,12 @@ func _setup_buttons():
 func _on_continue_pressed():
 	print("Continue playing")
 	# Return to exploration or next gameplay area
-	if get_tree():
-		get_tree().change_scene_to_file("res://scenes/ui/exploration_scene.tscn")
+	GameManager.change_scene("exploration_scene")
 
 func _on_menu_pressed():
 	print("Return to main menu")
 	# Return to main menu
-	if get_tree():
-		get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
+	GameManager.change_scene("main_menu")
 
 func _input(event: InputEvent):
 	if event is InputEventKey and event.pressed:

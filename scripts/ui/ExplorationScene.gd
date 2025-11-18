@@ -175,7 +175,7 @@ func _on_codex_pressed():
 
 func _on_menu_pressed():
 	# Return to main menu
-	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
+	GameManager.change_scene("main_menu")
 
 func _load_exploration_state():
 	var exploration_data = GameManager.get_exploration_state()
