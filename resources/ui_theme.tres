@@ -93,7 +93,9 @@ colors/disabled_text = Color(0.77, 0.66, 0.48, 0.33)
 
 # Theme styles removed due to Godot 4.5 theme parser bug that includes comment text in type names
 
-# Font Sizes
-H1/font_size = 32
-H2/font_size = 26
-Small/font_size = 16
+# Typography Font Sizes (following design system hierarchy)
+heading_large/font_size = 24
+heading_medium/font_size = 20
+body_large/font_size = 16
+body_regular/font_size = 14
+caption/font_size = 12

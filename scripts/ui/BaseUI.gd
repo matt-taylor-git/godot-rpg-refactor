@@ -9,6 +9,10 @@ signal back_pressed
 @onready var back_button: Button = $Content/VBoxContainer/Footer/BackButton
 @onready var main_content: CenterContainer = $Content/VBoxContainer/MainContent
 
+# Typography system integration
+const UITypographyClass = preload("res://scripts/components/UITypography.gd")
+var typography = UITypographyClass.new()
+
 var ui_title: String = "UI Title"
 var show_back_button: bool = true
 
@@ -75,7 +79,10 @@ func _setup_responsive_layout():
 func _adjust_font_sizes_recursive(node: Node, scale: float):
 	if node is Label or node is Button:
 		var current_size = node.get("theme_override_font_sizes/font_size") if node.get("theme_override_font_sizes/font_size") else 14
-		node.set("theme_override_font_sizes/font_size", int(current_size * scale))
+		var scaled_size = int(current_size * scale)
+		# Enforce minimum readable sizes per AC-UI-007
+		var min_size = 12 if current_size <= 12 else 14  # 12pt for captions, 14pt for body
+		node.set("theme_override_font_sizes/font_size", max(scaled_size, min_size))
 
 	for child in node.get_children():
 		_adjust_font_sizes_recursive(child, scale)
@@ -91,6 +98,45 @@ func _adjust_for_tall_screen():
 	var container = $Content/VBoxContainer
 	if container:
 		container.set("theme_override_constants/separation", 30)
+
+# Typography helper methods
+func apply_heading_large(label: Label):
+	label.set("theme_override_font_sizes/font_size", typography.get_heading_large_size())
+
+func apply_heading_medium(label: Label):
+	label.set("theme_override_font_sizes/font_size", typography.get_heading_medium_size())
+
+func apply_body_large(label: Label):
+	label.set("theme_override_font_sizes/font_size", typography.get_body_large_size())
+
+func apply_body_regular(label: Label):
+	label.set("theme_override_font_sizes/font_size", typography.get_body_regular_size())
+
+func apply_caption(label: Label):
+	label.set("theme_override_font_sizes/font_size", typography.get_caption_size())
+
+# Spacing helper methods
+func get_spacing_xs() -> int:
+	return typography.get_spacing_xs()
+
+func get_spacing_sm() -> int:
+	return typography.get_spacing_sm()
+
+func get_spacing_md() -> int:
+	return typography.get_spacing_md()
+
+func get_spacing_lg() -> int:
+	return typography.get_spacing_lg()
+
+func get_spacing_xl() -> int:
+	return typography.get_spacing_xl()
+
+# Apply spacing to control margins
+func apply_spacing_margin(control: Control, spacing: int):
+	control.set("theme_override_constants/margin_left", spacing)
+	control.set("theme_override_constants/margin_top", spacing)
+	control.set("theme_override_constants/margin_right", spacing)
+	control.set("theme_override_constants/margin_bottom", spacing)
 
 func _on_back_pressed():
 	emit_signal("back_pressed")

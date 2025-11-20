@@ -38,7 +38,7 @@ story_location: /home/matt/code/godot-rpg-refactor/docs/stories
 development_status:
   epic-1: contexted
   1-1-modern-button-component-system: done
-  1-2-typography-spacing-system: ready-for-dev
+   1-2-typography-spacing-system: review
   1-3-visual-feedback-system: backlog
   1-4-enhanced-color-scheme: backlog
   epic-1-retrospective: optional

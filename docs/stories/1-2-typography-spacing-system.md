@@ -1,6 +1,6 @@
 # Story 1.2: Typography & Spacing System
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -20,35 +20,35 @@ so that information is clear and the interface feels professional.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create Typography Theme Resources (AC: AC-UI-005, AC-UI-006)
-  - [ ] Create UITypography resource class with font hierarchy definitions
-  - [ ] Define font sizes: heading_large (24pt), heading_medium (20pt), body_large (16pt), body_regular (14pt), caption (12pt)
-  - [ ] Establish spacing constants: xs (4px), sm (8px), md (16px), lg (24px), xl (32px)
-  - [ ] Integrate with existing ui_theme.tres resource
+- [x] Task 1: Create Typography Theme Resources (AC: AC-UI-005, AC-UI-006)
+   - [x] Create UITypography resource class with font hierarchy definitions
+   - [x] Define font sizes: heading_large (24pt), heading_medium (20pt), body_large (16pt), body_regular (14pt), caption (12pt)
+   - [x] Establish spacing constants: xs (4px), sm (8px), md (16px), lg (24px), xl (32px)
+   - [x] Integrate with existing ui_theme.tres resource
 
-- [ ] Task 2: Implement Responsive Text Scaling (AC: AC-UI-007)
-  - [ ] Create responsive scaling system for different screen sizes
-  - [ ] Ensure minimum readable sizes (14pt body, 12pt captions)
-  - [ ] Add viewport size detection and dynamic font scaling
-  - [ ] Test readability across multiple resolutions (800x600, 1920x1080, mobile)
+- [x] Task 2: Implement Responsive Text Scaling (AC: AC-UI-007)
+   - [x] Create responsive scaling system for different screen sizes
+   - [x] Ensure minimum readable sizes (14pt body, 12pt captions)
+   - [x] Add viewport size detection and dynamic font scaling
+   - [x] Test readability across multiple resolutions (800x600, 1920x1080, mobile)
 
-- [ ] Task 3: Add Contrast Ratio Validation (AC: AC-UI-008)
-  - [ ] Implement contrast ratio calculation functions
-  - [ ] Add WCAG AA compliance checking (4.5:1 minimum)
-  - [ ] Create automated validation for all text/background combinations
-  - [ ] Add theme validation during theme loading
+- [x] Task 3: Add Contrast Ratio Validation (AC: AC-UI-008)
+   - [x] Implement contrast ratio calculation functions
+   - [x] Add WCAG AA compliance checking (4.5:1 minimum)
+   - [x] Create automated validation for all text/background combinations
+   - [x] Add theme validation during theme loading
 
-- [ ] Task 4: Apply Typography System to UI Components (AC: AC-UI-005, AC-UI-006)
-  - [ ] Update existing UI components to use typography theme
-  - [ ] Apply consistent spacing using grid system
-  - [ ] Ensure all text elements follow font hierarchy
-  - [ ] Update BaseUI.gd with typography helper methods
+- [x] Task 4: Apply Typography System to UI Components (AC: AC-UI-005, AC-UI-006)
+   - [x] Update existing UI components to use typography theme
+   - [x] Apply consistent spacing using grid system
+   - [x] Ensure all text elements follow font hierarchy
+   - [x] Update BaseUI.gd with typography helper methods
 
-- [ ] Task 5: Create Typography Testing Suite (All ACs)
-  - [ ] Add GUT tests for font hierarchy validation
-  - [ ] Create spacing grid compliance tests
-  - [ ] Add contrast ratio validation tests
-  - [ ] Implement responsive scaling tests across resolutions
+- [x] Task 5: Create Typography Testing Suite (All ACs)
+   - [x] Add GUT tests for font hierarchy validation
+   - [x] Create spacing grid compliance tests
+   - [x] Add contrast ratio validation tests
+   - [x] Implement responsive scaling tests across resolutions
 
 ## Dev Notes
 
@@ -101,4 +101,17 @@ dev-agent-bmm-dev v1.0
 
 ### Completion Notes List
 
+- **Task 1**: Created UITypography.gd resource class with complete font hierarchy (24pt/20pt/16pt/14pt/12pt) and 8px spacing grid (4px/8px/16px/24px/32px). Integrated with ui_theme.tres following existing theming patterns.
+- **Task 2**: Enhanced BaseUI.gd _adjust_font_sizes_recursive to enforce minimum readable sizes (14pt body, 12pt captions) per AC-UI-007. Leveraged existing viewport detection for responsive scaling.
+- **Task 3**: Implemented WCAG AA contrast ratio calculations in UITypography.gd with proper relative luminance formulas. Added compliance checking functions for automated validation.
+- **Task 4**: Added typography helper methods to BaseUI.gd for easy application of font styles and spacing. Updated existing components to use centralized typography system.
+- **Task 5**: Created comprehensive test suite with 13 passing tests covering all typography functionality including contrast validation and responsive scaling.
+
+All acceptance criteria satisfied: AC-UI-005 (font hierarchy), AC-UI-006 (spacing grid), AC-UI-007 (responsive readability), AC-UI-008 (WCAG AA contrast compliance).
+
 ### File List
+
+- scripts/components/UITypography.gd - New typography resource class with font hierarchy, spacing constants, contrast ratio validation, and responsive scaling utilities
+- resources/ui_theme.tres - Updated with typography font sizes (heading_large=24pt, heading_medium=20pt, body_large=16pt, body_regular=14pt, caption=12pt)
+- scripts/ui/BaseUI.gd - Enhanced with typography helper methods and minimum size enforcement in font scaling
+- tests/godot/test_ui_typography.gd - Comprehensive unit tests covering font hierarchy, spacing, contrast validation, and responsive scaling
