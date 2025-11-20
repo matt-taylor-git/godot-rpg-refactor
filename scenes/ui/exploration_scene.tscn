@@ -1,9 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://exploration_scene"]
+[gd_scene load_steps=4 format=3 uid="uid://c8x8x8x8x8x8x8x8x8x8x8"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/ExplorationScene.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
-[ext_resource type="Texture2D" path="res://assets/Hero.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/Hero.png" id="4"]
 
 [node name="ExplorationScene" type="Control"]
 layout_mode = 3
@@ -37,7 +37,7 @@ offset_left = 368.0
 offset_top = 268.0
 offset_right = 432.0
 offset_bottom = 332.0
-texture = ExtResource("3")
+texture = ExtResource("4")
 expand_mode = 1
 stretch_mode = 5
 

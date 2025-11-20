@@ -47,13 +47,43 @@ var button_text: String = "":
 func _ready():
 	# Store the Button's text before we clear it (to prevent double rendering)
 	button_text = self.text
-	self.text = ""  # Clear Button's text so it doesn't render (we use custom Label)
 
 	# Make button flat so it doesn't draw its own background (we use custom nodes)
 	flat = true
 
 	# Create child nodes if they don't exist
 	_create_child_nodes()
+
+	# Initialize label with our text
+	_update_label()
+
+	# IMPORTANT: Set a reasonable minimum size to ensure button is clickable
+	# We calculate this based on the label's text
+	var text_size = Vector2.ZERO
+	if label and not button_text.is_empty():
+		# Get font from theme or use default
+		var font = label.get_theme_font("font")
+		var font_size = label.get_theme_font_size("font_size")
+		if font and font_size > 0:
+			text_size = font.get_string_size(button_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+		else:
+			# Fallback: estimate based on character count
+			text_size = Vector2(button_text.length() * 10, 20)
+
+	# Set custom minimum size with padding
+	var min_size = Vector2(
+		max(100, text_size.x + 40),  # At least 100px wide, plus padding
+		max(44, text_size.y + 20)     # WCAG minimum 44px height
+	)
+	custom_minimum_size = min_size
+
+	print("UIButton '", button_text, "' calculated min_size: ", min_size)
+
+	# Now clear Button's text so it doesn't render (we use custom Label)
+	self.text = ""
+
+	# Queue a deferred update to ensure sizing is applied
+	call_deferred("_finalize_sizing")
 
 	# Connect to Button's built-in signals
 	connect("mouse_entered", Callable(self, "_on_mouse_entered"))
@@ -62,6 +92,7 @@ func _ready():
 	connect("focus_exited", Callable(self, "_on_focus_exited"))
 	connect("button_down", Callable(self, "_on_button_down"))
 	connect("button_up", Callable(self, "_on_button_up"))
+	connect("pressed", Callable(self, "_on_pressed_debug"))
 
 	# Set up input handling
 	set_focus_mode(FOCUS_ALL)
@@ -70,20 +101,24 @@ func _ready():
 	original_scale = scale
 	original_modulate = modulate
 
-	# Initialize - use our custom button_text property
-	_update_label()
+	# Apply theme and update state
 	_apply_theme()
 	_update_state()
-
-	# Size and position child nodes to match button size
-	call_deferred("_resize_children")
 
 	# Connect to resized signal to keep children sized correctly
 	connect("resized", Callable(self, "_resize_children"))
 
+func _finalize_sizing():
+	# Called deferred to ensure sizing is applied
+	update_minimum_size()
+	print("UIButton '", button_text, "' after sizing - size: ", size, " custom_minimum_size: ", custom_minimum_size)
+	# Resize children to match
+	_resize_children()
+
 func _resize_children():
 	# Ensure child nodes match button's size
 	var button_size = size
+	print("UIButton '", button_text, "' _resize_children called, size: ", button_size)
 
 	if background:
 		background.position = Vector2.ZERO
@@ -296,6 +331,9 @@ func _on_button_up():
 	if not self.disabled:
 		is_pressed = false
 		_update_state()
+
+func _on_pressed_debug():
+	print("UIButton '", button_text, "' pressed signal emitted!")
 
 func _update_focus_indicator():
 	# Show/hide focus indicator based on focus state and accessibility needs

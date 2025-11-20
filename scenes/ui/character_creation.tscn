@@ -139,6 +139,17 @@ text = "Attack: 12
 Defense: 6
 Dexterity: 6"
 
+[node name="SkillsLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Starting Skills"
+horizontal_alignment = 1
+theme_type_variation = "H3"
+
+[node name="SkillsText" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Slash
+Heal"
+
 [node name="Footer" type="HBoxContainer" parent="CenterContainer/CreationPanel/VBoxContainer"]
 layout_mode = 2
 alignment = 1
