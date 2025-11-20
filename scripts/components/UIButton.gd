@@ -34,12 +34,65 @@ var label: Label = null
 var background: Panel = null
 var focus_indicator: Panel = null
 
+# Store button text separately (Button's text property will be kept empty to prevent double rendering)
+var button_text: String = "":
+	set(value):
+		button_text = value
+		if label:
+			label.text = button_text
+			label.visible = not button_text.is_empty()
+	get:
+		return button_text
+
 func _ready():
+	# Store the Button's text before we clear it (to prevent double rendering)
+	button_text = self.text
+
+	# Make button flat so it doesn't draw its own background (we use custom nodes)
+	flat = true
+
 	# Create child nodes if they don't exist
 	_create_child_nodes()
 
-	# Note: Removed signal connections - Button handles mouse/focus events internally
-	# We'll override the virtual methods instead to avoid conflicts
+	# Initialize label with our text
+	_update_label()
+
+	# IMPORTANT: Set a reasonable minimum size to ensure button is clickable
+	# We calculate this based on the label's text
+	var text_size = Vector2.ZERO
+	if label and not button_text.is_empty():
+		# Get font from theme or use default
+		var font = label.get_theme_font("font")
+		var font_size = label.get_theme_font_size("font_size")
+		if font and font_size > 0:
+			text_size = font.get_string_size(button_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+		else:
+			# Fallback: estimate based on character count
+			text_size = Vector2(button_text.length() * 10, 20)
+
+	# Set custom minimum size with padding
+	var min_size = Vector2(
+		max(100, text_size.x + 40),  # At least 100px wide, plus padding
+		max(44, text_size.y + 20)     # WCAG minimum 44px height
+	)
+	custom_minimum_size = min_size
+
+	print("UIButton '", button_text, "' calculated min_size: ", min_size)
+
+	# Now clear Button's text so it doesn't render (we use custom Label)
+	self.text = ""
+
+	# Queue a deferred update to ensure sizing is applied
+	call_deferred("_finalize_sizing")
+
+	# Connect to Button's built-in signals
+	connect("mouse_entered", Callable(self, "_on_mouse_entered"))
+	connect("mouse_exited", Callable(self, "_on_mouse_exited"))
+	connect("focus_entered", Callable(self, "_on_focus_entered"))
+	connect("focus_exited", Callable(self, "_on_focus_exited"))
+	connect("button_down", Callable(self, "_on_button_down"))
+	connect("button_up", Callable(self, "_on_button_up"))
+	connect("pressed", Callable(self, "_on_pressed_debug"))
 
 	# Set up input handling
 	set_focus_mode(FOCUS_ALL)
@@ -48,10 +101,36 @@ func _ready():
 	original_scale = scale
 	original_modulate = modulate
 
-	# Initialize - use Button's built-in text property
-	_update_label()
+	# Apply theme and update state
 	_apply_theme()
 	_update_state()
+
+	# Connect to resized signal to keep children sized correctly
+	connect("resized", Callable(self, "_resize_children"))
+
+func _finalize_sizing():
+	# Called deferred to ensure sizing is applied
+	update_minimum_size()
+	print("UIButton '", button_text, "' after sizing - size: ", size, " custom_minimum_size: ", custom_minimum_size)
+	# Resize children to match
+	_resize_children()
+
+func _resize_children():
+	# Ensure child nodes match button's size
+	var button_size = size
+	print("UIButton '", button_text, "' _resize_children called, size: ", button_size)
+
+	if background:
+		background.position = Vector2.ZERO
+		background.size = button_size
+
+	if label:
+		label.position = Vector2.ZERO
+		label.size = button_size
+
+	if focus_indicator:
+		focus_indicator.position = Vector2.ZERO
+		focus_indicator.size = button_size
 
 func _exit_tree():
 	# Clean up active tween when node is removed
@@ -64,9 +143,11 @@ func _create_child_nodes():
 	if not has_node("Background"):
 		background = Panel.new()
 		background.name = "Background"
+		background.mouse_filter = MOUSE_FILTER_IGNORE  # Don't block mouse input
 		add_child(background)
 	else:
 		background = $Background as Panel
+		background.mouse_filter = MOUSE_FILTER_IGNORE
 
 	# Create label
 	if not has_node("Label"):
@@ -74,23 +155,27 @@ func _create_child_nodes():
 		label.name = "Label"
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.mouse_filter = MOUSE_FILTER_IGNORE  # Don't block mouse input
 		add_child(label)
 	else:
 		label = $Label as Label
+		label.mouse_filter = MOUSE_FILTER_IGNORE
 
 	# Create focus indicator (accessibility)
 	if not has_node("FocusIndicator"):
 		focus_indicator = Panel.new()
 		focus_indicator.name = "FocusIndicator"
 		focus_indicator.visible = false
+		focus_indicator.mouse_filter = MOUSE_FILTER_IGNORE  # Don't block mouse input
 		add_child(focus_indicator)
 	else:
 		focus_indicator = $FocusIndicator as Panel
+		focus_indicator.mouse_filter = MOUSE_FILTER_IGNORE
 
 func _update_label():
 	if label:
-		label.text = self.text  # Use Button's text property
-		label.visible = not self.text.is_empty()
+		label.text = button_text  # Use our custom text property
+		label.visible = not button_text.is_empty()
 
 func _apply_theme():
 	# Apply theme to child components
@@ -217,58 +302,38 @@ func _get_state_color(theme: Theme, type_name: String, color_name: String) -> Co
 	# Get color for specific state
 	return theme.get_color(color_name, type_name)
 
-func _gui_input(event: InputEvent):
-	if self.disabled:  # Use Button's disabled property
-		return
-
-	# Handle mouse events
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				is_pressed = true
-				button_down.emit()
-				accept_event()
-			else:
-				if is_pressed:  # Only emit pressed if we were actually pressed
-					pressed.emit()
-				is_pressed = false
-				button_up.emit()
-				accept_event()
-			_update_state()
-
-	# Handle keyboard events
-	elif event is InputEventKey:
-		if has_focus and event.pressed:
-			match event.keycode:
-				KEY_SPACE, KEY_ENTER:
-					if not is_pressed:
-						is_pressed = true
-						button_down.emit()
-						pressed.emit()
-						button_up.emit()
-						is_pressed = false
-						accept_event()
-						_update_state()
-
-func _mouse_enter():
+func _on_mouse_entered():
 	if not self.disabled:  # Use Button's disabled property
 		is_hovered = true
 		_update_state()
 
-func _mouse_exit():
+func _on_mouse_exited():
 	if not self.disabled:  # Use Button's disabled property
 		is_hovered = false
 		_update_state()
 
-func _focus_enter():
+func _on_focus_entered():
 	has_focus = true
 	_update_focus_indicator()
 	_update_state()
 
-func _focus_exit():
+func _on_focus_exited():
 	has_focus = false
 	_update_focus_indicator()
 	_update_state()
+
+func _on_button_down():
+	if not self.disabled:
+		is_pressed = true
+		_update_state()
+
+func _on_button_up():
+	if not self.disabled:
+		is_pressed = false
+		_update_state()
+
+func _on_pressed_debug():
+	print("UIButton '", button_text, "' pressed signal emitted!")
 
 func _update_focus_indicator():
 	# Show/hide focus indicator based on focus state and accessibility needs
@@ -414,7 +479,7 @@ func _animate_color(from_color: Color, to_color: Color, duration: float):
 func _get_minimum_size() -> Vector2:
 	var min_size = Vector2(44, 44)  # WCAG minimum touch target
 
-	if label and not self.text.is_empty():  # Use Button's text property
+	if label and not button_text.is_empty():  # Use our custom text property
 		var label_size = label.get_minimum_size()
 		min_size.x = max(min_size.x, label_size.x + 20)  # Add padding
 		min_size.y = max(min_size.y, label_size.y + 10)
