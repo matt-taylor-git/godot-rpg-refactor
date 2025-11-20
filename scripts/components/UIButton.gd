@@ -38,8 +38,13 @@ func _ready():
 	# Create child nodes if they don't exist
 	_create_child_nodes()
 
-	# Note: Removed signal connections - Button handles mouse/focus events internally
-	# We'll override the virtual methods instead to avoid conflicts
+	# Connect to Button's built-in signals
+	connect("mouse_entered", Callable(self, "_on_mouse_entered"))
+	connect("mouse_exited", Callable(self, "_on_mouse_exited"))
+	connect("focus_entered", Callable(self, "_on_focus_entered"))
+	connect("focus_exited", Callable(self, "_on_focus_exited"))
+	connect("button_down", Callable(self, "_on_button_down"))
+	connect("button_up", Callable(self, "_on_button_up"))
 
 	# Set up input handling
 	set_focus_mode(FOCUS_ALL)
@@ -64,9 +69,11 @@ func _create_child_nodes():
 	if not has_node("Background"):
 		background = Panel.new()
 		background.name = "Background"
+		background.mouse_filter = MOUSE_FILTER_IGNORE  # Don't block mouse input
 		add_child(background)
 	else:
 		background = $Background as Panel
+		background.mouse_filter = MOUSE_FILTER_IGNORE
 
 	# Create label
 	if not has_node("Label"):
@@ -74,18 +81,22 @@ func _create_child_nodes():
 		label.name = "Label"
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.mouse_filter = MOUSE_FILTER_IGNORE  # Don't block mouse input
 		add_child(label)
 	else:
 		label = $Label as Label
+		label.mouse_filter = MOUSE_FILTER_IGNORE
 
 	# Create focus indicator (accessibility)
 	if not has_node("FocusIndicator"):
 		focus_indicator = Panel.new()
 		focus_indicator.name = "FocusIndicator"
 		focus_indicator.visible = false
+		focus_indicator.mouse_filter = MOUSE_FILTER_IGNORE  # Don't block mouse input
 		add_child(focus_indicator)
 	else:
 		focus_indicator = $FocusIndicator as Panel
+		focus_indicator.mouse_filter = MOUSE_FILTER_IGNORE
 
 func _update_label():
 	if label:
@@ -217,58 +228,35 @@ func _get_state_color(theme: Theme, type_name: String, color_name: String) -> Co
 	# Get color for specific state
 	return theme.get_color(color_name, type_name)
 
-func _gui_input(event: InputEvent):
-	if self.disabled:  # Use Button's disabled property
-		return
-
-	# Handle mouse events
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				is_pressed = true
-				button_down.emit()
-				accept_event()
-			else:
-				if is_pressed:  # Only emit pressed if we were actually pressed
-					pressed.emit()
-				is_pressed = false
-				button_up.emit()
-				accept_event()
-			_update_state()
-
-	# Handle keyboard events
-	elif event is InputEventKey:
-		if has_focus and event.pressed:
-			match event.keycode:
-				KEY_SPACE, KEY_ENTER:
-					if not is_pressed:
-						is_pressed = true
-						button_down.emit()
-						pressed.emit()
-						button_up.emit()
-						is_pressed = false
-						accept_event()
-						_update_state()
-
-func _mouse_enter():
+func _on_mouse_entered():
 	if not self.disabled:  # Use Button's disabled property
 		is_hovered = true
 		_update_state()
 
-func _mouse_exit():
+func _on_mouse_exited():
 	if not self.disabled:  # Use Button's disabled property
 		is_hovered = false
 		_update_state()
 
-func _focus_enter():
+func _on_focus_entered():
 	has_focus = true
 	_update_focus_indicator()
 	_update_state()
 
-func _focus_exit():
+func _on_focus_exited():
 	has_focus = false
 	_update_focus_indicator()
 	_update_state()
+
+func _on_button_down():
+	if not self.disabled:
+		is_pressed = true
+		_update_state()
+
+func _on_button_up():
+	if not self.disabled:
+		is_pressed = false
+		_update_state()
 
 func _update_focus_indicator():
 	# Show/hide focus indicator based on focus state and accessibility needs
