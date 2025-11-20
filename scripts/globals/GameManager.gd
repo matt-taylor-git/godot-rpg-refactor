@@ -235,8 +235,16 @@ func change_scene(scene_name: String):
 		print("Error: Scene file not found: ", scene_path)
 		return
 	current_scene = scene_name
-	emit_signal("scene_changed", scene_name)
-	# Scene change is handled by MainScene via signal
+
+	# Directly change the scene instead of using signals
+	# (MainScene may not be in tree after initial scene change)
+	print("Loading scene: ", scene_path)
+	var error = get_tree().change_scene_to_file(scene_path)
+	if error != OK:
+		print("Error changing scene: ", error)
+	else:
+		print("Scene changed successfully to: ", scene_name)
+		emit_signal("scene_changed", scene_name)
 
 func get_current_scene() -> String:
 	return current_scene
