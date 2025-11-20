@@ -2,6 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/InventoryDialog.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 [ext_resource type="Texture2D" path="res://assets/Hero.png" id="3"]
 
 [node name="InventoryDialog" type="Control"]
@@ -130,22 +131,22 @@ columns = 5
 layout_mode = 2
 alignment = 1
 
-[node name="UseButton" type="Button" parent="RightPanel/ActionButtons"]
+[node name="UseButton" parent="RightPanel/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "USE"
 theme_type_variation = "Small"
 
-[node name="EquipButton" type="Button" parent="RightPanel/ActionButtons"]
+[node name="EquipButton" parent="RightPanel/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "EQUIP"
 theme_type_variation = "Small"
 
-[node name="DropButton" type="Button" parent="RightPanel/ActionButtons"]
+[node name="DropButton" parent="RightPanel/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "DROP"
 theme_type_variation = "Small"
 
-[node name="CloseButton" type="Button" parent="RightPanel"]
+[node name="CloseButton" parent="RightPanel" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "CLOSE"

@@ -1,0 +1,158 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.1</storyId>
+    <title>Modern Button Component System</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-19</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-1-modern-button-component-system.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>player</asA>
+    <iWant>modern, responsive buttons throughout the game</iWant>
+    <soThat>interactions feel polished and contemporary while maintaining RPG charm</soThat>
+    <tasks>- [ ] **Task 1: Create UIButton Component Class** (AC: AC-UI-001, AC-UI-002, AC-UI-003)
+  - [ ] Create UIButton.gd script extending Control node
+  - [ ] Implement state enum (NORMAL, HOVER, PRESSED, DISABLED)
+  - [ ] Add state change signal emissions
+  - [ ] Implement mouse event handling (_gui_input, mouse_entered, mouse_exited)
+  - [ ] Add keyboard focus handling (_gui_input for focus events)
+
+- [ ] **Task 2: Implement Visual State Management** (AC: AC-UI-002)
+  - [ ] Create state-based styling system using theme overrides
+  - [ ] Implement color transitions for each state
+  - [ ] Add state-specific visual effects (shadows, borders)
+  - [ ] Create disabled state visual treatment
+
+- [ ] **Task 3: Add Animation System Integration** (AC: AC-UI-001)
+  - [ ] Integrate with UIAnimationSystem for hover effects
+  - [ ] Implement smooth scale transitions (1.0 → 1.05 on hover)
+  - [ ] Add color interpolation for state changes
+  - [ ] Ensure 200ms animation duration with Tween.EASE_OUT
+
+- [ ] **Task 4: Implement Accessibility Features** (AC: AC-UI-004)
+  - [ ] Add focus rectangle with 3:1 contrast ratio
+  - [ ] Implement keyboard navigation (Tab, Space, Enter)
+  - [ ] Add screen reader support through Godot's accessibility API
+  - [ ] Ensure minimum 44px touch targets for mobile compatibility
+
+- [ ] **Task 5: Create Theme Integration** (AC: AC-UI-003)
+  - [ ] Implement UIThemeManager integration for centralized styling
+  - [ ] Add theme override capability for special cases
+  - [ ] Ensure consistent application across all UI screens
+  - [ ] Validate theme changes apply immediately
+
+- [ ] **Task 6: Add Comprehensive Testing** (All ACs)
+  - [ ] Create GUT unit tests for UIButton component
+  - [ ] Test state transitions and signal emissions
+  - [ ] Add integration tests for theme application
+  - [ ] Create accessibility compliance tests
+  - [ ] Add performance tests for animation system</tasks>
+  </story>
+
+  <acceptanceCriteria>1. **AC-UI-001: Button Hover Effects** - Given any button in the game interface, when the user hovers their mouse over the button, then a subtle highlight effect appears with smooth 200ms transition
+
+2. **AC-UI-002: Button State Visual Distinction** - Given buttons support normal, hover, pressed, and disabled states, when button state changes occur, then each state has visually distinct styling and colors
+
+3. **AC-UI-003: Button Consistency Across Screens** - Given buttons appear on multiple UI screens, when comparing button behavior across screens, then all buttons use identical styling, animations, and interaction patterns
+
+4. **AC-UI-004: Button Accessibility Standards** - Given buttons are keyboard navigable, when using Tab key navigation, then focus indicators meet WCAG AA standards with 3:1 contrast ratio</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/stories/tech-spec-epic-1.md</path>
+        <title>Epic 1 Technical Specification</title>
+        <section>Detailed Design → Services and Modules</section>
+        <snippet>UIButton component interface specification with state management, animation integration, and accessibility requirements</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>Decision Summary</section>
+        <snippet>UI Framework: Godot Control Nodes with Custom Themes, Animation System: Tween Nodes with AnimationPlayer, Component Architecture: Scene-based Components with Inheritance</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Success Criteria</section>
+        <snippet>Visual enhancements must maintain 60fps performance with &lt;5% frame rate drop, UI feels modern while preserving nostalgic charm</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>scripts/components/UIButton.gd</path>
+        <kind>component</kind>
+        <symbol>UIButton</symbol>
+        <lines>1-32</lines>
+        <reason>Existing UIButton component that needs modernization with hover effects, animations, and accessibility features</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/BaseUI.gd</path>
+        <kind>base-class</kind>
+        <symbol>BaseUI</symbol>
+        <lines>1-154</lines>
+        <reason>Base class for UI scenes providing common functionality, responsive layout, and component creation utilities</reason>
+      </artifact>
+      <artifact>
+        <path>resources/ui_theme.tres</path>
+        <kind>resource</kind>
+        <symbol>UITheme</symbol>
+        <reason>Centralized theme resource for UI styling that needs button-specific theme items added</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <godot>
+        <version>4.5</version>
+        <components>Control nodes, Tween system, Theme resources, Accessibility API</components>
+      </godot>
+      <gut>
+        <version>latest</version>
+        <purpose>Unit and integration testing framework for UI components</purpose>
+      </gut>
+    </dependencies>
+  </artifacts>
+
+  <constraints>Follow existing BaseUI.gd pattern for component inheritance. Use Godot Control nodes with custom theme resources for consistent styling. Tween-based animations with 200ms duration, Tween.EASE_OUT transition. Maintain 60fps performance with &lt;5% frame rate impact. Implement finite state machine for button states (NORMAL, HOVER, PRESSED, DISABLED). WCAG AA compliance with 3:1 contrast ratios for focus indicators, 44px minimum touch targets. Centralized theming through UIThemeManager with override capability.</constraints>
+  <interfaces>
+    <interface>
+      <name>UIButton</name>
+      <kind>component-interface</kind>
+      <signature>class_name UIButton extends Control
+
+# Signals
+signal pressed()                    # Button clicked
+signal button_down()               # Button pressed down
+signal button_up()                 # Button released
+signal mouse_entered()             # Mouse hover started
+signal mouse_exited()              # Mouse hover ended
+signal focus_entered()             # Keyboard focus gained
+signal focus_exited()              # Keyboard focus lost
+
+# Properties
+@export var text: String = ""      # Button label text
+@export var disabled: bool = false # Disable interaction
+@export var theme_override: UITheme # Optional theme override
+
+# Methods
+func set_text(new_text: String) -&gt; void
+func set_disabled(is_disabled: bool) -&gt; void
+func apply_theme(theme: UITheme) -&gt; void
+func play_hover_animation() -&gt; void
+func play_press_animation() -&gt; void</signature>
+      <path>scripts/components/UIButton.gd</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>GUT (Godot Unit Testing) framework for unit and integration tests. Test structure follows existing patterns in tests/godot/ directory. Unit tests for individual component behavior, integration tests for theme application and animation coordination.</standards>
+    <locations>tests/godot/ - All UI component tests should be placed here following the naming pattern test_ui_*.gd</locations>
+    <ideas>- Test UIButton state transitions (NORMAL → HOVER → PRESSED → NORMAL) and signal emissions
+- Test theme application changes button appearance correctly
+- Test accessibility features: focus indicators, keyboard navigation, screen reader support
+- Test animation performance: verify 200ms duration, 60fps maintenance, proper cleanup
+- Test cross-screen consistency: same button behavior across different UI scenes
+- Test edge cases: rapid clicking, theme changes during animations, disabled state handling</ideas>
+  </tests>
+</story-context>

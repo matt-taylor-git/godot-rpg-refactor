@@ -2,6 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/QuestCompletionDialog.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 
 [node name="QuestCompletionDialog" type="Control"]
 layout_mode = 3
@@ -77,7 +78,7 @@ custom_minimum_size = Vector2(0, 25)
 [node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
-[node name="OkButton" type="Button" parent="Panel/VBoxContainer"]
+[node name="OkButton" parent="Panel/VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "OK"
 custom_minimum_size = Vector2(0, 40)

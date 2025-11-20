@@ -1,0 +1,141 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.2</storyId>
+    <title>Typography & Spacing System</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-19</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-2-typography-spacing-system.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>player</asA>
+    <iWant>consistent, readable text throughout the game</iWant>
+    <soThat>information is clear and the interface feels professional</soThat>
+    <tasks>- [ ] Task 1: Create Typography Theme Resources (AC: AC-UI-005, AC-UI-006)
+  - [ ] Create UITypography resource class with font hierarchy definitions
+  - [ ] Define font sizes: heading_large (24pt), heading_medium (20pt), body_large (16pt), body_regular (14pt), caption (12pt)
+  - [ ] Establish spacing constants: xs (4px), sm (8px), md (16px), lg (24px), xl (32px)
+  - [ ] Integrate with existing ui_theme.tres resource
+
+- [ ] Task 2: Implement Responsive Text Scaling (AC: AC-UI-007)
+  - [ ] Create responsive scaling system for different screen sizes
+  - [ ] Ensure minimum readable sizes (14pt body, 12pt captions)
+  - [ ] Add viewport size detection and dynamic font scaling
+  - [ ] Test readability across multiple resolutions (800x600, 1920x1080, mobile)
+
+- [ ] Task 3: Add Contrast Ratio Validation (AC: AC-UI-008)
+  - [ ] Implement contrast ratio calculation functions
+  - [ ] Add WCAG AA compliance checking (4.5:1 minimum)
+  - [ ] Create automated validation for all text/background combinations
+  - [ ] Add theme validation during theme loading
+
+- [ ] Task 4: Apply Typography System to UI Components (AC: AC-UI-005, AC-UI-006)
+  - [ ] Update existing UI components to use typography theme
+  - [ ] Apply consistent spacing using grid system
+  - [ ] Ensure all text elements follow font hierarchy
+  - [ ] Update BaseUI.gd with typography helper methods
+
+- [ ] Task 5: Create Typography Testing Suite (All ACs)
+  - [ ] Add GUT tests for font hierarchy validation
+  - [ ] Create spacing grid compliance tests
+  - [ ] Add contrast ratio validation tests
+  - [ ] Implement responsive scaling tests across resolutions</tasks>
+  </story>
+
+  <acceptanceCriteria>1. **AC-UI-005: Typography Font Hierarchy** - Given text elements exist for headers, body text, and captions, when viewing any UI screen, then headers use 18-24pt fonts, body uses 14-16pt fonts, captions use 12pt fonts
+
+2. **AC-UI-006: Typography Spacing Guidelines** - Given UI elements with text content, when measuring spacing between elements, then all spacing follows 8px grid system (4px, 8px, 16px, 24px increments)
+
+3. **AC-UI-007: Typography Readability** - Given text displays at different screen sizes, when viewing on various resolutions, then text remains readable with minimum 14pt body text and 12pt captions
+
+4. **AC-UI-008: Typography Contrast Compliance** - Given text appears on colored backgrounds, when measuring contrast ratios, then all text meets WCAG AA standards (4.5:1 minimum contrast ratio)</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/stories/tech-spec-epic-1.md</path>
+        <title>Epic 1 Technical Specification</title>
+        <section>Detailed Design, Acceptance Criteria</section>
+        <snippet>Comprehensive typography system specifications including font hierarchy (18-24pt headers, 14-16pt body, 12pt captions), 8px spacing grid, responsive scaling, and WCAG AA contrast compliance requirements.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Decision Summary, Technology Stack</section>
+        <snippet>Godot 4.5 Control Nodes with Custom Themes strategy, centralized theme resources, component-based architecture following existing BaseUI.gd pattern.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/ui_button_guide.md</path>
+        <title>UIButton Usage Guide</title>
+        <section>Complete Guide</section>
+        <snippet>Established UI component patterns and theme integration approaches from Story 1.1, including centralized theming and component inheritance patterns to follow.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>scripts/components/UIButton.gd</path>
+        <kind>component</kind>
+        <symbol>UIButton</symbol>
+        <lines>1-471</lines>
+        <reason>Existing component pattern to follow for typography system - demonstrates theme integration, state management, and component architecture established in Story 1.1.</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/BaseUI.gd</path>
+        <kind>base-class</kind>
+        <symbol>BaseUI</symbol>
+        <lines>60-90</lines>
+        <reason>Existing UI base class with font scaling methods (_adjust_font_sizes_recursive) that typography system should extend and integrate with.</reason>
+      </artifact>
+      <artifact>
+        <path>resources/ui_theme.tres</path>
+        <kind>resource</kind>
+        <symbol>Theme</symbol>
+        <lines>1-200</lines>
+        <reason>Existing centralized theme resource that typography system must extend with font and spacing definitions following established theming patterns.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <dependency>
+        <ecosystem>godot</ecosystem>
+        <name>Godot Engine</name>
+        <version>4.5</version>
+        <packages>Control Nodes, Theme Resources, Tween System, Font Rendering</packages>
+      </dependency>
+      <dependency>
+        <ecosystem>testing</ecosystem>
+        <name>GUT Testing Framework</name>
+        <version>Latest</version>
+        <packages>Unit Testing, Integration Testing, Test Runner</packages>
+      </dependency>
+    </dependencies>
+  </artifacts>
+
+  <constraints>Font rendering must maintain 60fps performance using Godot's font caching and avoiding per-frame font changes. All text must meet WCAG AA accessibility standards (4.5:1 minimum contrast ratio). Typography system must integrate with existing centralized theming strategy using ui_theme.tres. Component architecture must follow established BaseUI.gd inheritance pattern. Spacing must follow 8px grid system (4px, 8px, 16px, 24px increments) for consistency. Responsive text scaling required for multiple screen resolutions while maintaining minimum readable sizes (14pt body, 12pt captions).</constraints>
+  <interfaces>
+    <interface>
+      <name>UIThemeManager Integration</name>
+      <kind>function-interface</kind>
+      <signature>func apply_theme_to_control(control: Control, theme: UITheme) -> void</signature>
+      <path>scripts/components/UIButton.gd</path>
+    </interface>
+    <interface>
+      <name>BaseUI Font Scaling</name>
+      <kind>method-interface</kind>
+      <signature>func _adjust_font_sizes_recursive(node: Node, scale: float) -> void</signature>
+      <path>scripts/ui/BaseUI.gd</path>
+    </interface>
+    <interface>
+      <name>Theme Font Access</name>
+      <kind>resource-interface</kind>
+      <signature>theme.get_font(font_name: String) -> Font</signature>
+      <path>resources/ui_theme.tres</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>GUT (Godot Unit Testing) framework for comprehensive component testing. Unit tests for state management, integration tests for theme application, accessibility compliance tests. Performance testing for 60fps font rendering. Automated contrast ratio validation during theme loading.</standards>
+    <locations>tests/godot/ directory following existing test patterns. Typography tests should be added as test_ui_typography.gd alongside existing test_ui_button.gd pattern.</locations>
+    <ideas>AC-UI-005: Test font hierarchy application across different UI elements (headers=18-24pt, body=14-16pt, captions=12pt). AC-UI-006: Validate 8px spacing grid compliance by measuring pixel distances between UI elements. AC-UI-007: Test responsive scaling across resolutions (800x600, 1920x1080, mobile) ensuring minimum readable sizes. AC-UI-008: Automated contrast ratio validation for all text/background combinations against 4.5:1 WCAG AA standard.</ideas>
+  </tests>
+</story-context>

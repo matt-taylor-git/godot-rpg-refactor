@@ -2,6 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/SaveSlotDialog.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 
 [node name="SaveSlotDialog" type="Control"]
 layout_mode = 3
@@ -54,19 +55,19 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 5
 
-[node name="Slot1Button" type="Button" parent="DialogPanel/VBoxContainer/SlotContainer"]
+[node name="Slot1Button" parent="DialogPanel/VBoxContainer/SlotContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "Slot 1: [Empty]"
 
-[node name="Slot2Button" type="Button" parent="DialogPanel/VBoxContainer/SlotContainer"]
+[node name="Slot2Button" parent="DialogPanel/VBoxContainer/SlotContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "Slot 2: [Empty]"
 
-[node name="Slot3Button" type="Button" parent="DialogPanel/VBoxContainer/SlotContainer"]
+[node name="Slot3Button" parent="DialogPanel/VBoxContainer/SlotContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "Slot 3: [Empty]"
 
-[node name="CancelButton" type="Button" parent="DialogPanel/VBoxContainer"]
+[node name="CancelButton" parent="DialogPanel/VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Cancel"

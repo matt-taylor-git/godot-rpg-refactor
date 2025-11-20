@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://b1saih6uqrtd1"]
+[gd_scene load_steps=5 format=3 uid="uid://b1saih6uqrtd1"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/CharacterCreation.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/hero.png" id="3"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="4"]
 
 [node name="CharacterCreation" type="Control"]
 layout_mode = 3
@@ -77,19 +78,19 @@ text = "Choose Your Class:"
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="HeroButton" type="Button" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons"]
+[node name="HeroButton" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "Hero"
 
-[node name="WarriorButton" type="Button" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons"]
+[node name="WarriorButton" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "Warrior"
 
-[node name="MageButton" type="Button" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons"]
+[node name="MageButton" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "Mage"
 
-[node name="RogueButton" type="Button" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons"]
+[node name="RogueButton" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "Rogue"
 
@@ -142,11 +143,11 @@ Dexterity: 6"
 layout_mode = 2
 alignment = 1
 
-[node name="BackButton" type="Button" parent="CenterContainer/CreationPanel/VBoxContainer/Footer"]
+[node name="BackButton" parent="CenterContainer/CreationPanel/VBoxContainer/Footer" instance=ExtResource("4")]
 layout_mode = 2
 text = "Back"
 
-[node name="StartGameButton" type="Button" parent="CenterContainer/CreationPanel/VBoxContainer/Footer"]
+[node name="StartGameButton" parent="CenterContainer/CreationPanel/VBoxContainer/Footer" instance=ExtResource("4")]
 layout_mode = 2
 disabled = true
 text = "Start Adventure"

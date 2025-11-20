@@ -1,6 +1,7 @@
 [gd_scene load_steps=2 format=3 uid="uid://victory_scene"]
 
 [ext_resource type="Script" path="res://scripts/ui/VictoryScene.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="2"]
 
 [node name="VictoryScene" type="Control"]
 layout_mode = 3
@@ -161,13 +162,13 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 60)
 theme_override_constants/separation = 20
 
-[node name="MenuButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+[node name="MenuButton" parent="VBoxContainer/ButtonContainer" instance=ExtResource("2")]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Return to Main Menu (Esc)"
 custom_minimum_size = Vector2(0, 50)
 
-[node name="ContinueButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+[node name="ContinueButton" parent="VBoxContainer/ButtonContainer" instance=ExtResource("2")]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Continue Playing (Space/Enter)"

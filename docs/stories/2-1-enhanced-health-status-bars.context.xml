@@ -1,0 +1,326 @@
+<story-context>
+  <metadata>
+    <epic-id>2</epic-id>
+    <story-id>2.1</story-id>
+    <story-key>2-1-enhanced-health-status-bars</story-key>
+    <title>Enhanced Health &amp; Status Bars</title>
+    <status>ready-for-dev</status>
+    <author>Matt</author>
+    <date>2025-11-19</date>
+  </metadata>
+
+  <story>
+    <as-a>player in combat</as-a>
+    <i-want>modern, informative health and mana bars</i-want>
+    <so-that>I can quickly assess character status during battles</so-that>
+  </story>
+
+  <acceptance-criteria>
+    <ac id="AC-2.1.1">
+      <title>Health and Mana Bar Modernization</title>
+      <criteria>Given a character is in combat with health/mana values, when I view the combat screen, then bars display with gradient fills (not solid colors), and transitions between values are smooth (300ms with easing), and bars change color based on percentage (green 100-50%, yellow 50-25%, red 25-0%), and current/maximum values are clearly displayed as text, and the implementation meets WCAG AA contrast standards (4.5:1 minimum)</criteria>
+    </ac>
+    <ac id="AC-2.1.2">
+      <title>Status Effect Visualization</title>
+      <criteria>Given a character has active status effects (poison, buff, etc.), when I view their health bar, then status effects appear as small overlay icons (24x24px), and health bar tint changes appropriately (green tint for poison, gold glow for buff), and hovering over status icon shows tooltip with effect name and duration, and effects update in real-time as they are applied/removed</criteria>
+    </ac>
+    <ac id="AC-2.1.3">
+      <title>Bar Animation Performance</title>
+      <criteria>Given health or mana values change during combat, when the values animate, then the animation completes within 300ms, and the animation maintains 60fps performance, and the tween properly cleans up after completion to prevent memory leaks</criteria>
+    </ac>
+    <ac id="AC-2.1.4">
+      <title>Accessibility Compliance</title>
+      <criteria>Given I have visual impairments or use assistive technology, when I view health/mana bars, then all text meets 4.5:1 contrast ratio minimum, and color is not the only indicator of status (icons + text, not just color), and the reduced motion setting (if enabled) disables animations, and UI remains fully functional with animations turned off</criteria>
+    </ac>
+    <ac id="AC-2.1.5">
+      <title>Responsive Scaling</title>
+      <criteria>Given the game runs at different resolutions, when I view health/mana bars at various screen sizes, then bars scale appropriately maintaining readability, and text remains legible at all resolutions, and bar dimensions adjust based on screen size, and mobile touch targets meet minimum 44px requirement</criteria>
+    </ac>
+  </acceptance-criteria>
+
+  <tasks>
+    <task id="1" ac-references="AC-2.1.1 AC-2.1.3 AC-2.1.5">
+      <description>Create UIProgressBar Component Class</description>
+      <subtasks>
+        <subtask>Create UIProgressBar.gd script extending ProgressBar node with gradient fill properties</subtask>
+        <subtask>Implement smooth value transitions using Tween (300ms duration, Tween.EASE_OUT)</subtask>
+        <subtask>Add color change logic based on percentage thresholds (green/yellow/red)</subtask>
+        <subtask>Implement current/maximum value text display</subtask>
+        <subtask>Add responsive scaling support for different resolutions</subtask>
+        <subtask>Integrate with existing theme system (ui_theme.tres)</subtask>
+      </subtasks>
+    </task>
+
+    <task id="2" ac-references="AC-2.1.2">
+      <description>Implement Status Effect Overlay System</description>
+      <subtasks>
+        <subtask>Create StatusEffectIcon component (24x24px)</subtask>
+        <subtask>Add status effect overlay properties to UIProgressBar</subtask>
+        <subtask>Implement tint/glow effects for different status types</subtask>
+        <subtask>Create tooltip system for status effect information</subtask>
+        <subtask>Add real-time effect application/removal handling</subtask>
+        <subtask>Integrate with GameManager for effect state synchronization</subtask>
+      </subtasks>
+    </task>
+
+    <task id="3" ac-references="AC-2.1.1">
+      <description>Add Color-Coded Status Indicators</description>
+      <subtasks>
+        <subtask>Define color thresholds (green: 100-50%, yellow: 50-25%, red: 25-0%)</subtask>
+        <subtask>Implement dynamic gradient color changes</subtask>
+        <subtask>Add smooth color transition animations</subtask>
+        <subtask>Ensure WCAG AA contrast compliance for all color states</subtask>
+        <subtask>Test colorblind-friendly alternatives</subtask>
+      </subtasks>
+    </task>
+
+    <task id="4" ac-references="AC-2.1.4">
+      <description>Implement Accessibility Features</description>
+      <subtasks>
+        <subtask>Ensure 4.5:1 contrast ratio for all text elements</subtask>
+        <subtask>Add text labels in addition to color coding</subtask>
+        <subtask>Integrate with reduced motion settings</subtask>
+        <subtask>Add screen reader support for status information</subtask>
+        <subtask>Implement keyboard navigation for status effect tooltips</subtask>
+      </subtasks>
+    </task>
+
+    <task id="5" ac-references="AC-2.1.1 AC-2.1.5">
+      <description>Create Theme Integration</description>
+      <subtasks>
+        <subtask>Define theme constants for bar styling (gradient stops, colors, fonts)</subtask>
+        <subtask>Add theme properties to ui_theme.tres</subtask>
+        <subtask>Implement theme override capability for special cases</subtask>
+        <subtask>Ensure consistent application across combat UI</subtask>
+        <subtask>Validate theme changes apply immediately</subtask>
+      </subtasks>
+    </task>
+
+    <task id="6" ac-references="AC-2.1.3">
+      <description>Add Animation Performance Optimization</description>
+      <subtasks>
+        <subtask>Implement Tween cleanup in completion callbacks (tween.kill())</subtask>
+        <subtask>Add frame rate monitoring during animations</subtask>
+        <subtask>Optimize gradient rendering for 60fps performance</subtask>
+        <subtask>Implement animation batching for multiple simultaneous changes</subtask>
+        <subtask>Add performance assertions in tests</subtask>
+      </subtasks>
+    </task>
+
+    <task id="7" ac-references="All ACs">
+      <description>Create Comprehensive Testing</description>
+      <subtasks>
+        <subtask>Create GUT unit tests for UIProgressBar component</subtask>
+        <subtask>Test gradient rendering and color transitions</subtask>
+        <subtask>Add tests for status effect overlay system</subtask>
+        <subtask>Test animation timing and tween cleanup</subtask>
+        <subtask>Create accessibility compliance tests</subtask>
+        <subtask>Add performance tests maintaining 60fps</subtask>
+        <subtask>Test responsive scaling at different resolutions</subtask>
+      </subtasks>
+    </task>
+
+    <task id="8" ac-references="AC-2.1.1 AC-2.1.2">
+      <description>Integrate with Combat Scene</description>
+      <subtasks>
+        <subtask>Replace existing ProgressBar nodes with UIProgressBar in combat_scene.tscn</subtask>
+        <subtask>Connect UIProgressBar to GameManager health change signals</subtask>
+        <subtask>Update combat_scene.gd to use new component interfaces</subtask>
+        <subtask>Test combat flow with all visual enhancements</subtask>
+        <subtask>Validate save/load compatibility</subtask>
+      </subtasks>
+    </task>
+  </tasks>
+
+  <learnings-from-previous-story>
+    <source-story story-key="1-1-modern-button-component-system" status="done">
+      <key-points>
+        <point>New Service Created: UIButton component extending Button with comprehensive state management - pattern can be adapted for UIProgressBar</point>
+        <point>Architectural Pattern: Component-based architecture with theme integration is working well - UIProgressBar should follow the same pattern</point>
+        <point>Animation System: Tween-based animations with 200ms duration established - UIProgressBar should use 300ms for smoother health transitions</point>
+        <point>Accessibility Pattern: WCAG AA compliance with 3:1 contrast ratios implemented - extend to 4.5:1 for health bar text as required</point>
+        <point>Theme Integration: Centralized theming through ui_theme.tres is functional - add UIProgressBar-specific theme items</point>
+        <point>Testing Pattern: GUT test suite structure established - follow same patterns for UIProgressBar tests</point>
+        <point>Performance Considerations: Tween cleanup with tween.kill() is critical to prevent memory leaks - ensure UIProgressBar implements same pattern</point>
+        <point>Type Safety: Extending the correct Godot node type (Button vs Control) is important - UIProgressBar should extend ProgressBar for proper inheritance</point>
+      </key-points>
+      <files-to-reference>
+        <file path="scripts/components/UIButton.gd">Component architecture pattern</file>
+        <file path="resources/ui_theme.tres">Theme integration example</file>
+        <file path="tests/godot/test_ui_button.gd">Test structure template</file>
+      </files-to-reference>
+      <components-to-reuse>
+        <component>Animation system pattern from UIButton (Tween with cleanup)</component>
+        <component>Theme integration approach from UIButton (ui_theme.tres integration)</component>
+        <component>Accessibility compliance patterns (contrast ratios, keyboard navigation)</component>
+        <component>Testing patterns from test_ui_button.gd (GUT framework structure)</component>
+        <component>Signal emission patterns for state changes</component>
+      </components-to-reuse>
+      <citation>[Source: docs/stories/1-1-modern-button-component-system.md#Dev-Agent-Record]</citation>
+    </source-story>
+  </learnings-from-previous-story>
+
+  <architecture-patterns>
+    <pattern>UI Framework: Godot Control Nodes with Custom Themes - UIProgressBar extends ProgressBar node</pattern>
+    <pattern>Theming Strategy: Centralized ui_theme.tres with theme constants for colors, gradients, and fonts</pattern>
+    <pattern>Animation System: Tween nodes with 300ms duration for health bar animations (slightly longer than button 200ms for smooth health transitions)</pattern>
+    <pattern>Component Architecture: Scene-based components following UIButton pattern from Story 1.1</pattern>
+    <pattern>Performance Monitoring: Performance singleton for frame rate tracking during animations</pattern>
+    <pattern>Accessibility: WCAG AA compliance (4.5:1 contrast for text, 3:1 for UI elements)</pattern>
+    <citation>[Source: docs/architecture.md#Decision-Summary]</citation>
+  </architecture-patterns>
+
+  <project-structure>
+    <component-location>Create scripts/components/UIProgressBar.gd following UIButton pattern</component-location>
+    <theme-resources>Extend resources/ui_theme.tres with progress bar theme items</theme-resources>
+    <testing-location>Add tests to tests/godot/ directory using GUT framework</testing-location>
+    <asset-dependencies>Status effect icons in assets/ui/icons/ directory</asset-dependencies>
+  </project-structure>
+
+  <technical-implementation>
+    <progressbar-extension-pattern>
+class_name UIProgressBar extends ProgressBar
+# Enhance existing ProgressBar with gradient fills, animations, status effects
+    </progressbar-extension-pattern>
+
+    <gradient-implementation>
+- Use Godot's Gradient resource for multi-color bar fills
+- Support horizontal and vertical gradient orientations
+- Dynamic gradient colors based on health percentage
+    </gradient-implementation>
+
+    <status-effect-system>
+- StatusEffectIcon as separate component (24x24px Control nodes)
+- Effect overlay with color tinting (modulate property)
+- Tooltips with effect name and duration
+    </status-effect-system>
+
+    <animation-parameters>
+- Duration: 300ms (longer than UIButton's 200ms for health transitions)
+- Easing: Tween.EASE_OUT
+- Always call tween.kill() in completion callback
+    </animation-parameters>
+
+    <performance-targets>
+- Maintain 60fps during all combat animations
+- <5% frame rate impact from visual enhancements
+- Memory usage &lt;500MB
+    </performance-targets>
+
+    <citation>[Source: docs/stories/tech-spec-epic-2.md#Services-and-Modules]</citation>
+  </technical-implementation>
+
+  <existing-codebase>
+    <components-to-enhance>
+      <component path="scripts/components/UIProgressBar.gd" kind="UI Component">
+        <existing-features>Basic progress bar with label and animation_speed property</existing-features>
+        <missing-features>Gradient fills, status effect overlays, Tween-based animations, theme integration</missing-features>
+        <enhancement-plan>Enhance existing component with modern polish features from tech spec</enhancement-plan>
+      </component>
+    </components-to-enhance>
+
+    <interfaces-to-use>
+      <interface name="GameManager Combat State APIs" kind="signals">
+        <signature>signal player_health_changed(new_health: int, max_health: int)</signature>
+        <signature>signal monster_health_changed(new_health: int, max_health: int)</signature>
+        <signature>signal player_turn_started()</signature>
+        <signature>signal monster_turn_started()</signature>
+        <path>scripts/globals/GameManager.gd</path>
+      </interface>
+
+      <interface name="UIProgressBar Enhanced Interface" kind="class methods">
+        <signature>func set_value_animated(new_value: float, animate: bool = true) -> void</signature>
+        <signature>func add_status_effect_overlay(effect_type: String) -> void</signature>
+        <signature>func remove_status_effect_overlay(effect_type: String) -> void</signature>
+        <path>scripts/components/UIProgressBar.gd</path>
+      </interface>
+    </interfaces-to-use>
+
+    <scenes-to-update>
+      <scene path="scenes/ui/combat_scene.tscn">Contains PlayerHealthBar and MonsterHealthBar ProgressBar nodes to replace with UIProgressBar</scene>
+    </scenes-to-update>
+  </existing-codebase>
+
+  <dependencies>
+    <internal>
+      <dependency component="Epic 1 - Core UI Modernization" required-by="Story 2.1">Requires modern button system, typography, color scheme, and visual feedback system</dependency>
+      <dependency component="GameManager.gd" required-by="All stories">Integration with existing combat system and state management</dependency>
+      <dependency component="combat_scene.tscn" required-by="All stories">Enhancing existing combat UI, not rebuilding from scratch</dependency>
+      <dependency component="ui_theme.tres" required-by="All stories">Centralized theming for consistent styling</dependency>
+    </internal>
+
+    <external>
+      <package ecosystem="godot" name="Godot 4.5 Engine" version="4.5+">Tween animations, GPUParticles2D, UI Control nodes, Performance monitoring</package>
+    </external>
+
+    <assets>
+      <asset name="UI Status Effect Icons" type="Texture2D" specs="24x24px PNG, optimized for small size" quantity="10">poison, burn, freeze, buff, debuff, etc.</asset>
+    </assets>
+  </dependencies>
+
+  <testing>
+    <standards>
+      Use GUT (Godot Unit Testing) framework for unit tests. Create tests for all public methods, state transitions, and animation timing. Performance tests should maintain 60fps target. Accessibility tests should verify WCAG AA compliance.
+    </standards>
+
+    <locations>
+      <location pattern="tests/godot/">All GUT test files</location>
+      <location pattern="tests/godot/test_ui_*.gd">UI component tests following UIButton pattern</location>
+    </locations>
+
+    <test-ideas>
+      <idea ac="AC-2.1.1">Unit test: Verify gradient rendering and color transitions based on percentage</idea>
+      <idea ac="AC-2.1.1">Unit test: Verify 300ms animation duration with Tween.EASE_OUT</idea>
+      <idea ac="AC-2.1.2">Unit test: Verify status effect overlay positioning and tinting</idea>
+      <idea ac="AC-2.1.2">Unit test: Verify tooltip display on hover</idea>
+      <idea ac="AC-2.1.3">Performance test: Verify animation completes within 300ms</idea>
+      <idea ac="AC-2.1.3">Performance test: Verify Tween cleanup with tween.kill()</idea>
+      <idea ac="AC-2.1.4">Accessibility test: Verify 4.5:1 contrast ratio for text</idea>
+      <idea ac="AC-2.1.4">Accessibility test: Verify reduced motion setting disables animations</idea>
+      <idea ac="AC-2.1.5">Integration test: Verify responsive scaling at different resolutions</idea>
+      <idea ac="AC-2.1.1">Integration test: Verify GameManager signal integration</idea>
+    </test-ideas>
+  </testing>
+
+  <development-constraints>
+    <constraint>
+      <source>Architecture</source>
+      <text>UI enhancements must work within existing GameManager combat system</text>
+    </constraint>
+    <constraint>
+      <source>Architecture</source>
+      <text>All components must follow Godot Control node patterns established in architecture</text>
+    </constraint>
+    <constraint>
+      <source>Tech Spec</source>
+      <text>Animations limited to 500ms duration maximum for responsive feel</text>
+    </constraint>
+    <constraint>
+      <source>NFR-PERF-001</source>
+      <text>Memory usage must remain under 500MB</text>
+    </constraint>
+    <constraint>
+      <source>Architecture</source>
+      <text>Component implementations must be compatible with save/load serialization</text>
+    </constraint>
+    <constraint>
+      <source>WCAG AA</source>
+      <text>4.5:1 contrast ratio minimum for text elements</text>
+    </constraint>
+    <constraint>
+      <source>WCAG AA</source>
+      <text>Color is not the only indicator of status (icons + text required)</text>
+    </constraint>
+  </development-constraints>
+
+  <references>
+    <reference path="docs/PRD.md">Product Requirements Document - Visual polish requirements</reference>
+    <reference path="docs/architecture.md">Architecture Overview - Godot Control Nodes with Custom Themes</reference>
+    <reference path="docs/stories/tech-spec-epic-2.md">Epic 2 Technical Specification - Detailed component specifications and acceptance criteria</reference>
+    <reference path="docs/stories/1-1-modern-button-component-system.md">Previous Story - UIButton pattern to follow</reference>
+    <reference path="scripts/components/UIButton.gd">Reference component for architecture patterns</reference>
+    <reference path="scripts/globals/GameManager.gd">Existing combat system integration</reference>
+    <reference path="resources/ui_theme.tres">Centralized theme resource</reference>
+    <reference path="scenes/ui/combat_scene.tscn">Combat scene to integrate with</reference>
+  </references>
+</story-context>

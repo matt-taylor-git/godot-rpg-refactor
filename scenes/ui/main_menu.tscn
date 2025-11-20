@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://c1q1q1q1q1q1q1q1q1q1"]
+[gd_scene load_steps=4 format=3 uid="uid://c1q1q1q1q1q1q1q1q1q1q1"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -43,15 +44,15 @@ text = "Pyrpg-Godot"
 horizontal_alignment = 1
 theme_type_variation = "H1"
 
-[node name="NewGameButton" type="Button" parent="CenterContainer/MenuPanel/VBoxContainer"]
+[node name="NewGameButton" parent="CenterContainer/MenuPanel/VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "New Game"
 
-[node name="LoadGameButton" type="Button" parent="CenterContainer/MenuPanel/VBoxContainer"]
+[node name="LoadGameButton" parent="CenterContainer/MenuPanel/VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "Load Game"
 
-[node name="ExitButton" type="Button" parent="CenterContainer/MenuPanel/VBoxContainer"]
+[node name="ExitButton" parent="CenterContainer/MenuPanel/VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "Exit"
 

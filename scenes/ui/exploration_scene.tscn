@@ -2,6 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/ExplorationScene.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 [ext_resource type="Texture2D" path="res://assets/Hero.png" id="3"]
 
 [node name="ExplorationScene" type="Control"]
@@ -91,35 +92,35 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 20
 
-[node name="ExploreButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="ExploreButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Explore"
 
-[node name="RestButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="RestButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Rest"
 
-[node name="InventoryButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="InventoryButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Inventory"
 
-[node name="ShopButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="ShopButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Shop"
 
-[node name="QuestLogButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="QuestLogButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Quests"
 
-[node name="TalkButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="TalkButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Talk"
 
-[node name="CodexButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="CodexButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Codex"
 
-[node name="MenuButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="MenuButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Menu"
 

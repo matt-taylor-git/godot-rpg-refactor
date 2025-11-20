@@ -1,42 +1,37 @@
 {
   "workflow_version": "1.2.0",
   "timestamps": {
-    "started": "2025-11-13T00:00:00Z",
-    "last_updated": "2025-11-13T00:00:00Z",
-    "completed": "2025-11-13T00:00:00Z"
+    "started": "2025-11-19T00:00:00Z",
+    "last_updated": "2025-11-19T00:00:00Z",
+    "completed": "2025-11-19T00:00:00Z"
   },
-  "mode": "initial_scan",
-  "scan_level": "deep",
+  "mode": "full_rescan",
+  "scan_level": "quick",
   "project_root": "/home/matt/code/godot-rpg-refactor",
   "output_folder": "docs",
   "completed_steps": [
-    {"step": "step_1", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Classified as monolith with 1 parts"},
-    {"step": "step_2", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Found 0 existing docs"},
-    {"step": "step_3", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Tech stack: Godot on GDScript"},
-    {"step": "step_4", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Conditional analysis complete, 4 files written"},
-    {"step": "step_5", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Source tree documented"},
-    {"step": "step_6", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Dev/deployment guides written"},
-    {"step": "step_8", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Architecture docs written for 1 parts"},
-    {"step": "step_9", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "All supporting docs written"},
-    {"step": "step_10", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Master index generated"},
-    {"step": "step_11", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Validation and review complete"},
-    {"step": "step_12", "status": "completed", "timestamp": "2025-11-13T00:00:00Z", "summary": "Workflow complete"}
+    {"step": "step_1", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Classified as monolith with 1 parts"},
+    {"step": "step_2", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Found 7 existing docs"},
+    {"step": "step_3", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Tech stack: Godot on GDScript"},
+    {"step": "step_4", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Conditional analysis complete, 0 files written"},
+    {"step": "step_5", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Source tree documented"},
+    {"step": "step_6", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Dev/deployment guides written"},
+    {"step": "step_8", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Architecture docs written for 1 parts"},
+    {"step": "step_9", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "All supporting docs written"},
+    {"step": "step_10", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Master index generated"},
+    {"step": "step_11", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Validation and review complete"},
+    {"step": "step_12", "status": "completed", "timestamp": "2025-11-19T00:00:00Z", "summary": "Workflow complete"}
   ],
   "current_step": "completed",
   "findings": {
     "project_classification": "monolith, 1 parts, Godot game",
-    "technology_stack": "Godot 4.x, GDScript",
-    "existing_docs_count": 0
+    "existing_docs_count": 7,
+    "technology_stack": "Godot 4.5, GDScript, scene-based architecture, autoload managers",
+    "state_management_patterns": "5 autoload singletons: GameManager, QuestManager, DialogueManager, StoryManager, CodexManager",
+    "ui_components": "17 UI scenes, 3 reusable components (UIButton, UIPanel, UIProgressBar)",
+    "asset_inventory": "42 assets: 39 PNG sprites, 2 TTF fonts, 1 QSS stylesheet"
   },
-  "outputs_generated": [
-    "index.md",
-    "architecture.md",
-    "component-inventory.md",
-    "asset-inventory.md",
-    "source-tree-analysis.md",
-    "development-guide.md",
-    "project-scan-report.json"
-  ],
+  "outputs_generated": ["project-scan-report.json", "architecture.md", "project-overview.md", "index.md"],
   "resume_instructions": "Workflow completed successfully",
   "project_types": [
     {

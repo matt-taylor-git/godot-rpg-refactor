@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://ck6d6rke5lknx"]
+[gd_scene load_steps=5 format=3 uid="uid://ck6d6rke5lknx"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" uid="uid://cg4ikbac8bt18" path="res://scripts/ui/CombatScene.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://c6g2w3j1x1v2k" path="res://assets/goblin.png" id="3"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="4"]
 
 [node name="CombatScene" type="Control"]
 layout_mode = 3
@@ -122,22 +123,22 @@ theme_type_variation = "Panel"
 layout_mode = 2
 columns = 2
 
-[node name="AttackButton" type="Button" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons"]
+[node name="AttackButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "ATTACK"
 theme_type_variation = "Small"
 
-[node name="SkillsButton" type="Button" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons"]
+[node name="SkillsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "SKILLS"
 theme_type_variation = "Small"
 
-[node name="ItemsButton" type="Button" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons"]
+[node name="ItemsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "ITEMS"
 theme_type_variation = "Small"
 
-[node name="RunButton" type="Button" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons"]
+[node name="RunButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "RUN"
 theme_type_variation = "Small"

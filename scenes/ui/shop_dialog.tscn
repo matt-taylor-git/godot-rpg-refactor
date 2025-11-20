@@ -2,6 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/ShopDialog.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 
 [node name="ShopDialog" type="PanelContainer"]
 anchors_preset = 8
@@ -72,15 +73,15 @@ size_flags_vertical = 3
 layout_mode = 2
 alignment = 1
 
-[node name="BuyButton" type="Button" parent="VBoxContainer/ActionButtons"]
+[node name="BuyButton" parent="VBoxContainer/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Buy"
 
-[node name="SellButton" type="Button" parent="VBoxContainer/ActionButtons"]
+[node name="SellButton" parent="VBoxContainer/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Sell"
 
-[node name="CloseButton" type="Button" parent="VBoxContainer/ActionButtons"]
+[node name="CloseButton" parent="VBoxContainer/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "Close"
 

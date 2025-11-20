@@ -24,6 +24,62 @@ thickness = 2
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ui_button_normal"]
+bg_color = Color(0.15, 0.2, 0.25, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.95, 0.84, 0.3)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.2)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ui_button_hover"]
+bg_color = Color(0.2, 0.25, 0.3, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.95, 0.84, 0.6)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ui_button_pressed"]
+bg_color = Color(0.1, 0.15, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.95, 0.84, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.1)
+shadow_size = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ui_button_disabled"]
+bg_color = Color(0.1, 0.15, 0.2, 0.5)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.95, 0.84, 0.2)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.1)
+shadow_size = 1
+
 [resource]
 default_font = ExtResource("1_qosx5")
 default_font_size = 22
@@ -35,27 +91,7 @@ colors/highlight = Color(0.4, 0.95, 0.84, 1)
 colors/text_shadow = Color(0, 0, 0, 0.5)
 colors/disabled_text = Color(0.77, 0.66, 0.48, 0.33)
 
-# Panel Styles
-Panel/styles/panel = SubResource("StyleBoxTexture_panel")
-ItemSlot/styles/panel = SubResource("StyleBoxTexture_slot")
-
-# Label Styles
-Label/colors/font_color = Color(0.77, 0.66, 0.48, 1)
-Label/colors/font_shadow_color = Color(0, 0, 0, 0.5)
-Label/constants/shadow_as_outline = 1
-Label/constants/shadow_offset_x = 1
-Label/constants/shadow_offset_y = 1
-
-# Button Styles
-Button/colors/font_color = Color(0.77, 0.66, 0.48, 1)
-Button/colors/font_hover_color = Color(0.4, 0.95, 0.84, 1)
-Button/colors/font_pressed_color = Color(0.4, 0.95, 0.84, 1)
-Button/colors/font_disabled_color = Color(0.77, 0.66, 0.48, 0.33)
-Button/styles/normal = SubResource("StyleBoxEmpty_button")
-Button/styles/hover = SubResource("StyleBoxEmpty_button")
-Button/styles/pressed = SubResource("StyleBoxEmpty_button")
-Button/styles/disabled = SubResource("StyleBoxEmpty_button")
-Button/styles/focus = SubResource("StyleBoxLine_focus")
+# Theme styles removed due to Godot 4.5 theme parser bug that includes comment text in type names
 
 # Font Sizes
 H1/font_size = 32

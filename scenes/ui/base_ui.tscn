@@ -2,6 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/BaseUI.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 
 [node name="BaseUI" type="Control"]
 layout_mode = 3
@@ -65,7 +66,7 @@ size_flags_vertical = 0
 alignment = 1
 theme_override_constants/separation = 10
 
-[node name="BackButton" type="Button" parent="Content/VBoxContainer/Footer"]
+[node name="BackButton" parent="Content/VBoxContainer/Footer" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4

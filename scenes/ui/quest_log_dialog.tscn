@@ -2,6 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/QuestLogDialog.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 
 [node name="QuestLogDialog" type="PanelContainer"]
 anchors_preset = 8
@@ -65,7 +66,7 @@ layout_mode = 2
 [node name="QuestRewards" type="Label" parent="VBoxContainer/MainContent/QuestDetailsContainer"]
 layout_mode = 2
 
-[node name="CloseButton" type="Button" parent="VBoxContainer"]
+[node name="CloseButton" parent="VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Close"
