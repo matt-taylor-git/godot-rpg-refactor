@@ -34,7 +34,24 @@ var label: Label = null
 var background: Panel = null
 var focus_indicator: Panel = null
 
+# Store button text separately (Button's text property will be kept empty to prevent double rendering)
+var button_text: String = "":
+	set(value):
+		button_text = value
+		if label:
+			label.text = button_text
+			label.visible = not button_text.is_empty()
+	get:
+		return button_text
+
 func _ready():
+	# Store the Button's text before we clear it (to prevent double rendering)
+	button_text = self.text
+	self.text = ""  # Clear Button's text so it doesn't render (we use custom Label)
+
+	# Make button flat so it doesn't draw its own background (we use custom nodes)
+	flat = true
+
 	# Create child nodes if they don't exist
 	_create_child_nodes()
 
@@ -53,10 +70,32 @@ func _ready():
 	original_scale = scale
 	original_modulate = modulate
 
-	# Initialize - use Button's built-in text property
+	# Initialize - use our custom button_text property
 	_update_label()
 	_apply_theme()
 	_update_state()
+
+	# Size and position child nodes to match button size
+	call_deferred("_resize_children")
+
+	# Connect to resized signal to keep children sized correctly
+	connect("resized", Callable(self, "_resize_children"))
+
+func _resize_children():
+	# Ensure child nodes match button's size
+	var button_size = size
+
+	if background:
+		background.position = Vector2.ZERO
+		background.size = button_size
+
+	if label:
+		label.position = Vector2.ZERO
+		label.size = button_size
+
+	if focus_indicator:
+		focus_indicator.position = Vector2.ZERO
+		focus_indicator.size = button_size
 
 func _exit_tree():
 	# Clean up active tween when node is removed
@@ -100,8 +139,8 @@ func _create_child_nodes():
 
 func _update_label():
 	if label:
-		label.text = self.text  # Use Button's text property
-		label.visible = not self.text.is_empty()
+		label.text = button_text  # Use our custom text property
+		label.visible = not button_text.is_empty()
 
 func _apply_theme():
 	# Apply theme to child components
@@ -402,7 +441,7 @@ func _animate_color(from_color: Color, to_color: Color, duration: float):
 func _get_minimum_size() -> Vector2:
 	var min_size = Vector2(44, 44)  # WCAG minimum touch target
 
-	if label and not self.text.is_empty():  # Use Button's text property
+	if label and not button_text.is_empty():  # Use our custom text property
 		var label_size = label.get_minimum_size()
 		min_size.x = max(min_size.x, label_size.x + 20)  # Add padding
 		min_size.y = max(min_size.y, label_size.y + 10)
