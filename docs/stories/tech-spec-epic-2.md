@@ -554,8 +554,20 @@ func coordinate_spell_cast(caster, spell, targets) -> void
 - Accessibility testing: WCAG AA compliance verified
 - Performance testing: <5% frame drops, <500MB memory usage
 
+## Post-Review Follow-ups
+
+### Story 2.1 Follow-ups
+- **Critical Integration Fix**: Replace ProgressBar nodes with UIProgressBar in combat_scene.tscn (lines 78, 97) - this is blocking story completion
+- **Theme Integration**: Add UIProgressBar theme items to ui_theme.tres resource file for complete theme system integration
+- **Test Organization**: Move integration test files from project root to tests/godot/ directory for proper test organization
+
+### Lessons Learned
+- Component integration requires updating both scene files (.tscn) and ensuring node types match the new component classes
+- Theme integration needs both component-side theme support AND actual theme resource updates
+- Test file organization should follow established patterns (tests/godot/ for GUT tests)
+
 ---
 
 _This technical specification provides comprehensive guidance for implementing Epic 2: Combat Interface Enhancement, ensuring modern visual polish while maintaining gameplay integrity and performance standards._
 
-_Updated as of: 2025-11-19_
+_Updated as of: 2025-11-20_

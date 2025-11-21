@@ -1,0 +1,200 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>3</storyId>
+    <title>Visual Feedback System</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-20</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-3-visual-feedback-system.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As a player,</asA>
+    <iWant>I want clear visual responses to my actions,</iWant>
+    <soThat>so that I understand when interactions succeed or fail.</soThat>
+    <tasks>
+- Task 1: Create UIAnimationSystem for feedback coordination (AC: AC-UI-009, AC-UI-011, AC-UI-012)
+  - Create UIAnimationSystem.gd singleton for animation management
+  - Implement property animation methods with 100ms timing for immediate feedback
+  - Add success and error feedback methods (500ms animations)
+  - Integrate with Tween system for smooth animations
+  - Ensure tween cleanup to prevent memory leaks (call tween.kill() in callbacks)
+
+- Task 2: Implement Hover State System (AC: AC-UI-009)
+  - Create hover state detection for all interactive elements
+  - Add scale animations (1.05x) with 100ms duration on hover
+  - Implement color change animations (highlight to accent color)
+  - Add hover effects to existing UIButton components
+  - Ensure hover states are visually distinct and consistent
+
+- Task 3: Create Loading Indicator Components (AC: AC-UI-010)
+  - Design loading spinner animation using Godot's AnimationPlayer
+  - Create loading overlay component with transparency
+  - Implement 500ms threshold detection for showing indicators
+  - Add progress feedback for long-running operations
+  - Ensure loading indicators animate smoothly at 60fps
+
+- Task 4: Implement Success Confirmation Animations (AC: AC-UI-011)
+  - Create success feedback animation (bounce/glow effect)
+  - Add green color coding and checkmark icons
+  - Implement 500ms animation duration for completion feedback
+  - Integrate with GameManager for save/load completion events
+  - Add sound effect integration (optional)
+
+- Task 5: Implement Error State Visual Indicators (AC: AC-UI-012)
+  - Create error feedback animation (shake/red flash)
+  - Add red color coding with warning/error icons
+  - Implement error state persistence (until corrected)
+  - Add validation failure visual cues for forms
+  - Ensure error states meet accessibility standards
+
+- Task 6: Apply Visual Feedback to UI Components (AC: All ACs)
+  - Update BaseUI.gd with feedback helper methods
+  - Integrate feedback system with existing UIButton components from Story 1-1
+  - Add feedback triggers to form validation systems
+  - Implement feedback for menu transitions and navigation
+  - Ensure consistent feedback timing (100ms immediate, 500ms completion)
+
+- Task 7: Create Animation Testing Suite (All ACs)
+  - Add GUT tests for animation timing validation (100ms/500ms)
+  - Create hover state detection and visual feedback tests
+  - Add loading indicator display and timing tests
+  - Implement success/error feedback animation tests
+  - Create performance tests to ensure 60fps during animations
+</tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. AC-UI-009: Visual Feedback on Interactions - Given user interacts with any UI element (buttons, menus, forms), when hover, click, or input actions occur, then immediate visual feedback appears within 100ms (highlights, animations, state changes)
+
+2. AC-UI-010: Loading State Indicators - Given operations take longer than 500ms to complete, when waiting for completion, then animated loading indicators display with progress feedback
+
+3. AC-UI-011: Confirmation Animations - Given important actions complete successfully (save, delete, submit), when operations finish, then success confirmation animations play for 500ms with visual feedback
+
+4. AC-UI-012: Error State Communication - Given user actions result in errors or validation failures, when errors occur, then clear visual error indicators appear with red coloring, icons, and appropriate messaging
+</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/stories/tech-spec-epic-1.md</path>
+        <title>Epic 1 Technical Specification</title>
+        <section>APIs and Interfaces, Animation Parameters, Workflows and Sequencing, Acceptance Criteria</section>
+        <snippet>Contains UIAnimationSystem interface specifications with methods for animate_property(), play_button_hover_animation(), show_success_feedback(), show_error_feedback(). Defines animation parameters (tween_duration: 0.3s, easing_type: EASE_OUT, transition_type: TRANS_QUAD) and button interaction workflow.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>Animation Implementation Pattern</section>
+        <snippet>Simple transitions use Tween with create_tween(), durations 200ms for immediate feedback, 500ms for state changes. Always call tween.kill() in completion callbacks to prevent memory leaks. Maintain 60fps, &lt;5% performance impact, limit concurrent tweens to 10 maximum.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/stories/1-2-typography-spacing-system.md</path>
+        <title>Story 1-2: Typography & Spacing System</title>
+        <section>Learnings from Previous Story, Completion Notes</section>
+        <snippet>UIButton component architecture with comprehensive state management. UIThemeManager with centralized theming. GUT testing patterns with 100% AC coverage. Comprehensive testing approach with timing validation and visual property checks.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>scripts/components/UIButton.gd</path>
+        <kind>component</kind>
+        <symbol>UIButton</symbol>
+        <lines>1-500</lines>
+        <reason>Existing button component with Tween animations and state management. Provides pattern for UIAnimationSystem integration and hover animation implementation.</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/components/UIProgressBar.gd</path>
+        <kind>component</kind>
+        <symbol>UIProgressBar</symbol>
+        <lines>1-600</lines>
+        <reason>Existing progress bar component using Tween animations with proper cleanup. Demonstrates animation performance patterns and tween management for health/mana bars.</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/BaseUI.gd</path>
+        <kind>base_class</kind>
+        <symbol>BaseUI</symbol>
+        <lines>1-50</lines>
+        <reason>Base class for all UI scenes following established inheritance pattern. UIAnimationSystem should follow similar structure extending Node.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="godot">
+        <package name="Godot Engine" version="4.5" />
+        <package name="Tween System" version="4.5" />
+        <package name="AnimationPlayer" version="4.5" />
+        <package name="Control Nodes" version="4.5" />
+      </ecosystem>
+      <ecosystem name="testing">
+        <package name="GUT Testing Framework" version="latest" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Animation durations: 100ms for immediate feedback (hover), 500ms for completion feedback (success/error)</constraint>
+    <constraint>Performance: Maintain 60fps with &lt;5% frame rate impact, limit concurrent tweens to 10 maximum</constraint>
+    <constraint>Tween cleanup: Always call tween.kill() in completion callbacks to prevent memory leaks</constraint>
+    <constraint>Animation parameters: Tween.EASE_OUT, Tween.TRANS_QUAD for smooth transitions</constraint>
+    <constraint>Component architecture: Follow BaseUI.gd inheritance pattern, extend Node for animation management</constraint>
+    <constraint>Testing: GUT framework with comprehensive coverage including timing validation and performance monitoring</constraint>
+    <constraint>Integration: Extend existing UIButton component with hover animations, integrate with UIThemeManager</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>UIAnimationSystem</name>
+      <kind>singleton_component</kind>
+      <signature>class_name UIAnimationSystem extends Node</signature>
+      <path>scripts/components/UIAnimationSystem.gd</path>
+    </interface>
+    <interface>
+      <name>animate_property</name>
+      <kind>method</kind>
+      <signature>func animate_property(node: Node, property: String, from_value, to_value, duration: float) -> Tween</signature>
+      <path>scripts/components/UIAnimationSystem.gd</path>
+    </interface>
+    <interface>
+      <name>play_button_hover_animation</name>
+      <kind>method</kind>
+      <signature>func play_button_hover_animation(button: UIButton) -> void</signature>
+      <path>scripts/components/UIAnimationSystem.gd</path>
+    </interface>
+    <interface>
+      <name>show_success_feedback</name>
+      <kind>method</kind>
+      <signature>func show_success_feedback(position: Vector2) -> void</signature>
+      <path>scripts/components/UIAnimationSystem.gd</path>
+    </interface>
+    <interface>
+      <name>show_error_feedback</name>
+      <kind>method</kind>
+      <signature>func show_error_feedback(position: Vector2) -> void</signature>
+      <path>scripts/components/UIAnimationSystem.gd</path>
+    </interface>
+    <interface>
+      <name>create_loading_spinner</name>
+      <kind>method</kind>
+      <signature>func create_loading_spinner(parent: Control) -> Control</signature>
+      <path>scripts/components/UIAnimationSystem.gd</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>GUT (Godot Unit Testing) framework for unit and integration tests. Test files located in tests/godot/ with naming pattern test_component.gd. Comprehensive test coverage including timing validation, performance monitoring, and visual feedback verification. Follow existing patterns from test_ui_button.gd and test_ui_progress_bar.gd.</standards>
+    <locations>
+      <location>tests/godot/test_ui_animation.gd</location>
+      <location>tests/godot/test_ui_button_hover.gd</location>
+      <location>tests/godot/test_ui_feedback_timing.gd</location>
+    </locations>
+    <ideas>
+      <idea>Test hover animation timing: Verify 100ms response time for UIButton hover effects</idea>
+      <idea>Test tween cleanup: Ensure tween.kill() called in all completion callbacks to prevent memory leaks</idea>
+      <idea>Test loading spinner: Verify spinner appears after 500ms threshold and animates at 60fps</idea>
+      <idea>Test success feedback: Verify 500ms confirmation animations with green color coding</idea>
+      <idea>Test error feedback: Verify error indicators with red coloring and appropriate icons</idea>
+      <idea>Test performance: Monitor frame rates during multiple concurrent animations</idea>
+      <idea>Test accessibility: Verify reduced motion setting disables animations when enabled</idea>
+    </ideas>
+  </tests>
+</story-context></content>
+<parameter name="filePath">docs/stories/1-3-visual-feedback-system.context.xml

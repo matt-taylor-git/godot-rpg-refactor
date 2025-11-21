@@ -4,6 +4,10 @@ class_name UIButton
 # UIButton - Modern button component with hover effects, animations, and accessibility
 # Extends Control for full customization while maintaining button-like behavior
 
+# Preload UIAnimationSystem for hover animations
+const UIAnimationSystemClass = preload("res://scripts/components/UIAnimationSystem.gd")
+var animation_system = UIAnimationSystemClass.new()
+
 # State enum for button states
 enum ButtonState {
 	NORMAL,
@@ -311,6 +315,7 @@ func _on_mouse_exited():
 	if not self.disabled:  # Use Button's disabled property
 		is_hovered = false
 		_update_state()
+		play_unhover_animation()  # Play unhover animation on exit
 
 func _on_focus_entered():
 	has_focus = true
@@ -420,26 +425,38 @@ func validate_theme_consistency() -> bool:
 	return true
 
 func play_hover_animation() -> void:
-	# Play hover animation (scale up slightly)
-	_animate_scale(Vector2.ONE, Vector2(1.05, 1.05), 0.2)
+	# Play hover animation using UIAnimationSystem (100ms, scale 1.05x, color highlight)
+	animation_system.play_button_hover_animation(self)
+
+	# Additional color highlight animation if accent color is available
+	if theme and theme.has_color("accent_color", "UIButton"):
+		var accent = theme.get_color("accent_color", "UIButton")
+		animation_system.animate_property(self, "modulate", modulate, accent * 1.2, 0.1)
+
+func play_unhover_animation() -> void:
+	# Play unhover animation using UIAnimationSystem (100ms, return to normal)
+	animation_system.play_button_unhover_animation(self)
+
+	# Return to normal color
+	animation_system.animate_property(self, "modulate", modulate, Color.WHITE, 0.1)
 
 func play_press_animation() -> void:
 	# Play press animation (scale down slightly)
 	_animate_scale(Vector2(1.05, 1.05), Vector2(0.95, 0.95), 0.1)
 
 func _animate_state_transition(old_state: ButtonState, new_state: ButtonState):
-	# Handle specific state transition animations
+	# Handle specific state transition animations using UIAnimationSystem
 	match [old_state, new_state]:
 		[ButtonState.NORMAL, ButtonState.HOVER]:
 			play_hover_animation()
 		[ButtonState.HOVER, ButtonState.NORMAL]:
-			_animate_scale(Vector2(1.05, 1.05), Vector2.ONE, 0.2)
+			animation_system.animate_property(self, "scale", scale, Vector2.ONE, 0.1)
 		[ButtonState.HOVER, ButtonState.PRESSED]:
 			play_press_animation()
 		[ButtonState.PRESSED, ButtonState.HOVER]:
-			_animate_scale(Vector2(0.95, 0.95), Vector2(1.05, 1.05), 0.1)
+			animation_system.animate_property(self, "scale", scale, Vector2(1.05, 1.05), 0.1)
 		[ButtonState.PRESSED, ButtonState.NORMAL]:
-			_animate_scale(Vector2(0.95, 0.95), Vector2.ONE, 0.1)
+			animation_system.animate_property(self, "scale", scale, Vector2.ONE, 0.1)
 
 func _animate_scale(from_scale: Vector2, to_scale: Vector2, duration: float):
 	# Kill any existing tween

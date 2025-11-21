@@ -99,3 +99,15 @@ heading_medium/font_size = 20
 body_large/font_size = 16
 body_regular/font_size = 14
 caption/font_size = 12
+
+# UIProgressBar Theme Colors (for health/mana bars)
+UIProgressBar/colors/health_high = Color(0.2, 0.8, 0.2, 1.0)
+UIProgressBar/colors/health_medium = Color(0.9, 0.6, 0.1, 1.0)
+UIProgressBar/colors/health_low = Color(0.8, 0.2, 0.2, 1.0)
+UIProgressBar/colors/health_high_cb = Color(0.2, 0.8, 0.2, 1.0)
+UIProgressBar/colors/health_medium_cb = Color(0.9, 0.6, 0.1, 1.0)
+UIProgressBar/colors/health_low_cb = Color(0.2, 0.4, 0.8, 1.0)
+UIProgressBar/colors/font_color = Color(1, 1, 1, 1)
+
+# UIProgressBar Font Settings
+UIProgressBar/font_sizes/font_size = 14

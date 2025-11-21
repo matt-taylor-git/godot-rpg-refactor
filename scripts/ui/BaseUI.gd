@@ -13,10 +13,24 @@ signal back_pressed
 const UITypographyClass = preload("res://scripts/components/UITypography.gd")
 var typography = UITypographyClass.new()
 
+# Visual feedback system integration
+const UIAnimationSystemClass = preload("res://scripts/components/UIAnimationSystem.gd")
+const UISuccessFeedbackClass = preload("res://scripts/components/UISuccessFeedback.gd")
+const UIErrorFeedbackClass = preload("res://scripts/components/UIErrorFeedback.gd")
+const UILoadingIndicatorClass = preload("res://scripts/components/UILoadingIndicator.gd")
+
+# Feedback system instances
+var animation_system: UIAnimationSystem = null
+var success_feedback: UISuccessFeedback = null
+var error_feedback: UIErrorFeedback = null
+var loading_indicator: UILoadingIndicator = null
+
 var ui_title: String = "UI Title"
 var show_back_button: bool = true
 
 func _ready():
+	# Initialize feedback systems
+	_init_feedback_systems()
 	_update_ui()
 	_connect_signals()
 	_setup_responsive_layout()
@@ -197,3 +211,126 @@ func _on_enter_scene():
 func _on_exit_scene():
 	# Called when exiting this scene
 	pass
+
+# Visual feedback helper methods (AC-UI-009, AC-UI-011, AC-UI-012)
+
+func _init_feedback_systems():
+	"""Initialize visual feedback systems"""
+	# Initialize animation system
+	animation_system = UIAnimationSystemClass.new()
+	add_child(animation_system)
+
+	# Initialize success feedback
+	success_feedback = UISuccessFeedbackClass.new()
+	add_child(success_feedback)
+
+	# Initialize error feedback
+	error_feedback = UIErrorFeedbackClass.new()
+	add_child(error_feedback)
+
+	# Initialize loading indicator (not shown by default)
+	loading_indicator = UILoadingIndicatorClass.new()
+	loading_indicator.visible = false
+	add_child(loading_indicator)
+
+func show_success_feedback(message: String = "Success!"):
+	"""
+	Show success feedback with optional message
+	- 500ms bounce/glow animation with green checkmark
+	"""
+	if success_feedback:
+		success_feedback.show_feedback()
+		print("Success: %s" % message)
+
+func show_error_feedback(message: String = "Error occurred"):
+	"""
+	Show error feedback with message
+	- 500ms shake/red flash animation with red icon
+	- Persists until dismissed if needed
+	"""
+	if error_feedback:
+		error_feedback.show_error(null, message)
+		print("Error: %s" % message)
+
+func show_loading(message: String = "Loading..."):
+	"""
+	Show loading indicator with threshold
+	- Shows after 500ms delay
+	- Animated spinner at 60fps
+	"""
+	if loading_indicator:
+		loading_indicator.progress_text = message
+		loading_indicator.start_loading()
+		print("Loading: %s" % message)
+
+func hide_loading():
+	"""
+	Hide loading indicator
+	"""
+	if loading_indicator:
+		loading_indicator.stop_loading()
+		print("Loading complete")
+
+func update_loading_progress(progress: float, status: String = ""):
+	"""
+	Update loading progress (0.0 to 1.0)
+	"""
+	if loading_indicator:
+		loading_indicator.update_progress(progress, status)
+
+# Form validation helpers
+
+func validate_form_field(field: Control, is_valid: bool, error_message: String = ""):
+	"""
+	Validate form field and show error feedback if invalid
+	- Adds error icon to field
+	- Shows error message
+	"""
+	if not is_valid and error_feedback:
+		error_feedback.add_error_icon(field)
+		if not error_message.is_empty():
+			show_error_feedback(error_message)
+	return is_valid
+
+func clear_form_errors():
+	"""
+	Clear all form validation errors
+	"""
+	if error_feedback:
+		error_feedback.dismiss_error()
+
+# Feedback integration with GameManager signals
+
+func connect_game_feedback():
+	"""
+	Connect to GameManager operation signals for automatic feedback
+	"""
+	GameManager.connect("operation_succeeded", Callable(self, "_on_operation_succeeded"))
+	GameManager.connect("operation_failed", Callable(self, "_on_operation_failed"))
+
+func _on_operation_succeeded(message: String):
+	"""Handle GameManager success operations"""
+	show_success_feedback(message)
+
+func _on_operation_failed(message: String):
+	"""Handle GameManager failure operations"""
+	show_error_feedback(message)
+
+# Menu transition animations
+
+func animate_menu_transition(out_menu: Control, in_menu: Control):
+	"""
+	Animate smooth transition between menus
+	- Fade out old menu
+	- Fade in new menu
+	"""
+	if animation_system:
+		# Fade out
+		var fade_out = animation_system.fade_out(out_menu, 0.1)
+		if fade_out:
+			fade_out.finished.connect(func():
+				out_menu.visible = false
+				in_menu.modulate = Color(1, 1, 1, 0)
+				in_menu.visible = true
+				animation_system.fade_in(in_menu, 0.1)
+			)

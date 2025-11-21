@@ -17,6 +17,9 @@ class_name Monster
 
 @export var ai_behavior: String = "aggressive"  # aggressive, defensive, etc.
 
+# Status effects: effect_type -> {duration: int, data: Dictionary}
+@export var status_effects: Dictionary = {}
+
 func _init():
 	loot_table = []
 
@@ -46,6 +49,45 @@ func get_ai_action() -> String:
 		_:
 			return "attack"
 
+func add_status_effect(effect_type: String, duration: int, effect_data: Dictionary = {}) -> void:
+	# Add or update a status effect
+	status_effects[effect_type] = {
+		"duration": duration,
+		"data": effect_data
+	}
+
+func remove_status_effect(effect_type: String) -> void:
+	# Remove a status effect
+	if status_effects.has(effect_type):
+		status_effects.erase(effect_type)
+
+func has_status_effect(effect_type: String) -> bool:
+	# Check if monster has a specific status effect
+	return status_effects.has(effect_type)
+
+func get_status_effect_duration(effect_type: String) -> int:
+	# Get remaining duration of a status effect
+	if status_effects.has(effect_type):
+		return status_effects[effect_type].duration
+	return 0
+
+func tick_status_effects() -> Array:
+	# Process status effects for one turn, return array of expired effects
+	var expired_effects = []
+
+	for effect_type in status_effects.keys():
+		var effect = status_effects[effect_type]
+		effect.duration -= 1
+
+		if effect.duration <= 0:
+			expired_effects.append(effect_type)
+
+	# Remove expired effects
+	for effect_type in expired_effects:
+		status_effects.erase(effect_type)
+
+	return expired_effects
+
 func to_dict() -> Dictionary:
 	return {
 		"name": name,
@@ -58,7 +100,8 @@ func to_dict() -> Dictionary:
 		"loot_table": loot_table,
 		"experience_reward": experience_reward,
 		"gold_reward": gold_reward,
-		"ai_behavior": ai_behavior
+		"ai_behavior": ai_behavior,
+		"status_effects": status_effects
 	}
 
 func from_dict(data: Dictionary) -> void:
@@ -73,3 +116,4 @@ func from_dict(data: Dictionary) -> void:
 	experience_reward = data.get("experience_reward", 10)
 	gold_reward = data.get("gold_reward", 5)
 	ai_behavior = data.get("ai_behavior", "aggressive")
+	status_effects = data.get("status_effects", {})

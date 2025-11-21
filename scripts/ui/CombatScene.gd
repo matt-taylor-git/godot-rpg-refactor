@@ -40,22 +40,29 @@ func _update_player_ui():
         return
     player_name_label.text = player.name
     player_health_bar.max_value = player.max_health
-    player_health_bar.value = player.health
+    # Use animated value change for smooth health transitions
+    player_health_bar.set_value_animated(player.health, true)
     # TODO: Set player sprite based on class
 
 func _update_monster_ui():
     var monster = GameManager.get_current_monster()
     if not monster:
         monster_name_label.text = "No Monster"
-        monster_health_bar.value = 0
+        monster_health_bar.set_value_animated(0, true)
         return
+
+    monster_name_label.text = monster.name
+    monster_health_bar.max_value = monster.max_health
+    # Use animated value change for smooth health transitions
+    monster_health_bar.set_value_animated(monster.health, true)
+    return
 
     var name_text = monster.name + " (Lv." + str(monster.level) + ")"
     if GameManager.is_boss_combat():
         name_text += " [Phase " + str(monster.current_phase) + "/4]"
     monster_name_label.text = name_text
     monster_health_bar.max_value = monster.max_health
-    monster_health_bar.value = monster.health
+    monster_health_bar.set_value_animated(monster.health, true)
     # TODO: Set monster sprite based on type
 
 func _append_to_log(message: String):

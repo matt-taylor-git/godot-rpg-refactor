@@ -21,6 +21,9 @@ class_name Player
 
 @export var gold: int = 0
 
+# Status effects: effect_type -> {duration: int, data: Dictionary}
+@export var status_effects: Dictionary = {}
+
 func _init():
 	inventory.resize(20)  # 20-slot inventory
 	equipment = {
@@ -117,6 +120,45 @@ func unequip_item(slot: String) -> Resource:
 		return item
 	return null
 
+func add_status_effect(effect_type: String, duration: int, effect_data: Dictionary = {}) -> void:
+	# Add or update a status effect
+	status_effects[effect_type] = {
+		"duration": duration,
+		"data": effect_data
+	}
+
+func remove_status_effect(effect_type: String) -> void:
+	# Remove a status effect
+	if status_effects.has(effect_type):
+		status_effects.erase(effect_type)
+
+func has_status_effect(effect_type: String) -> bool:
+	# Check if player has a specific status effect
+	return status_effects.has(effect_type)
+
+func get_status_effect_duration(effect_type: String) -> int:
+	# Get remaining duration of a status effect
+	if status_effects.has(effect_type):
+		return status_effects[effect_type].duration
+	return 0
+
+func tick_status_effects() -> Array:
+	# Process status effects for one turn, return array of expired effects
+	var expired_effects = []
+
+	for effect_type in status_effects.keys():
+		var effect = status_effects[effect_type]
+		effect.duration -= 1
+
+		if effect.duration <= 0:
+			expired_effects.append(effect_type)
+
+	# Remove expired effects
+	for effect_type in expired_effects:
+		status_effects.erase(effect_type)
+
+	return expired_effects
+
 func _serialize_equipment() -> Dictionary:
 	var serialized = {}
 	for slot in equipment.keys():
@@ -140,7 +182,8 @@ func to_dict() -> Dictionary:
 		"inventory": inventory.map(func(item): return item.to_dict() if item else null),
 		"equipment": _serialize_equipment(),
 		"skills": skills.map(func(skill): return skill.to_dict() if skill else null),
-		"gold": gold
+		"gold": gold,
+		"status_effects": status_effects
 	}
 
 func from_dict(data: Dictionary) -> void:
@@ -178,3 +221,6 @@ func from_dict(data: Dictionary) -> void:
 			return skill
 		return null
 	)
+
+	# Load status effects
+	status_effects = data.get("status_effects", {})

@@ -18,3 +18,7 @@ Routing guidance:
 | 2025-11-19 | 1.1 | 1 | Bug | High | TBD | Open | Fix type mismatch in ui_button.tscn - change from type="Button" to type="Control" to match UIButton.gd script |
 | 2025-11-19 | 1.1 | 1 | Enhancement | Med | TBD | Open | Create migration script to batch-update Button nodes to UIButton across all scenes |
 | 2025-11-19 | 1.1 | 1 | Documentation | Low | TBD | Open | Document UIButton usage pattern for future UI development |
+| 2025-11-20 | 2.1 | 2 | Bug | High | TBD | Open | Replace ProgressBar nodes with UIProgressBar in combat_scene.tscn (Task 8) [file: scenes/ui/combat_scene.tscn:78,97] |
+| 2025-11-20 | 2.1 | 2 | Bug | High | TBD | Open | Update combat scene node types from ProgressBar to UIProgressBar [file: scenes/ui/combat_scene.tscn] |
+| 2025-11-20 | 2.1 | 2 | TechDebt | Med | TBD | Open | Add UIProgressBar theme items to ui_theme.tres resource file [file: resources/ui_theme.tres] |
+| 2025-11-20 | 2.1 | 2 | TechDebt | Med | TBD | Open | Move integration test files to tests/godot/ directory [file: test_progress_bar_simple.gd, test_combat_scene_integration.gd] |

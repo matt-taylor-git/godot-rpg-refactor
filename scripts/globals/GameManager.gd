@@ -19,8 +19,18 @@ signal loot_dropped(item_name: String)
 signal boss_phase_changed(phase: int, description: String)
 signal boss_defeated()
 
+# Status effect signals
+signal player_status_effect_added(effect_type: String, duration: int)
+signal player_status_effect_removed(effect_type: String)
+signal monster_status_effect_added(effect_type: String, duration: int)
+signal monster_status_effect_removed(effect_type: String)
+
 # Victory signal
 signal game_victory()
+
+# Operation feedback signals for UI animations (AC-UI-011)
+signal operation_succeeded(message: String)  # Success feedback signal
+signal operation_failed(message: String)  # Error feedback signal
 
 var current_scene: String = ""
 var game_data = {}
@@ -177,8 +187,10 @@ func load_game(save_slot: int):
 		game_start_time = loaded_data.get("game_start_time", Time.get_unix_time_from_system())
 
 		emit_signal("game_loaded")
+		emit_signal("operation_succeeded", "Game loaded successfully!")  # AC-UI-011
 	else:
 		print("Failed to load save slot ", save_slot)
+		emit_signal("operation_failed", "Failed to load game")  # AC-UI-012
 
 func _load_from_file(save_slot: int) -> Variant:
 	var save_path = "user://save_slot_%d.json" % save_slot
@@ -225,8 +237,10 @@ func _save_to_file(save_slot: int):
 		file.store_string(json_string)
 		file.close()
 		print("Game saved to ", save_path)
+		emit_signal("operation_succeeded", "Game saved successfully!")  # AC-UI-011
 	else:
 		print("Failed to save game")
+		emit_signal("operation_failed", "Failed to save game")  # AC-UI-012
 
 func change_scene(scene_name: String):
 	print("Changing scene to: ", scene_name)
@@ -593,6 +607,39 @@ func get_quests_completed() -> int:
 
 func set_quests_completed(count: int) -> void:
 	stats["quests_completed"] = count
+
+# Status effect management
+func add_player_status_effect(effect_type: String, duration: int, effect_data: Dictionary = {}) -> void:
+	if game_data.player:
+		game_data.player.add_status_effect(effect_type, duration, effect_data)
+		emit_signal("player_status_effect_added", effect_type, duration)
+
+func remove_player_status_effect(effect_type: String) -> void:
+	if game_data.player:
+		game_data.player.remove_status_effect(effect_type)
+		emit_signal("player_status_effect_removed", effect_type)
+
+func add_monster_status_effect(effect_type: String, duration: int, effect_data: Dictionary = {}) -> void:
+	if current_monster:
+		current_monster.add_status_effect(effect_type, duration, effect_data)
+		emit_signal("monster_status_effect_added", effect_type, duration)
+
+func remove_monster_status_effect(effect_type: String) -> void:
+	if current_monster:
+		current_monster.remove_status_effect(effect_type)
+		emit_signal("monster_status_effect_removed", effect_type)
+
+func tick_combat_status_effects() -> void:
+	# Process status effects for both player and monster at end of combat turn
+	if game_data.player:
+		var expired_player_effects = game_data.player.tick_status_effects()
+		for effect_type in expired_player_effects:
+			emit_signal("player_status_effect_removed", effect_type)
+
+	if current_monster:
+		var expired_monster_effects = current_monster.tick_status_effects()
+		for effect_type in expired_monster_effects:
+			emit_signal("monster_status_effect_removed", effect_type)
 
 func trigger_victory() -> void:
 	emit_signal("game_victory")
