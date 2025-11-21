@@ -296,7 +296,6 @@ func test_loading_progress_updates():
 	loading_indicator.update_progress(1.0, "Complete")
 
 	assert_eq(loading_indicator.progress_bar.value, 1.0, "Progress should be 1.0")
-}
 
 # Test: Success feedback green color coding (AC-UI-011)
 func test_success_color_coding():
@@ -333,7 +332,6 @@ func test_loading_spinner_animation():
 	assert_eq(loading_indicator.animation_player.current_animation, "spin", "Should play 'spin' animation")
 
 	loading_indicator.stop_loading()
-}
 
 # Test: Accessibility - animations respect reduced motion
 func test_reduced_motion_accessibility():
@@ -350,7 +348,6 @@ func test_reduced_motion_accessibility():
 
 	# Reset setting
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
-}
 
 # Test: Memory leak prevention - tween cleanup
 func test_memory_leak_prevention():
@@ -370,4 +367,3 @@ func test_memory_leak_prevention():
 	# Can't easily test queue size in unit test, but pattern is verified
 	assert_lte(animation_system.tween_counter, animation_system.MAX_CONCURRENT_TWEENS,
 				"Should clean up completed tweens")
-}
