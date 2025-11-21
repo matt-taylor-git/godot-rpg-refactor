@@ -278,13 +278,13 @@ func test_form_validation_helpers():
 	var result = validate_form_field(field, false, "Field is required")
 	assert_false(result, "Should return is_valid value")
 
-	// Can't reliably test error icon without full UI, but logic is tested via inspection
+	# Can't reliably test error icon without full UI, but logic is tested via inspection
 
 func test_loading_progress_updates():
 	if loading_indicator == null:
 		return
 
-	loading_indicator.show_immediate()  // Show immediately for testing
+	loading_indicator.show_immediate()  # Show immediately for testing
 	loading_indicator.show_progress = true
 
 	# Update progress to 50%
