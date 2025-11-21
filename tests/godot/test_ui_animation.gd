@@ -258,13 +258,13 @@ func test_error_persistence():
 	# Wait for animation to complete
 	await yield_for(0.6)
 
-	// Error should still be showing (persist until corrected)
+	# Error should still be showing (persist until corrected)
 	assert_true(error_feedback.is_showing, "Error should persist after animation completes")
 
-	// Dismiss error
+	# Dismiss error
 	error_feedback.dismiss_error()
 
-	// Should no longer be showing
+	# Should no longer be showing
 	assert_false(error_feedback.is_showing, "Error should be dismissed")
 
 # Test: Form validation helper methods

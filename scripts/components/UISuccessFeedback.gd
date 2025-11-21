@@ -53,7 +53,7 @@ func show_feedback(anchor_node: Node = null) -> void:
 		position += position_offset
 	else:
 		# Center of viewport
-		var viewport = get_viewport_rect()
+		var viewport = get_viewport().get_visible_rect()
 		position = viewport.size / 2 + position_offset
 
 	# Show feedback using animation system

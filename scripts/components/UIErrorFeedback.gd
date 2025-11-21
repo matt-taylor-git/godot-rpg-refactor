@@ -54,7 +54,7 @@ func show_error(anchor_node: Node = null, message: String = "Error occurred") ->
 		position += position_offset
 	else:
 		# Center of viewport
-		var viewport = get_viewport_rect()
+		var viewport = get_viewport().get_visible_rect()
 		position = viewport.size / 2 + position_offset
 
 	# Show error feedback using animation system
@@ -130,6 +130,12 @@ func set_persistence(persist: bool) -> void:
 	Set whether error persists until corrected
 	"""
 	persists_until_corrected = persist
+
+func set_sound_effect(stream: AudioStream) -> void:
+	"""
+	Set sound effect to play with error
+	"""
+	sound_effect = stream
 
 func add_error_icon(node: Control) -> void:
 	"""

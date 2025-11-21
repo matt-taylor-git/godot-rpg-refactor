@@ -272,7 +272,7 @@ func _get_responsive_font_size() -> int:
 	if not responsive_scaling:
 		return 14  # Default font size
 
-	var viewport_size = get_viewport_rect().size
+	var viewport_size = get_viewport().get_visible_rect().size
 	var scale_factor = min(viewport_size.x / 1920.0, viewport_size.y / 1080.0)  # Base resolution
 
 	# Font size ranges from 10 (small screens) to 18 (large screens)
@@ -285,7 +285,7 @@ func _get_responsive_bar_size() -> Vector2:
 	if not responsive_scaling:
 		return Vector2(200, 24)  # Default size
 
-	var viewport_size = get_viewport_rect().size
+	var viewport_size = get_viewport().get_visible_rect().size
 	var scale_factor = min(viewport_size.x / 1920.0, viewport_size.y / 1080.0)
 
 	# Base dimensions scaled responsively
