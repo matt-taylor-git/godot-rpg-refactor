@@ -258,13 +258,13 @@ func test_error_persistence():
 	# Wait for animation to complete
 	await yield_for(0.6)
 
-	// Error should still be showing (persist until corrected)
+	# Error should still be showing (persist until corrected)
 	assert_true(error_feedback.is_showing, "Error should persist after animation completes")
 
-	// Dismiss error
+	# Dismiss error
 	error_feedback.dismiss_error()
 
-	// Should no longer be showing
+	# Should no longer be showing
 	assert_false(error_feedback.is_showing, "Error should be dismissed")
 
 # Test: Form validation helper methods
@@ -278,13 +278,13 @@ func test_form_validation_helpers():
 	var result = validate_form_field(field, false, "Field is required")
 	assert_false(result, "Should return is_valid value")
 
-	// Can't reliably test error icon without full UI, but logic is tested via inspection
+	# Can't reliably test error icon without full UI, but logic is tested via inspection
 
 func test_loading_progress_updates():
 	if loading_indicator == null:
 		return
 
-	loading_indicator.show_immediate()  // Show immediately for testing
+	loading_indicator.show_immediate()  # Show immediately for testing
 	loading_indicator.show_progress = true
 
 	# Update progress to 50%
@@ -296,7 +296,6 @@ func test_loading_progress_updates():
 	loading_indicator.update_progress(1.0, "Complete")
 
 	assert_eq(loading_indicator.progress_bar.value, 1.0, "Progress should be 1.0")
-}
 
 # Test: Success feedback green color coding (AC-UI-011)
 func test_success_color_coding():
@@ -333,7 +332,6 @@ func test_loading_spinner_animation():
 	assert_eq(loading_indicator.animation_player.current_animation, "spin", "Should play 'spin' animation")
 
 	loading_indicator.stop_loading()
-}
 
 # Test: Accessibility - animations respect reduced motion
 func test_reduced_motion_accessibility():
@@ -350,7 +348,6 @@ func test_reduced_motion_accessibility():
 
 	# Reset setting
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
-}
 
 # Test: Memory leak prevention - tween cleanup
 func test_memory_leak_prevention():
@@ -370,4 +367,3 @@ func test_memory_leak_prevention():
 	# Can't easily test queue size in unit test, but pattern is verified
 	assert_lte(animation_system.tween_counter, animation_system.MAX_CONCURRENT_TWEENS,
 				"Should clean up completed tweens")
-}
