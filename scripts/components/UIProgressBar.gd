@@ -324,13 +324,21 @@ func set_value_animated(new_value: float, animate: bool = true) -> void:
 	var old_value = value
 	target_value = clamp(new_value, min_value, max_value)
 
+	# Debug: Print animation decision factors
+	print("DEBUG UIProgressBar: name=", name, " old_value=", old_value, " new_value=", new_value)
+	print("DEBUG: animate=", animate, " animate_value_changes=", animate_value_changes, " respect_reduced_motion=", respect_reduced_motion)
+
 	# Check for reduced motion accessibility setting
 	var reduced_motion = _is_reduced_motion_enabled()
+	print("DEBUG: reduced_motion=", reduced_motion, " should_animate=", (animate and animate_value_changes and not (respect_reduced_motion and reduced_motion)))
+
 	var should_animate = animate and animate_value_changes and not (respect_reduced_motion and reduced_motion)
 
 	if should_animate:
+		print("DEBUG: Starting animation")
 		_animate_value_change(target_value)
 	else:
+		print("DEBUG: Skipping animation, setting value directly")
 		value = target_value
 		_update_visual_state()
 
@@ -345,6 +353,7 @@ func _animate_value_change(target_val: float):
 	_start_performance_monitoring()
 
 	# Create new tween for value animation
+	print("DEBUG: Creating tween for ", name, " from ", value, " to ", target_val, " over ", ANIMATION_DURATION, " seconds")
 	active_tween = create_tween()
 	active_tween.set_ease(ANIMATION_EASE)
 	active_tween.set_trans(ANIMATION_TRANS)
@@ -357,6 +366,7 @@ func _animate_value_change(target_val: float):
 
 	# Clean up tween when finished
 	active_tween.finished.connect(func():
+		print("DEBUG: Tween finished for ", name)
 		_end_performance_monitoring()
 		active_tween = null
 		_update_visual_state()

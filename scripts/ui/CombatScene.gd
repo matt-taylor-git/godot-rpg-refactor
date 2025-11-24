@@ -51,17 +51,13 @@ func _update_monster_ui():
         monster_health_bar.set_value_animated(0, true)
         return
 
-    monster_name_label.text = monster.name
-    monster_health_bar.max_value = monster.max_health
-    # Use animated value change for smooth health transitions
-    monster_health_bar.set_value_animated(monster.health, true)
-    return
-
     var name_text = monster.name + " (Lv." + str(monster.level) + ")"
     if GameManager.is_boss_combat():
         name_text += " [Phase " + str(monster.current_phase) + "/4]"
     monster_name_label.text = name_text
+
     monster_health_bar.max_value = monster.max_health
+    # Use animated value change for smooth health transitions
     monster_health_bar.set_value_animated(monster.health, true)
     # TODO: Set monster sprite based on type
 
@@ -76,7 +72,13 @@ func _on_combat_started(monster_name_param: String):
 
 func _on_player_attacked(damage: int, is_critical: bool):
     _append_to_log(GameManager.get_combat_log())
+    # Debug: Check monster health before update
+    var monster = GameManager.get_current_monster()
+    if monster:
+        print("DEBUG: Monster health before UI update: ", monster.health)
     _update_ui()
+    # Debug: Check health bar value after update
+    print("DEBUG: Health bar value after update: ", monster_health_bar.value)
     if GameManager.in_combat:
         await get_tree().create_timer(1.0).timeout
         var monster_attack_msg = GameManager.monster_attack()
