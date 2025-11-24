@@ -346,7 +346,9 @@ func _animate_value_change(target_val: float):
 	_start_performance_monitoring()
 
 	# Update visuals during animation by connecting to value changes
-	var value_changed_conn = self.value_changed.connect(_update_visual_state)
+	# Use lambda to handle signal argument for _update_visual_state
+	var value_changed_callable = func(_new_value): _update_visual_state()
+	self.value_changed.connect(value_changed_callable)
 
 	# Create new tween for value animation
 	active_tween = create_tween()
@@ -359,7 +361,7 @@ func _animate_value_change(target_val: float):
 	# Clean up tween when finished
 	active_tween.finished.connect(func():
 		# Disconnect the value changed signal
-		self.value_changed.disconnect(value_changed_conn)
+		self.value_changed.disconnect(value_changed_callable)
 		_end_performance_monitoring()
 		active_tween = null
 		_update_visual_state()
