@@ -107,7 +107,6 @@ func _ready():
 
 	# Apply theme and update state
 	_apply_theme()
-	_update_state()
 
 	# Connect to resized signal to keep children sized correctly
 	connect("resized", Callable(self, "_resize_children"))
@@ -182,160 +181,94 @@ func _update_label():
 		label.visible = not button_text.is_empty()
 
 func _apply_theme():
-	# Apply theme to child components
-	var active_theme = self.theme  # Button uses 'theme' property
-	if active_theme:
-		if label:
-			label.theme = active_theme
-		if background:
-			background.theme = active_theme
-
-func _update_state():
-	# Determine new state based on current conditions
-	var new_state = ButtonState.NORMAL
-
-	if self.disabled:  # Use Button's disabled property
-		new_state = ButtonState.DISABLED
-	elif is_pressed:
-		new_state = ButtonState.PRESSED
-	elif is_hovered or has_focus:
-		new_state = ButtonState.HOVER
-
-	# Emit state change signal if state actually changed
-	if new_state != current_state:
-		var old_state = current_state
-		current_state = new_state
-		state_changed.emit(new_state, old_state)
-
-		# Animate state transition
-		_animate_state_transition(old_state, new_state)
-
-	# Update visual appearance (without animation for instant updates)
+	# This function is now simplified, as color application is centralized.
+	# We still need to ensure child nodes get the theme resource if it's set directly on the button.
+	if theme:
+		if label and label.theme != theme:
+			label.theme = theme
+		if background and background.theme != theme:
+			background.theme = theme
 	_update_visual_state()
 
 func _update_visual_state():
-	# Update visual appearance based on current state using theme overrides
-	var active_theme = self.theme  # Button uses 'theme' property
+	# Central point for updating visuals based on state.
+	# This now directly uses UIThemeManager.
+	_apply_theme_colors()
 
-	if not active_theme:
-		# Fallback to basic modulation if no theme
-		_apply_fallback_styling()
-		return
+func _apply_theme_colors():
+	# Apply colors directly from the UIThemeManager singleton.
+	var bg_color = Color.WHITE
+	var font_color = UIThemeManager.get_text_primary_color()
+	var border_color = UIThemeManager.get_secondary_color()
+	var scale_mod = 1.0
 
-	# Apply theme-based styling
-	_apply_theme_styling(active_theme)
-
-func _apply_fallback_styling():
-	# Basic fallback styling when no theme is available
 	match current_state:
 		ButtonState.NORMAL:
-			modulate = Color(1, 1, 1, 1)
-			if background:
-				background.modulate = Color(0.8, 0.8, 0.8, 1)
+			bg_color = UIThemeManager.get_primary_action_color().lightened(0.1)
 		ButtonState.HOVER:
-			modulate = Color(1.05, 1.05, 1.05, 1)
-			if background:
-				background.modulate = Color(0.9, 0.9, 0.9, 1)
+			bg_color = UIThemeManager.get_primary_action_color().lightened(0.2)
+			border_color = UIThemeManager.get_accent_color()
+			scale_mod = 1.05
 		ButtonState.PRESSED:
-			modulate = Color(0.95, 0.95, 0.95, 1)
-			if background:
-				background.modulate = Color(0.7, 0.7, 0.7, 1)
+			bg_color = UIThemeManager.get_primary_action_color().darkened(0.1)
+			scale_mod = 0.95
 		ButtonState.DISABLED:
-			modulate = Color(0.6, 0.6, 0.6, 0.5)
-			if background:
-				background.modulate = Color(0.5, 0.5, 0.5, 0.5)
+			bg_color = UIThemeManager.get_secondary_color()
+			font_color = UIThemeManager.get_color("disabled_text")
+			border_color = UIThemeManager.get_secondary_color().darkened(0.2)
 
-func _apply_theme_styling(theme: Theme):
-	# Apply comprehensive theme-based styling for each state
-
-	# Background styling
-	if background:
-		var bg_stylebox = _get_state_stylebox(theme, "UIButton", "background")
-		if bg_stylebox:
-			background.add_theme_stylebox_override("panel", bg_stylebox)
-
-	# Label styling
+	# Animate visual changes
+	animation_system.animate_property(background, "color", background.modulate, bg_color, 0.1)
 	if label:
-		var font_color = _get_state_color(theme, "UIButton", "font_color")
-		if font_color:
-			label.add_theme_color_override("font_color", font_color)
-
-		var shadow_color = _get_state_color(theme, "UIButton", "font_shadow_color")
-		if shadow_color:
-			label.add_theme_color_override("font_shadow_color", shadow_color)
-
-	# Self styling (for borders, shadows, etc.)
-	var self_stylebox = _get_state_stylebox(theme, "UIButton", "normal")
-	if self_stylebox:
-		add_theme_stylebox_override("panel", self_stylebox)
-
-	# State-specific effects
-	match current_state:
-		ButtonState.NORMAL:
-			modulate = Color(1, 1, 1, 1)
-		ButtonState.HOVER:
-			# Subtle highlight effect
-			modulate = Color(1.1, 1.1, 1.1, 1)
-			var hover_stylebox = _get_state_stylebox(theme, "UIButton", "hover")
-			if hover_stylebox and background:
-				background.add_theme_stylebox_override("panel", hover_stylebox)
-		ButtonState.PRESSED:
-			# Pressed down effect
-			modulate = Color(0.95, 0.95, 0.95, 1)
-			var pressed_stylebox = _get_state_stylebox(theme, "UIButton", "pressed")
-			if pressed_stylebox and background:
-				background.add_theme_stylebox_override("panel", pressed_stylebox)
-		ButtonState.DISABLED:
-			# Disabled appearance
-			modulate = Color(0.6, 0.6, 0.6, 0.7)
-			var disabled_stylebox = _get_state_stylebox(theme, "UIButton", "disabled")
-			if disabled_stylebox and background:
-				background.add_theme_stylebox_override("panel", disabled_stylebox)
-
-			# Disabled text color
-			if label:
-				var disabled_color = _get_state_color(theme, "UIButton", "font_disabled_color")
-				if disabled_color:
-					label.add_theme_color_override("font_color", disabled_color)
-
-func _get_state_stylebox(theme: Theme, type_name: String, stylebox_name: String) -> StyleBox:
-	# Get stylebox for specific state, fallback to normal if not found
-	return theme.get_stylebox(stylebox_name, type_name)
-
-func _get_state_color(theme: Theme, type_name: String, color_name: String) -> Color:
-	# Get color for specific state
-	return theme.get_color(color_name, type_name)
+		animation_system.animate_property(label, "modulate", label.modulate, font_color, 0.1)
+	
+	# For now, let's create a simple StyleBoxFlat to apply these colors.
+	# This replaces the complex _get_state_stylebox logic.
+	var stylebox = StyleBoxFlat.new()
+	stylebox.bg_color = bg_color
+	stylebox.border_width_left = 2
+	stylebox.border_width_top = 2
+	stylebox.border_width_right = 2
+	stylebox.border_width_bottom = 2
+	stylebox.border_color = border_color
+	stylebox.corner_radius_top_left = 4
+	stylebox.corner_radius_top_right = 4
+	stylebox.corner_radius_bottom_right = 4
+	stylebox.corner_radius_bottom_left = 4
+	
+	if background:
+		background.add_theme_stylebox_override("panel", stylebox)
 
 func _on_mouse_entered():
 	if not self.disabled:  # Use Button's disabled property
 		is_hovered = true
-		_update_state()
+		_update_visual_state()
 
 func _on_mouse_exited():
 	if not self.disabled:  # Use Button's disabled property
 		is_hovered = false
-		_update_state()
+		_update_visual_state()
 		play_unhover_animation()  # Play unhover animation on exit
 
 func _on_focus_entered():
 	has_focus = true
 	_update_focus_indicator()
-	_update_state()
+	_update_visual_state()
 
 func _on_focus_exited():
 	has_focus = false
 	_update_focus_indicator()
-	_update_state()
+	_update_visual_state()
 
 func _on_button_down():
 	if not self.disabled:
 		is_pressed = true
-		_update_state()
+		_update_visual_state()
 
 func _on_button_up():
 	if not self.disabled:
 		is_pressed = false
-		_update_state()
+		_update_visual_state()
 
 func _on_pressed_debug():
 	print("UIButton '", button_text, "' pressed signal emitted!")
@@ -351,14 +284,14 @@ func _update_focus_indicator():
 			focus_indicator.add_theme_stylebox_override("panel", focus_stylebox)
 
 func _create_focus_stylebox() -> StyleBoxFlat:
-	# Create focus indicator with high contrast (3:1 ratio)
+	# Create focus indicator with high contrast using theme colors
 	var stylebox = StyleBoxFlat.new()
-	stylebox.bg_color = Color(0, 0, 0, 0)  # Transparent background
+	stylebox.bg_color = Color.TRANSPARENT
 	stylebox.border_width_left = 2
 	stylebox.border_width_top = 2
 	stylebox.border_width_right = 2
 	stylebox.border_width_bottom = 2
-	stylebox.border_color = Color(0.4, 0.95, 0.84, 1)  # High contrast cyan
+	stylebox.border_color = UIThemeManager.get_accent_color() # Use accent color for focus
 	stylebox.corner_radius_top_left = 6
 	stylebox.corner_radius_top_right = 6
 	stylebox.corner_radius_bottom_right = 6
@@ -377,34 +310,34 @@ func apply_theme(theme: Theme) -> void:
 func apply_global_theme(theme: Theme) -> void:
 	# Apply global theme without overriding local theme
 	if not self.theme:  # Button uses 'theme' property
-		_apply_theme_styling(theme)
+		_apply_theme_colors()
 		_update_visual_state()
 		queue_redraw()
 
 func get_theme_variation(variation_name: String) -> Theme:
 	# Return theme variation for special cases (e.g., "primary", "destructive")
-	# This can be extended by UIThemeManager
+	# This now uses colors from UIThemeManager
 	var variation_theme = Theme.new()
 
 	match variation_name:
 		"primary":
-			# Primary button styling
+			# Primary button styling (using success color)
 			var primary_bg = StyleBoxFlat.new()
-			primary_bg.bg_color = Color(0.4, 0.95, 0.84, 0.8)  # Accent color
+			primary_bg.bg_color = UIThemeManager.get_success_color()
 			variation_theme.set_stylebox("normal", "UIButton", primary_bg)
 
 			var primary_hover = StyleBoxFlat.new()
-			primary_hover.bg_color = Color(0.5, 0.98, 0.9, 0.9)
+			primary_hover.bg_color = UIThemeManager.get_success_color().lightened(0.1)
 			variation_theme.set_stylebox("hover", "UIButton", primary_hover)
 
 		"destructive":
-			# Destructive action styling
+			# Destructive action styling (using danger color)
 			var destructive_bg = StyleBoxFlat.new()
-			destructive_bg.bg_color = Color(0.8, 0.3, 0.3, 0.8)  # Red
+			destructive_bg.bg_color = UIThemeManager.get_danger_color()
 			variation_theme.set_stylebox("normal", "UIButton", destructive_bg)
 
 			var destructive_hover = StyleBoxFlat.new()
-			destructive_hover.bg_color = Color(0.9, 0.4, 0.4, 0.9)
+			destructive_hover.bg_color = UIThemeManager.get_danger_color().lightened(0.1)
 			variation_theme.set_stylebox("hover", "UIButton", destructive_hover)
 
 	return variation_theme

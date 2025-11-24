@@ -85,11 +85,15 @@ default_font = ExtResource("1_qosx5")
 default_font_size = 22
 
 # Colors
-colors/background = Color(0.06, 0.10, 0.10, 1)
-colors/accent = Color(0.77, 0.66, 0.48, 1)
-colors/highlight = Color(0.4, 0.95, 0.84, 1)
+colors/background = Color(0.101961, 0.101961, 0.113725, 1) # #1a1a1d
+colors/text_primary = Color(0.960784, 0.960784, 0.960784, 1) # #f5f5f5
+colors/primary_action = Color(0.435294, 0.176471, 0.741176, 1) # #6f2dbd
+colors/secondary = Color(0.290196, 0.305882, 0.411765, 1) # #4a4e69
+colors/accent = Color(0.788235, 0.635294, 0.152941, 1) # #c9a227
+colors/success = Color(0.360784, 0.721569, 0.360784, 1) # #5cb85c
+colors/danger = Color(0.85098, 0.32549, 0.309804, 1) # #d9534f
 colors/text_shadow = Color(0, 0, 0, 0.5)
-colors/disabled_text = Color(0.77, 0.66, 0.48, 0.33)
+colors/disabled_text = Color(0.290196, 0.305882, 0.411765, 0.5) # #4a4e69 with alpha
 
 # Theme styles removed due to Godot 4.5 theme parser bug that includes comment text in type names
 

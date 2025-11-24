@@ -194,28 +194,28 @@ func _apply_theme():
 		_apply_progress_bar_theme(active_theme)
 
 func _apply_progress_bar_theme(theme: Theme):
-	# Apply theme constants for progress bar styling
-	# Since ui_theme.tres has issues, we define theme programmatically
+	# Apply theme constants for progress bar styling using UIThemeManager
+	# Ensures colors come from centralized theme system
 
-	# Define theme colors for health states
+	# Define theme colors for health states using UIThemeManager
 	if not theme.has_color("health_high", "UIProgressBar"):
-		theme.set_color("health_high", "UIProgressBar", Color(0.2, 0.8, 0.2, 1.0))  # Green
+		theme.set_color("health_high", "UIProgressBar", UIThemeManager.get_success_color())
 
 	if not theme.has_color("health_medium", "UIProgressBar"):
-		theme.set_color("health_medium", "UIProgressBar", Color(0.9, 0.6, 0.1, 1.0))  # Yellow
+		theme.set_color("health_medium", "UIProgressBar", UIThemeManager.get_accent_color())
 
 	if not theme.has_color("health_low", "UIProgressBar"):
-		theme.set_color("health_low", "UIProgressBar", Color(0.8, 0.2, 0.2, 1.0))  # Red
+		theme.set_color("health_low", "UIProgressBar", UIThemeManager.get_danger_color())
 
 	# Colorblind-friendly colors
 	if not theme.has_color("health_high_cb", "UIProgressBar"):
-		theme.set_color("health_high_cb", "UIProgressBar", Color(0.2, 0.8, 0.2, 1.0))  # Green
+		theme.set_color("health_high_cb", "UIProgressBar", UIThemeManager.get_success_color())
 
 	if not theme.has_color("health_medium_cb", "UIProgressBar"):
-		theme.set_color("health_medium_cb", "UIProgressBar", Color(0.9, 0.6, 0.1, 1.0))  # Orange
+		theme.set_color("health_medium_cb", "UIProgressBar", UIThemeManager.get_accent_color())
 
 	if not theme.has_color("health_low_cb", "UIProgressBar"):
-		theme.set_color("health_low_cb", "UIProgressBar", Color(0.2, 0.4, 0.8, 1.0))  # Blue
+		theme.set_color("health_low_cb", "UIProgressBar", UIThemeManager.get_primary_action_color())
 
 	# Font color for high contrast
 	if not theme.has_color("font_color", "UIProgressBar"):

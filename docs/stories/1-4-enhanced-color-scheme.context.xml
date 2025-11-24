@@ -1,0 +1,173 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>4</storyId>
+    <title>enhanced-color-scheme</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-24</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-4-enhanced-color-scheme.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As a player,</asA>
+    <iWant>I want a cohesive, accessible color palette,</iWant>
+    <soThat>so that the game feels visually unified and easy to read.</soThat>
+    <tasks>- Task 1: Define and Implement the Core Color Palette (AC: #1, #4)
+  - Research and define a cohesive color palette (primary, secondary, accent, text, background) that feels modern yet respects the RPG aesthetic.
+  - Update `resources/ui_theme.tres` with the new color definitions.
+  - Create a new `UIThemeManager` autoload singleton (if not already present) to manage theme access globally.
+  - Refactor existing UI components to source colors exclusively from the `UIThemeManager`.
+
+- Task 2: Ensure Accessibility Compliance (AC: #2)
+  - Implement a utility function in `UIThemeManager` to calculate the contrast ratio between two colors.
+  - Create a GUT test suite (`test_ui_theme_accessibility.gd`) that automatically validates all text/background color combinations from the theme against the 4.5:1 WCAG AA standard.
+  - Adjust palette colors as needed to meet contrast requirements.
+
+- Task 3: Apply Color Hierarchy and Refactor UI (AC: #3)
+  - Apply the new color palette consistently across all core UI components (Buttons, Panels, etc.).
+  - Ensure that color usage reflects the intended information hierarchy (e.g., primary for actions, accent for warnings).
+  - Use the `UIAnimationSystem` from the previous story to add smooth color transitions where appropriate (e.g., on hover).
+
+- Task 4: Documentation and Validation (AC: #4)
+  - Create a simple style guide in `docs/ui_color_guide.md` documenting the new palette and its intended usage.
+  - Manually review all major UI screens to confirm the new color scheme is applied correctly and preserves the game's nostalgic feel.</tasks>
+  </story>
+
+  <acceptanceCriteria>1. AC-UI-013: Color Palette Consistency - Given UI elements use colors throughout the game, when comparing color usage across screens, then all colors come from the approved palette with consistent application. [Source: docs/stories/tech-spec-epic-1.md#AC-UI-013]
+2. AC-UI-014: Color Contrast Accessibility - Given colored UI elements with text, when measuring contrast ratios, then all combinations meet WCAG AA standards (4.5:1 minimum). [Source: docs/stories/tech-spec-epic-1.md#AC-UI-014]
+3. AC-UI-015: Color Information Hierarchy - Given different information types in the UI, when using color to differentiate content, then color coding follows the established hierarchy (primary, secondary, accent, neutral). [Source: docs/stories/tech-spec-epic-1.md#AC-UI-015]
+4. AC-UI-016: Theme Preservation of RPG Aesthetics - Given the modern UI enhancements are applied, when comparing to the original game's appearance, then the nostalgic RPG charm is maintained while adding contemporary polish. [Source: docs/stories/tech-spec-epic-1.md#AC-UI-016]</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/stories/tech-spec-epic-1.md</path>
+        <title>Epic 1 Technical Specification</title>
+        <section>Color Palette and UITheme Data Model</section>
+        <snippet>Defines UITheme resource structure with color dictionaries, contrast validation requirements, and accessibility standards for the color palette implementation.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>Theming Strategy and Performance</section>
+        <snippet>Centralized theme resource architecture and performance constraints for maintaining 60fps during theme operations.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/stories/1-3-visual-feedback-system.md</path>
+        <title>Story 1-3: Visual Feedback System</title>
+        <section>UIAnimationSystem Integration</section>
+        <snippet>Details the UIAnimationSystem component used for smooth color transitions and hover effects, established in the previous story.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/ui_button_guide.md</path>
+        <title>UI Button Component Guide</title>
+        <section>Component Styling Guidelines</section>
+        <snippet>Guidelines for consistent button styling and interaction patterns that will be affected by the new color palette.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>resources/ui_theme.tres</path>
+        <kind>resource</kind>
+        <symbol>UITheme</symbol>
+        <lines>87-93</lines>
+        <reason>Existing theme file with basic color definitions that needs expansion with cohesive palette and accessibility-compliant colors.</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/components/UIAnimationSystem.gd</path>
+        <kind>component</kind>
+        <symbol>UIAnimationSystem</symbol>
+        <lines>1-50</lines>
+        <reason>Centralized animation system for smooth color transitions and hover effects, must be used for theme color animations.</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/components/UIButton.gd</path>
+        <kind>component</kind>
+        <symbol>UIButton</symbol>
+        <lines>428-448</lines>
+        <reason>Button component with hover animations that will source colors from the new UIThemeManager instead of hardcoded values.</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/components/UIProgressBar.gd</path>
+        <kind>component</kind>
+        <symbol>UIProgressBar</symbol>
+        <lines>103-112</lines>
+        <reason>Progress bar component with color-coded status indicators that uses theme colors for health/mana visualization.</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/BaseUI.gd</path>
+        <kind>base-class</kind>
+        <symbol>BaseUI</symbol>
+        <lines>17-25</lines>
+        <reason>Base UI class that all UI components inherit from, provides access to UIAnimationSystem for consistent theming.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <dependency>
+        <ecosystem>godot</ecosystem>
+        <name>Godot Engine</name>
+        <version>4.5</version>
+        <packages>Theme, Tween, Control nodes, Resource system</packages>
+      </dependency>
+      <dependency>
+        <ecosystem>testing</ecosystem>
+        <name>GUT Testing Framework</name>
+        <version>Latest</version>
+        <packages>Unit testing for UI components and accessibility validation</packages>
+      </dependency>
+      <dependency>
+        <ecosystem>autoload</ecosystem>
+        <name>GameManager</name>
+        <version>N/A</version>
+        <packages>Scene management and game state coordination</packages>
+      </dependency>
+      <dependency>
+        <ecosystem>assets</ecosystem>
+        <name>UI Assets</name>
+        <version>N/A</version>
+        <packages>Fonts (Cinzel-VariableFont_wght.ttf), UI sprites (frame_main.png, frame_slot.png)</packages>
+      </dependency>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Color palette must meet WCAG AA accessibility standards with 4.5:1 minimum contrast ratio for all text/background combinations</constraint>
+    <constraint>Theme operations must maintain 60fps performance with &lt;5% frame rate impact</constraint>
+    <constraint>Color hierarchy must follow established pattern: primary (actions), secondary (navigation), accent (warnings), neutral (backgrounds)</constraint>
+    <constraint>UIThemeManager must implement validate_contrast_ratio() function as specified in tech spec</constraint>
+    <constraint>Color transitions must use UIAnimationSystem for consistency and performance monitoring</constraint>
+    <constraint>Theme must preserve nostalgic RPG aesthetic while adding contemporary polish</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>UIThemeManager</name>
+      <kind>singleton</kind>
+      <signature>func apply_theme_to_control(control: Control, theme: UITheme) -> void</signature>
+      <path>scripts/globals/UIThemeManager.gd (to be created)</path>
+    </interface>
+    <interface>
+      <name>UITheme</name>
+      <kind>resource</kind>
+      <signature>colors: Dictionary, fonts: Dictionary, spacing: Dictionary</signature>
+      <path>resources/ui_theme.tres</path>
+    </interface>
+    <interface>
+      <name>UIAnimationSystem</name>
+      <kind>component</kind>
+      <signature>func animate_property(node: Node, property: String, from_value, to_value, duration: float) -> Tween</signature>
+      <path>scripts/components/UIAnimationSystem.gd</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>GUT (Godot Unit Testing) framework for unit and integration tests. Automated accessibility testing with contrast ratio validation. Component-level testing for theme integration. Performance testing for 60fps maintenance during theme operations.</standards>
+    <locations>tests/godot/ directory for all test files. New test file: test_ui_theme_accessibility.gd for contrast validation. Existing component tests updated for theme integration.</locations>
+    <ideas>
+      <idea>Automated contrast ratio testing: Iterate through all color combinations in ui_theme.tres and assert 4.5:1 minimum contrast for text/background pairs</idea>
+      <idea>Theme integration testing: Verify UIButton and other components source colors from UIThemeManager instead of hardcoded values</idea>
+      <idea>Performance testing: Measure theme application duration and ensure &lt;5% frame rate impact during color transitions</idea>
+      <idea>Accessibility compliance: Test colorblind-friendly color schemes and keyboard navigation with focus indicators</idea>
+      <idea>Visual regression: Screenshot comparison of UI elements before/after theme application</idea>
+    </ideas>
+  </tests>
+</story-context>

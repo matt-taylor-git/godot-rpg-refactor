@@ -25,6 +25,7 @@ QuestManager="*res://scripts/globals/QuestManager.gd"
 DialogueManager="*res://scripts/globals/DialogueManager.gd"
 StoryManager="*res://scripts/globals/StoryManager.gd"
 CodexManager="*res://scripts/globals/CodexManager.gd"
+UIThemeManager="*res://scripts/globals/UIThemeManager.gd"
 
 [display]
 
