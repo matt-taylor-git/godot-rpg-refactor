@@ -218,7 +218,7 @@ func _apply_theme_colors():
 			border_color = UIThemeManager.get_secondary_color().darkened(0.2)
 
 	# Animate visual changes
-	animation_system.animate_property(background, "color", background.modulate, bg_color, 0.1)
+	# Note: background color is set via StyleBoxFlat below, not Panel.color property
 	if label:
 		animation_system.animate_property(label, "modulate", label.modulate, font_color, 0.1)
 	

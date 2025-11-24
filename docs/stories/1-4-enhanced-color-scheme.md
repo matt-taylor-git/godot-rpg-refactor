@@ -136,6 +136,11 @@ Color palette carefully chosen to maintain nostalgic RPG feel while adding conte
   - Refactored `_apply_progress_bar_theme()` to use UIThemeManager.get_success_color(), UIThemeManager.get_accent_color(), UIThemeManager.get_danger_color()
   - Removed hardcoded Color values, replaced with centralized theme access
 
+- scripts/components/UIButton.gd
+  - Fixed animation bug: removed incorrect `animate_property(background, "color", ...)` call
+  - Panel nodes don't have "color" property; background is set via StyleBoxFlat
+  - Preserved correct label text color animation with `animate_property(label, "modulate", ...)`
+
 - tests/godot/test_ui_theme_accessibility.gd
   - Enhanced from 4 tests to 11 comprehensive tests
   - Added tests for: accent, secondary, success, danger colors; button hover states; disabled text; comprehensive color pair validation
