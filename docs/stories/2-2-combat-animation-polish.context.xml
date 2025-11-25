@@ -1,0 +1,74 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2</storyId>
+    <title>Combat Animation Polish</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-2-combat-animation-polish.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a player watching combat</asA>
+    <iWant>smooth, satisfying animations for all combat actions</iWant>
+    <soThat>battles feel dynamic and engaging</soThat>
+    <tasks>- Task 1: Create DamageNumberPopup Component (AC: AC-2.2.1)
+- Task 2: Create CombatAnimationController (AC: AC-2.2.2, AC-2.2.4)
+- Task 3: Create Particle Effect System (AC: AC-2.2.2)
+- Task 4: Implement Turn Indicator System (AC: AC-2.2.3)
+- Task 5: Add Performance Monitoring (AC: AC-2.2.4)
+- Task 6: Implement Accessibility Features (AC: AC-2.2.5)
+- Task 7: Integrate with Combat Scene (AC: AC-2.2.1, AC-2.2.2, AC-2.2.3)
+- Task 8: Create Comprehensive Testing (All ACs)</tasks>
+  </story>
+
+  <acceptanceCriteria>1. AC-2.2.1: Damage and Healing Numbers - Given combat damage or healing occurs, when the value changes, then a number pops up at the target position with bounce animation (500ms total), and damage numbers are red with shake effect while healing numbers are green with pulse, and critical hits show larger numbers with additional effect (screen flash), and numbers fade out smoothly over 400ms
+
+2. AC-2.2.2: Combat Animation Polish - Given a character performs a combat action (attack or spell), when the action executes, then character sprite shows appropriate animation (attack motion or cast pose, 300ms), and screen shake occurs for impactful attacks (5px displacement, 100ms), and spell casts show particle effects traveling to target (500ms duration), and all animations complete without dropping below 60fps, and animations enhance gameplay without delaying turn resolution
+
+3. AC-2.2.3: Turn Indicator Clarity - Given combat is in progress, when a character's turn begins, then their portrait highlights with subtle glow effect, and non-active portraits dim slightly for contrast, and the active indicator is clearly visible at all screen sizes, and transition between active characters is smooth (200ms)
+
+4. AC-2.2.4: Animation Performance - Given combat animations are playing, when monitoring game performance, then frame rate maintains 60fps throughout, and frame drops below 55fps trigger a warning (development mode), and memory usage stays under 500MB, and animations don't delay game logic or turn resolution
+
+5. AC-2.2.5: Animation Accessibility - Given a player has reduced motion preferences enabled, when combat animations play, then animations are disabled or minimized per user settings, and all combat information remains visible without animations, and the UI remains fully functional with instant state updates instead of animated transitions</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact path="docs/tech-spec-epic-2.md" title="Epic 2 Technical Specification" section="Combat Interface Enhancement" snippet="Comprehensive technical specification for combat UI polish including damage numbers, animations, performance requirements, and acceptance criteria for all story tasks." />
+      <artifact path="docs/PRD.md" title="Product Requirements Document" section="FR-VP-005, FR-VP-006" snippet="Functional requirements for combat UI polish and character visual improvements, including modern health bars, status effects, and smooth animations." />
+      <artifact path="docs/architecture.md" title="Architecture Document" section="Animation System, Performance Considerations" snippet="Architecture patterns for Tween-based animations, performance monitoring, and component inheritance following BaseUI.gd pattern." />
+    </docs>
+    <code>
+      <artifact path="scripts/ui/CombatScene.gd" kind="controller" symbol="CombatScene" lines="1-168" reason="Existing combat scene implementation with health bar animations and GameManager integration - needs enhancement with damage numbers and turn indicators." />
+      <artifact path="scripts/components/UIProgressBar.gd" kind="component" symbol="UIProgressBar" lines="" reason="Enhanced health bar component with gradient fills and smooth animations - already integrated into combat scene." />
+      <artifact path="scripts/components/UIAnimationSystem.gd" kind="component" symbol="UIAnimationSystem" lines="1-429" reason="Centralized animation system providing bounce, shake, fade effects - foundation for combat animations and performance monitoring." />
+      <artifact path="scripts/globals/GameManager.gd" kind="service" symbol="GameManager" lines="" reason="Combat system manager with signals for health changes, attacks, and turn management - integration point for animation triggers." />
+    </code>
+    <dependencies>
+      <dependency name="Godot 4.5 Engine" version="4.5+" purpose="Tween animations, GPUParticles2D, UI Control nodes, Performance monitoring" />
+      <dependency name="GUT Testing Framework" version="" purpose="Unit testing for UI components and animation timing" />
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Animation durations limited to maximum 500ms for responsive feel</constraint>
+    <constraint>Maintain 60fps performance throughout all combat animations</constraint>
+    <constraint>Memory usage must stay under 500MB during combat scenes</constraint>
+    <constraint>Accessibility compliance with 4.5:1 contrast ratio minimum</constraint>
+    <constraint>Particle effects limited to 100 particles per effect, 300 total on screen</constraint>
+    <constraint>Component architecture follows BaseUI.gd inheritance pattern</constraint>
+    <constraint>Save file integrity - visual UI state doesn't corrupt save files</constraint>
+  </constraints>
+  <interfaces>
+    <interface name="GameManager Combat Signals" kind="signal-based" signature="signal player_health_changed(new_health, max_health); signal monster_health_changed(new_health, max_health); signal player_turn_started(); signal monster_turn_started()" path="scripts/globals/GameManager.gd" />
+    <interface name="UIProgressBar API" kind="method" signature="func set_value_animated(new_value: float, animate: bool = true) -> void" path="scripts/components/UIProgressBar.gd" />
+    <interface name="UIAnimationSystem API" kind="method" signature="func animate_property(node, property, from_value, to_value, duration); func shake(node, intensity, duration); func scale_bounce(node, target_scale, duration)" path="scripts/components/UIAnimationSystem.gd" />
+    <interface name="CombatAnimationController Events" kind="signal" signature="signal animation_started(animation_id); signal animation_completed(animation_id); signal damage_number_spawned(value, position)" path="scripts/components/CombatAnimationController.gd" />
+  </interfaces>
+  <tests>
+    <standards>GUT framework for unit and integration tests. Performance assertions maintain 60fps during animations. Tween cleanup verification prevents memory leaks. Accessibility testing with reduced motion settings.</standards>
+    <locations>tests/godot/ directory for GUT test files. Unit tests for DamageNumberPopup, CombatAnimationController. Integration tests for end-to-end combat flow with animations.</locations>
+    <ideas>Test animation timing matches specifications (500ms bounce, 400ms fade). Test performance impact of concurrent animations. Test accessibility mode disables animations. Test critical hit effects and screen shake. Test particle effect limits and cleanup.</ideas>
+  </tests>
+</story-context>

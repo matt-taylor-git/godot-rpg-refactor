@@ -1,6 +1,6 @@
 # Story 2.1: Enhanced Health & Status Bars
 
-Status: review
+Status: done
 
 ## Story
 
@@ -228,6 +228,10 @@ sm-agent-bmm-sm v1.0 (for story drafting)
 - ✅ Updated File List with corrected paths
 
 **Story Complete** - All tasks implemented, tested, and integrated. Ready for final code review.
+
+### Completion Notes
+**Completed:** 2025-11-25
+**Definition of Done:** All acceptance criteria met, code reviewed, tests passing
 
 ### File List
 
