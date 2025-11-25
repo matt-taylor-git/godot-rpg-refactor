@@ -1,0 +1,114 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>3</storyId>
+    <title>Character Portrait Enhancement</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-3-character-portrait-enhancement.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>player in combat</asA>
+    <iWant>polished character portraits with status indicators</iWant>
+    <soThat>I can quickly identify characters and their conditions</soThat>
+    <tasks>- [ ] **Task 1: Create CharacterPortraitContainer Component** (AC: AC-2.3.1)
+  - [ ] Create `scripts/components/CharacterPortraitContainer.gd` extending BaseUI
+  - [ ] Create `scenes/components/character_portrait_container.tscn`
+  - [ ] Implement 120x120px sizing constraint
+  - [ ] Add background/border styling using `ui_theme.tres`
+  - [ ] Add drop shadow effect
+
+- [ ] **Task 2: Implement Health Bar Overlay** (AC: AC-2.3.1)
+  - [ ] Add `UIProgressBar` child node for health
+  - [ ] Style as thin overlay bar at bottom or top of portrait
+  - [ ] Implement color changing based on health % (Green/Yellow/Red)
+  - [ ] Connect to `update_health_percentage` method
+
+- [ ] **Task 3: Implement Status Effect Icons** (AC: AC-2.3.1, AC-2.3.2)
+  - [ ] Create container for status icons (HBox/Grid)
+  - [ ] Implement `add_status_effect` and `remove_status_effect`
+  - [ ] Reuse `StatusEffectIcon` component pattern
+  - [ ] Ensure icons stack correctly in corner without obscuring face
+
+- [ ] **Task 4: Implement Active State Highlighting** (AC: AC-2.3.1, AC-2.3.2)
+  - [ ] Implement `set_active(active: bool)` method
+  - [ ] Add Tween-based glow/pulse animation
+  - [ ] Support reduced motion (disable pulse if set)
+  - [ ] Integrate with `TurnIndicatorController` logic if applicable
+
+- [ ] **Task 5: Integrate with Combat Scene** (AC: AC-2.3.1)
+  - [ ] Replace existing portrait nodes in `scenes/ui/combat_scene.tscn` with `CharacterPortraitContainer`
+  - [ ] Update `scripts/ui/CombatScene.gd` to initialize and update new containers
+  - [ ] Connect to `GameManager` signals (health changed, turn started)
+
+- [ ] **Task 6: Testing and Polish** (AC: AC-2.5.1)
+  - [ ] Create `tests/godot/test_character_portrait_container.gd`
+  - [ ] Test setup, updates, and active state toggling
+  - [ ] Verify accessibility (contrast, reduced motion)
+  - [ ] Verify performance (no memory leaks from Tweens)</tasks>
+  </story>
+
+  <acceptanceCriteria>1. **AC-2.3.1: Character Portrait Modernization** - Given characters are displayed in combat, when I view the combat interface, then portraits have modern borders with drop shadows, health percentage is displayed as a small bar overlay on the portrait, status effect icons appear on the portrait (bottom corner stacking), the active character portrait has a subtle glow/pulse effect, and portraits scale consistently to 120x120px.
+
+2. **AC-2.3.2: Portrait Information Hierarchy** - Given I need to quickly assess combat state, when I glance at character portraits, then I can immediately identify character identity, current health %, active status effects, and whose turn it is; the visual hierarchy guides attention appropriately, and critical information (low health, dangerous effects) is emphasized.
+
+3. **AC-2.4.1: Accessibility Compliance** - Given I have visual impairments, when I view the portraits, then all text meets 4.5:1 contrast ratio minimum, color is not the only indicator of status (icons + text), and animations (pulse) honor the reduced motion setting.
+
+4. **AC-2.5.1: Performance Requirements** - Given combat is active, when portraits update, then frame rate maintains 60fps, and memory usage for portrait textures and overlays stays within budget.</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact path="docs/architecture.md" title="Architecture Document" section="UI Component Creation Pattern" snippet="Guidelines for creating reusable UI components extending BaseUI or Control with proper theming and animation patterns." />
+      <artifact path="docs/architecture.md" title="Architecture Document" section="Animation System" snippet="Use Tween nodes for smooth animations with proper cleanup to prevent memory leaks, max 500ms duration for responsive feel." />
+      <artifact path="docs/architecture.md" title="Architecture Document" section="Performance Considerations" snippet="Maintain 60fps, monitor memory usage, use object pooling for frequently created objects." />
+      <artifact path="docs/epics.md" title="Epics Document" section="Epic 2: Combat Interface Enhancement" snippet="Story 2.3 focuses on character portrait enhancement with modern borders, health overlays, status effects, and active state highlighting." />
+      <artifact path="docs/stories/2-2-combat-animation-polish.md" title="Story 2.2: Combat Animation Polish" section="Turn Indicator Implementation" snippet="TurnIndicatorController provides glow effects for active characters, supports reduced motion accessibility." />
+      <artifact path="docs/stories/2-1-enhanced-health-status-bars.md" title="Story 2.1: Enhanced Health Status Bars" section="Status Effect Visualization" snippet="UIProgressBar component with status effect overlays, animations, and accessibility features." />
+      <artifact path="docs/stories/1-4-enhanced-color-scheme.md" title="Story 1.4: Enhanced Color Scheme" section="Accessibility Compliance" snippet="WCAG AA compliance with 4.5:1 contrast ratios, automated testing for color combinations." />
+      <artifact path="docs/ui_color_guide.md" title="UI Color Guide" section="Accessibility Standards" snippet="Color palette designed for accessibility, contrast validation, and consistent theming." />
+    </docs>
+    <code>
+      <artifact path="scripts/components/UIProgressBar.gd" kind="component" symbol="UIProgressBar" lines="" reason="Existing health bar component with animations, status effects, and accessibility - reuse for health overlay in portraits." />
+      <artifact path="scripts/components/StatusEffectIcon.gd" kind="component" symbol="StatusEffectIcon" lines="" reason="24x24px status effect overlay icons - reuse pattern for portrait status effects." />
+      <artifact path="scripts/components/TurnIndicatorController.gd" kind="component" symbol="TurnIndicatorController" lines="" reason="Manages active state highlighting with glow effects - integrate for portrait active state." />
+      <artifact path="scripts/components/CombatAnimationController.gd" kind="component" symbol="CombatAnimationController" lines="" reason="Coordinates combat animations - ensure portrait animations integrate properly." />
+      <artifact path="scripts/ui/BaseUI.gd" kind="base" symbol="BaseUI" lines="" reason="Base class for UI components - CharacterPortraitContainer should extend this." />
+      <artifact path="scripts/ui/CombatScene.gd" kind="scene" symbol="CombatScene" lines="54-68" reason="Initializes animation and turn indicator controllers - update to include portrait containers." />
+      <artifact path="scripts/globals/GameManager.gd" kind="manager" symbol="GameManager" lines="" reason="Provides combat state signals - connect to portrait updates." />
+    </code>
+    <dependencies>
+      <godot version="4.5" />
+      <gut version="latest" />
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Extend BaseUI for component consistency
+    - Use ui_theme.tres for styling
+    - Tween animations with kill() cleanup
+    - Maintain 60fps performance
+    - Support reduced motion accessibility
+    - WCAG AA contrast ratios
+    - Project-relative paths only
+  </constraints>
+  <interfaces>
+    <interface name="GameManager Signals" kind="signals" signature="combat_started, player_attacked, monster_attacked, player_leveled_up" path="scripts/globals/GameManager.gd" />
+    <interface name="TurnIndicatorController API" kind="function signatures" signature="set_active(active: bool), set_reduced_motion(enabled: bool)" path="scripts/components/TurnIndicatorController.gd" />
+    <interface name="UIProgressBar API" kind="function signatures" signature="set_value_animated(value: float, duration: float = 0.3), add_status_effect(effect_type: String), remove_status_effect(effect_type: String)" path="scripts/components/UIProgressBar.gd" />
+  </interfaces>
+  <tests>
+    <standards>GUT testing framework with assertions for setup, updates, accessibility, and performance.</standards>
+    <locations>tests/godot/</locations>
+    <ideas>
+      - Test CharacterPortraitContainer initialization and 120x120px sizing
+      - Test health bar overlay updates and color changes
+      - Test status effect icon addition/removal
+      - Test active state glow/pulse animation
+      - Test reduced motion accessibility
+      - Test performance (60fps, memory usage)
+      - Test contrast ratios for accessibility
+    </ideas>
+  </tests>
+</story-context>

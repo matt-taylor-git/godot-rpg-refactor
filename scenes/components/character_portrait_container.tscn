@@ -1,0 +1,59 @@
+[gd_scene load_steps=3 format=3 uid="uid://bvxq8r7y5n2kl"]
+
+[ext_resource type="Script" path="res://scripts/components/CharacterPortraitContainer.gd" id="1_character_portrait"]
+
+[sub_resource type="Theme" id="Theme_portrait"]
+default_font = null
+default_font_size = 14
+
+[node name="CharacterPortraitContainer" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+custom_minimum_size = Vector2(120, 120)
+size = Vector2(120, 120)
+theme = SubResource("Theme_portrait")
+script = ExtResource("1_character_portrait")
+
+[node name="PortraitPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+
+[node name="PortraitImage" type="TextureRect" parent="PortraitPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+stretch_mode = 3
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = -12.0
+offset_right = -4.0
+offset_bottom = -4.0
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="StatusContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -104.0
+offset_top = -28.0
+offset_right = -4.0
+offset_bottom = -4.0
+theme_override_constants/separation = 2

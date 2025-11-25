@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://c6g2w3j1x1v2k" path="res://assets/goblin.png" id="3"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="4"]
 [ext_resource type="Script" uid="uid://b8x3k2j7x1q2a" path="res://scripts/components/UIProgressBar.gd" id="5"]
+[ext_resource type="PackedScene" uid="uid://bvxq8r7y5n2kl" path="res://scenes/components/character_portrait_container.tscn" id="6"]
 
 
 [node name="CombatScene" type="Control"]
@@ -44,18 +45,13 @@ theme_type_variation = "Panel"
 layout_mode = 2
 alignment = 1
 
-[node name="PlayerSprite" type="TextureRect" parent="MainContainer/ArenaPanel/HBoxContainer"]
+[node name="PlayerPortrait" parent="MainContainer/ArenaPanel/HBoxContainer" instance=ExtResource("6")]
 layout_mode = 2
 size_flags_horizontal = 3
-expand_mode = 1
-stretch_mode = 5
 
-[node name="MonsterSprite" type="TextureRect" parent="MainContainer/ArenaPanel/HBoxContainer"]
+[node name="MonsterPortrait" parent="MainContainer/ArenaPanel/HBoxContainer" instance=ExtResource("6")]
 layout_mode = 2
 size_flags_horizontal = 3
-texture = ExtResource("3")
-expand_mode = 1
-stretch_mode = 5
 
 [node name="InfoPanel" type="HBoxContainer" parent="MainContainer"]
 layout_mode = 2

@@ -3,8 +3,8 @@ extends Control
 # CombatScene - Redesigned turn-based combat interface
 # Integrates animation systems from Story 2.2
 
-@onready var player_sprite = $MainContainer/ArenaPanel/HBoxContainer/PlayerSprite
-@onready var monster_sprite = $MainContainer/ArenaPanel/HBoxContainer/MonsterSprite
+@onready var player_portrait = $MainContainer/ArenaPanel/HBoxContainer/PlayerPortrait
+@onready var monster_portrait = $MainContainer/ArenaPanel/HBoxContainer/MonsterPortrait
 
 @onready var player_name_label = $MainContainer/InfoPanel/PlayerInfo/VBoxContainer/PlayerName
 @onready var player_health_bar = $MainContainer/InfoPanel/PlayerInfo/VBoxContainer/PlayerHealthBar
@@ -55,7 +55,7 @@ func _setup_animation_systems() -> void:
     animation_controller = CombatAnimationController.new()
     animation_controller.name = "CombatAnimationController"
     add_child(animation_controller)
-    animation_controller.setup(player_sprite, monster_sprite, null, self)
+    animation_controller.setup(player_portrait.get_node("PortraitPanel/PortraitImage"), monster_portrait.get_node("PortraitPanel/PortraitImage"), null, self)
     animation_controller.set_reduced_motion(reduced_motion)
     
     # Connect animation signals for logging/debugging
@@ -67,7 +67,7 @@ func _setup_animation_systems() -> void:
     turn_indicator = TurnIndicatorController.new()
     turn_indicator.name = "TurnIndicatorController"
     add_child(turn_indicator)
-    turn_indicator.setup(player_sprite, monster_sprite)
+    turn_indicator.setup(player_portrait.get_node("PortraitPanel/PortraitImage"), monster_portrait.get_node("PortraitPanel/PortraitImage"))
     turn_indicator.set_reduced_motion(reduced_motion)
     
     # Create PerformanceMonitor - AC-2.2.4
@@ -107,6 +107,10 @@ func set_reduced_motion(enabled: bool) -> void:
         animation_controller.set_reduced_motion(enabled)
     if turn_indicator:
         turn_indicator.set_reduced_motion(enabled)
+    if player_portrait:
+        player_portrait.respect_reduced_motion = enabled
+    if monster_portrait:
+        monster_portrait.respect_reduced_motion = enabled
 
 func _update_ui():
     _update_player_ui()
@@ -120,13 +124,22 @@ func _update_player_ui():
     player_health_bar.max_value = player.max_health
     # Use animated value change for smooth health transitions
     player_health_bar.set_value_animated(player.health, true)
-    # TODO: Set player sprite based on class
+    
+    # Update player portrait
+    if player_portrait:
+        var health_pct = (float(player.health) / float(player.max_health)) * 100.0
+        player_portrait.set_character_data(player.name, _get_player_portrait_texture(player), health_pct)
+        
+        # Update status effects from player
+        _update_player_status_effects(player)
 
 func _update_monster_ui():
     var monster = GameManager.get_current_monster()
     if not monster:
         monster_name_label.text = "No Monster"
         monster_health_bar.set_value_animated(0, true)
+        if monster_portrait:
+            monster_portrait.visible = false
         return
 
     var name_text = monster.name + " (Lv." + str(monster.level) + ")"
@@ -137,7 +150,15 @@ func _update_monster_ui():
     monster_health_bar.max_value = monster.max_health
     # Use animated value change for smooth health transitions
     monster_health_bar.set_value_animated(monster.health, true)
-    # TODO: Set monster sprite based on type
+    
+    # Update monster portrait
+    if monster_portrait:
+        monster_portrait.visible = true
+        var health_pct = (float(monster.health) / float(monster.max_health)) * 100.0
+        monster_portrait.set_character_data(name_text, _get_monster_portrait_texture(monster), health_pct)
+        
+        # Update status effects from monster
+        _update_monster_status_effects(monster)
 
 func _append_to_log(message: String):
     if combat_log:
@@ -151,6 +172,10 @@ func _on_combat_started(monster_name_param: String):
     # Set player as active turn - AC-2.2.3
     if turn_indicator:
         turn_indicator.highlight_player()
+    if player_portrait:
+        player_portrait.is_active = true
+    if monster_portrait:
+        monster_portrait.is_active = false
 
 func _on_player_attacked(damage: int, is_critical: bool):
     _append_to_log(GameManager.get_combat_log())
@@ -165,6 +190,10 @@ func _on_player_attacked(damage: int, is_critical: bool):
         # Switch to monster turn indicator - AC-2.2.3
         if turn_indicator:
             turn_indicator.highlight_monster()
+        if player_portrait:
+            player_portrait.is_active = false
+        if monster_portrait:
+            monster_portrait.is_active = true
         
         await get_tree().create_timer(0.5).timeout # Reduced from 1.0 since we wait for animations
         var monster_attack_msg = GameManager.monster_attack()
@@ -178,6 +207,10 @@ func _on_player_attacked(damage: int, is_critical: bool):
         # Return to player turn if combat continues - AC-2.2.3
         if GameManager.in_combat and turn_indicator:
             turn_indicator.highlight_player()
+        if player_portrait:
+            player_portrait.is_active = true
+        if monster_portrait:
+            monster_portrait.is_active = false
 
 func _on_monster_attacked(damage: int):
     _append_to_log(GameManager.get_combat_log())
@@ -272,7 +305,7 @@ func _on_skill_selected(skill_index: int):
     
     # Play spell cast animation before using skill - AC-2.2.2
     if animation_controller and not reduced_motion and skill_name != "":
-        await animation_controller.play_spell_cast(player_sprite, monster_sprite, skill_name)
+        await animation_controller.play_spell_cast(player_portrait.get_node("PortraitPanel/PortraitImage"), monster_portrait.get_node("PortraitPanel/PortraitImage"), skill_name)
     
     var result = GameManager.player_use_skill(skill_index)
     _append_to_log(result)
@@ -283,6 +316,10 @@ func _on_skill_selected(skill_index: int):
     if GameManager.in_combat:
         if turn_indicator:
             turn_indicator.highlight_monster()
+        if player_portrait:
+            player_portrait.is_active = false
+        if monster_portrait:
+            monster_portrait.is_active = true
         
         await get_tree().create_timer(0.5).timeout
         var monster_attack_msg = GameManager.monster_attack()
@@ -294,9 +331,77 @@ func _on_skill_selected(skill_index: int):
         
         if GameManager.in_combat and turn_indicator:
             turn_indicator.highlight_player()
+        if player_portrait:
+            player_portrait.is_active = true
+        if monster_portrait:
+            monster_portrait.is_active = false
 
 func _on_skills_cancelled():
     skills_dialog_instance = null
+
+func _get_player_portrait_texture(player) -> Texture2D:
+    # Get portrait texture based on player class
+    match player.class_name:
+        "Warrior":
+            return load("res://assets/warrior.png")
+        "Mage":
+            return load("res://assets/mage.png")
+        "Rogue":
+            return load("res://assets/rogue.png")
+        "Hero":
+            return load("res://assets/Hero.png")
+        _:
+            return load("res://assets/Hero.png")  # Default fallback
+
+func _get_monster_portrait_texture(monster) -> Texture2D:
+    # Get portrait texture based on monster type
+    match monster.name.to_lower():
+        "goblin":
+            return load("res://assets/goblin.png")
+        "orc":
+            return load("res://assets/orc.png")
+        "skeleton":
+            return load("res://assets/skeleton.png")
+        "slime":
+            return load("res://assets/slime.png")
+        "spider":
+            return load("res://assets/spider.png")
+        "wolf":
+            return load("res://assets/wolf.png")
+        "golem":
+            return load("res://assets/golem.png")
+        "bandit":
+            return load("res://assets/bandit.png")
+        "boss":
+            return load("res://assets/boss.png")
+        "final boss":
+            return load("res://assets/final_boss.png")
+        _:
+            return load("res://assets/goblin.png")  # Default fallback
+
+func _update_player_status_effects(player):
+    # Update player status effects on portrait
+    if not player_portrait:
+        return
+    
+    # Clear existing status effects
+    player_portrait.clear_status_effects()
+    
+    # Add current status effects (if player has status effects system)
+    # This would need to be implemented in Player class
+    # For now, we'll skip as status effects aren't fully implemented yet
+
+func _update_monster_status_effects(monster):
+    # Update monster status effects on portrait
+    if not monster_portrait:
+        return
+    
+    # Clear existing status effects
+    monster_portrait.clear_status_effects()
+    
+    # Add current status effects (if monster has status effects system)
+    # This would need to be implemented in Monster class
+    # For now, we'll skip as status effects aren't fully implemented yet
 
 func _exit_tree() -> void:
     # Cleanup animation systems
