@@ -341,7 +341,7 @@ func _on_skills_cancelled():
 
 func _get_player_portrait_texture(player) -> Texture2D:
     # Get portrait texture based on player class
-    match player.class_name:
+    match player.character_class:
         "Warrior":
             return load("res://assets/warrior.png")
         "Mage":
