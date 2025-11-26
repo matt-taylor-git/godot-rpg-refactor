@@ -420,6 +420,13 @@ Menu Stack: [MainMenu] → [CharacterCreation] → [GameWorld]
 | AC-3.3.3 | Non-Functional: Performance (Response Time Targets), Detailed Design: APIs and Interfaces | Settings.gd._on_setting_changed(), preview update logic | Integration test: Change setting → Verify UI updates within 100ms |
 | AC-3.3.4 | Non-Functional: Reliability (Error Recovery), Dependencies and Integrations (File System Integration) | SettingsManager.gd.save_settings(), JSON persistence | Persistence test: Change settings → Restart application → Verify settings restored |
 
+## Post-Review Follow-ups
+
+- [ ] [Medium] Fix `reduce_motion` detection logic to use a proper GameSetting or OS feature (AC-3.1.4) (Ref: Story 3.1)
+- [ ] [Low] Update `tests/godot/test_main_menu.gd` to test the fixed logic (Ref: Story 3.1)
+- [ ] [High] Add the missing "Options" UIButton entry and route it to Settings per AC-3.1.2 (Ref: Story 3.1)
+- [ ] [High] Refactor `MainMenu.gd` to extend `BaseUI` and keep tests green (Ref: Story 3.1)
+
 ## Risks, Assumptions, Open Questions
 
 **Risk:** Theme resource loading failures could result in unstyled UI components

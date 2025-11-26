@@ -1,8 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://c1q1q1q1q1q1q1q1q1q1q1"]
+[gd_scene load_steps=6 format=3 uid="uid://c1q1q1q1q1q1q1q1q1q1q1"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
+[ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="4"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
+shader = ExtResource("4")
+shader_parameter/reduce_motion = false
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -13,6 +18,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1")
 script = ExtResource("2")
+metadata/_edit_lock_ = true
 
 [node name="Background" type="Panel" parent="."]
 layout_mode = 1
@@ -22,40 +28,84 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+material = SubResource("ShaderMaterial_bg")
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="Content" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
 
-[node name="MenuPanel" type="PanelContainer" parent="CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Content"]
 layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/MenuPanel"]
-layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 20
 
-[node name="TitleLabel" type="Label" parent="CenterContainer/MenuPanel/VBoxContainer"]
+[node name="Header" type="HBoxContainer" parent="Content/VBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Content/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 text = "Pyrpg-Godot"
 horizontal_alignment = 1
+vertical_alignment = 1
 theme_type_variation = "H1"
 
-[node name="NewGameButton" parent="CenterContainer/MenuPanel/VBoxContainer" instance=ExtResource("3")]
+[node name="MainContent" type="CenterContainer" parent="Content/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MenuPanel" type="PanelContainer" parent="Content/VBoxContainer/MainContent"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Content/VBoxContainer/MainContent/MenuPanel"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="NewGameButton" parent="Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "New Game"
 
-[node name="LoadGameButton" parent="CenterContainer/MenuPanel/VBoxContainer" instance=ExtResource("3")]
+[node name="LoadGameButton" parent="Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "Load Game"
 
-[node name="ExitButton" parent="CenterContainer/MenuPanel/VBoxContainer" instance=ExtResource("3")]
+[node name="OptionsButton" parent="Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer" instance=ExtResource("3")]
+layout_mode = 2
+text = "Options"
+
+[node name="ExitButton" parent="Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 text = "Exit"
 
-[connection signal="pressed" from="CenterContainer/MenuPanel/VBoxContainer/NewGameButton" to="." method="_on_new_game_pressed"]
-[connection signal="pressed" from="CenterContainer/MenuPanel/VBoxContainer/LoadGameButton" to="." method="_on_load_game_pressed"]
-[connection signal="pressed" from="CenterContainer/MenuPanel/VBoxContainer/ExitButton" to="." method="_on_exit_pressed"]
+[node name="Footer" type="HBoxContainer" parent="Content/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="BackButton" parent="Content/VBoxContainer/Footer" instance=ExtResource("3")]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+text = "Back"
+
+[connection signal="pressed" from="Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer/NewGameButton" to="." method="_on_new_game_pressed"]
+[connection signal="pressed" from="Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer/LoadGameButton" to="." method="_on_load_game_pressed"]
+[connection signal="pressed" from="Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer/OptionsButton" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer/ExitButton" to="." method="_on_exit_pressed"]

@@ -22,3 +22,7 @@ Routing guidance:
 | 2025-11-20 | 2.1 | 2 | Bug | High | TBD | Open | Update combat scene node types from ProgressBar to UIProgressBar [file: scenes/ui/combat_scene.tscn] |
 | 2025-11-20 | 2.1 | 2 | TechDebt | Med | TBD | Open | Add UIProgressBar theme items to ui_theme.tres resource file [file: resources/ui_theme.tres] |
 | 2025-11-20 | 2.1 | 2 | TechDebt | Med | TBD | Open | Move integration test files to tests/godot/ directory [file: test_progress_bar_simple.gd, test_combat_scene_integration.gd] |
+| 2025-11-25 | 3.1 | 3 | Enhancement | Med | TBD | Open | Fix `reduce_motion` detection logic to use a proper GameSetting or OS feature (AC-3.1.4) [file: scripts/ui/MainMenu.gd:50] |
+| 2025-11-25 | 3.1 | 3 | Test | Low | TBD | Open | Update `tests/godot/test_main_menu.gd` to test the fixed reduced motion logic [file: tests/godot/test_main_menu.gd] |
+| 2025-11-25 | 3.1 | 3 | Bug | High | TBD | Open | Add the missing "Options" UIButton and handler so AC-3.1.2 is satisfied [files: scenes/ui/main_menu.tscn, scripts/ui/MainMenu.gd] |
+| 2025-11-25 | 3.1 | 3 | Bug | High | TBD | Open | Refactor MainMenu to extend BaseUI and rerun `tests/godot/test_main_menu.gd` to restore architectural compliance [files: scripts/ui/MainMenu.gd, scenes/ui/main_menu.tscn, tests/godot/test_main_menu.gd] |

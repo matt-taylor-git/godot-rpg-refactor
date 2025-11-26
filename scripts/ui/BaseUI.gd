@@ -1,4 +1,5 @@
 extends Control
+class_name BaseUI
 
 # BaseUI - Base class for all UI scenes
 # Provides common functionality and responsive layout
