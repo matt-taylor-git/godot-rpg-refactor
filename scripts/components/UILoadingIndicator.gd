@@ -110,7 +110,15 @@ func _create_spinner_animation():
 	anim.track_insert_key(track_idx, 0.0, 0.0)
 	anim.track_insert_key(track_idx, 1.0, 2 * PI)  # 360 degrees
 
-	animation_player.add_animation("spin", anim)
+	# Add animation to the AnimationPlayer using the root library
+	if animation_player.has_animation_library(""):
+		var library = animation_player.get_animation_library("")
+		library.add_animation("spin", anim)
+	else:
+		# Create root library if it doesn't exist
+		var library = AnimationLibrary.new()
+		library.add_animation("spin", anim)
+		animation_player.add_animation_library("", library)
 
 func _position_elements():
 	# Center spinner
