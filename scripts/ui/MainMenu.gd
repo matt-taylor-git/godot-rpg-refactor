@@ -123,15 +123,16 @@ func _setup_focus_navigation():
 	new_game_button.grab_focus()
 	
 	# Setup focus neighbors for arrow key navigation
-	new_game_button.focus_neighbor_down = new_game_button.get_path_to(load_game_button)
+	# Use set() method to properly assign focus properties in Godot 4
+	new_game_button.set("focus_neighbor_down", load_game_button.get_path())
 	
-	load_game_button.focus_neighbor_up = load_game_button.get_path_to(new_game_button)
-	load_game_button.focus_neighbor_down = load_game_button.get_path_to(options_button)
+	load_game_button.set("focus_neighbor_up", new_game_button.get_path())
+	load_game_button.set("focus_neighbor_down", options_button.get_path())
 	
-	options_button.focus_neighbor_up = options_button.get_path_to(load_game_button)
-	options_button.focus_neighbor_down = options_button.get_path_to(exit_button)
+	options_button.set("focus_neighbor_up", load_game_button.get_path())
+	options_button.set("focus_neighbor_down", exit_button.get_path())
 	
-	exit_button.focus_neighbor_up = exit_button.get_path_to(options_button)
+	exit_button.set("focus_neighbor_up", options_button.get_path())
 
 func _animate_background():
 	"""Setup background atmosphere per AC-3.1.3"""
