@@ -36,6 +36,9 @@ __pycache__/
 # Testing
 Testing/
 
+# Claude Code
+.claude/
+
 # Vim
 *.swp
 *.swo
@@ -47,4 +50,5 @@ Testing/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+nul
 .venv/
