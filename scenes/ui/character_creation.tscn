@@ -1,13 +1,13 @@
-[gd_scene load_steps=5 format=3 uid="uid://b1saih6uqrtd1"]
+[gd_scene load_steps=9 format=3 uid="uid://b1saih6uqrtd1"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/CharacterCreation.gd" id="2"]
-[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/hero.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/Hero.png" id="3"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="4"]
-[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/ui/icons/hero.png" id="5"]
-[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/ui/icons/warrior.png" id="6"]
-[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/ui/icons/mage.png" id="7"]
-[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/ui/icons/rogue.png" id="8"]
+[ext_resource type="Texture2D" uid="uid://b7rm3eq66h2qc" path="res://assets/ui/icons/hero.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://cfdgntjpxmoj3" path="res://assets/ui/icons/warrior.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://b4lgo58qkbd7a" path="res://assets/ui/icons/mage.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://b3ea4vemk2met" path="res://assets/ui/icons/rogue.png" id="8"]
 
 [node name="CharacterCreation" type="Control"]
 layout_mode = 3
@@ -26,6 +26,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -147,7 +148,7 @@ text = "Attack: 12
 Defense: 6
 Dexterity: 6"
 
-[node name="StatsLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+[node name="StatProgressLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
 layout_mode = 2
 text = "Stat Progress"
 horizontal_alignment = 1
