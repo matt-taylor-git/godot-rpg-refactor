@@ -31,6 +31,38 @@ def create_sword_icon(path, size, color):
     img.save(path)
     print(f"Generated {path}")
 
+def create_class_icon(path, size, color, icon_type):
+    """Creates a simple class icon based on type."""
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+
+    if icon_type == "warrior":
+        # Sword icon for warrior
+        draw.line([(size // 2, size - 5), (size // 2, size - 15)], fill=color, width=3)
+        draw.line([(size // 2 - 5, size - 15), (size // 2 + 5, size - 15)], fill=color, width=3)
+        draw.line([(size // 2, size - 16), (size // 2, 5)], fill=color, width=3)
+        draw.point((size // 2, 4), fill=color)
+
+    elif icon_type == "mage":
+        # Staff icon for mage
+        draw.line([(size // 2, size - 5), (size // 2, 5)], fill=color, width=3)
+        draw.ellipse([(size // 2 - 3, 5), (size // 2 + 3, 11)], fill=color)
+        draw.line([(size // 2 - 2, 8), (size // 2 + 2, 8)], fill=color, width=2)
+
+    elif icon_type == "rogue":
+        # Dagger icon for rogue
+        draw.line([(size // 2, size - 5), (size // 2, 10)], fill=color, width=2)
+        draw.line([(size // 2 - 3, 10), (size // 2 + 3, 10)], fill=color, width=2)
+        draw.line([(size // 2, 10), (size // 2, 5)], fill=color, width=2)
+
+    elif icon_type == "hero":
+        # Shield icon for hero
+        draw.arc([(10, 10), (size - 10, size - 10)], 0, 180, fill=color, width=3)
+        draw.line([(10, size // 2), (size - 10, size // 2)], fill=color, width=3)
+
+    img.save(path)
+    print(f"Generated {path}")
+
 if __name__ == "__main__":
     assets_dir = "assets/"
     main_color = "#C4A87A"  # Gold
@@ -44,3 +76,9 @@ if __name__ == "__main__":
 
     # Sword Icon
     create_sword_icon(f"{assets_dir}icon_sword.png", 32, main_color)
+
+    # Class Icons
+    create_class_icon(f"{assets_dir}ui/icons/warrior.png", 64, main_color, "warrior")
+    create_class_icon(f"{assets_dir}ui/icons/mage.png", 64, main_color, "mage")
+    create_class_icon(f"{assets_dir}ui/icons/rogue.png", 64, main_color, "rogue")
+    create_class_icon(f"{assets_dir}ui/icons/hero.png", 64, main_color, "hero")

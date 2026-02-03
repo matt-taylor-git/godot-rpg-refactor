@@ -22,6 +22,8 @@ build/
 !.godot/.gdignore
 !addons/
 !addons/gut/
+doc/
+**/doc_classes/
 
 # Python
 __pycache__/

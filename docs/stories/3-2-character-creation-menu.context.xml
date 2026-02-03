@@ -1,0 +1,202 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>2</storyId>
+    <title>Character Creation Menu</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-08</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-2-character-creation-menu.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a new player</asA>
+    <iWant>an intuitive character creation experience</iWant>
+    <soThat>I can easily create my ideal RPG character</soThat>
+    <tasks>
+      <task id="1" ac="AC-3.2.1, AC-3.2.2, AC-3.2.3, AC-3.2.4">
+        <description>Create Character Creation Scene</description>
+        <subtasks>
+          <subtask>Create scenes/ui/character_creation.tscn with tabbed interface</subtask>
+          <subtask>Design layout with name input, class selection, stat preview, and confirmation sections</subtask>
+          <subtask>Apply ui_theme.tres for consistent styling</subtask>
+          <subtask>Implement smooth transitions between creation steps</subtask>
+        </subtasks>
+      </task>
+      <task id="2" ac="AC-3.2.1">
+        <description>Implement Class Selection System</description>
+        <subtasks>
+          <subtask>Create class selection UI with 64x64px icons for each class (Warrior, Mage, Rogue, Hero)</subtask>
+          <subtask>Add hover tooltips with class descriptions and role information</subtask>
+          <subtask>Implement visual highlighting for selected class</subtask>
+          <subtask>Ensure keyboard navigation works between class options</subtask>
+        </subtasks>
+      </task>
+      <task id="3" ac="AC-3.2.2">
+        <description>Real-time Stat Preview System</description>
+        <subtasks>
+          <subtask>Create stat preview panel with animated bars (200ms transition)</subtask>
+          <subtask>Implement stat calculation logic based on class selection</subtask>
+          <subtask>Display base stats (Strength, Dexterity, Intelligence, Constitution) with class modifiers</subtask>
+          <subtask>Show stat descriptions and gameplay impact information</subtask>
+        </subtasks>
+      </task>
+      <task id="4" ac="AC-3.2.3, AC-3.2.4">
+        <description>Character Creation Controller Logic</description>
+        <subtasks>
+          <subtask>Create scripts/ui/CharacterCreation.gd extending BaseUI.gd</subtask>
+          <subtask>Implement name validation (3-12 characters, alphanumeric only)</subtask>
+          <subtask>Add step-by-step navigation with smooth transitions</subtask>
+          <subtask>Implement confirmation step before finalizing character</subtask>
+          <subtask>Connect to GameManager.new_game() for character creation completion</subtask>
+        </subtasks>
+      </task>
+      <task id="5" ac="AC-3.2.3, AC-3.2.4">
+        <description>Visual Polish and Accessibility</description>
+        <subtasks>
+          <subtask>Add subtle background animations with reduce_motion support</subtask>
+          <subtask>Implement smooth transitions between creation steps (300ms fade/slide)</subtask>
+          <subtask>Ensure keyboard navigation with proper focus indicators</subtask>
+          <subtask>Verify WCAG AA contrast ratios for all text elements</subtask>
+          <subtask>Add sound effects for class selection and confirmation actions</subtask>
+        </subtasks>
+      </task>
+      <task id="6" ac="All">
+        <description>Testing</description>
+        <subtasks>
+          <subtask>Create tests/godot/test_character_creation.gd</subtask>
+          <subtask>Test class selection logic and stat calculations</subtask>
+          <subtask>Test name validation and error handling</subtask>
+          <subtask>Test navigation flow and step transitions</subtask>
+          <subtask>Test accessibility features and keyboard navigation</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-3.2.1">
+      <description>Given I choose to create a character, when I use the character creation menu, then class selection is visually clear with icons and descriptions.</description>
+    </criterion>
+    <criterion id="AC-3.2.2">
+      <description>Given I choose to create a character, when I select a class, then stat previews update in real-time.</description>
+    </criterion>
+    <criterion id="AC-3.2.3">
+      <description>Given I choose to create a character, when I navigate between steps, then navigation between steps is smooth.</description>
+    </criterion>
+    <criterion id="AC-3.2.4">
+      <description>Given I choose to create a character, when I complete the process, then the process feels guided and modern.</description>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 3: Menu System Redesign</section>
+        <snippet>Character creation menu with intuitive, guided workflow for easy RPG character creation.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture</title>
+        <section>UI Component Creation Pattern</section>
+        <snippet>Create component scene in scenes/components/, attach script in scripts/components/, extend Control node type.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/stories/tech-spec-epic-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Detailed Design</section>
+        <snippet>Character creation workflow with class selection, stat preview, and validation.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/stories/3-1-main-menu-modernization.md</path>
+        <title>Main Menu Modernization</title>
+        <section>Dev Notes</section>
+        <snippet>Tween management, reduced motion support, theme usage, and component reuse patterns.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>scripts/ui/BaseUI.gd</path>
+        <kind>base-class</kind>
+        <symbol>BaseUI</symbol>
+        <lines>1-50</lines>
+        <reason>CharacterCreation.gd must extend BaseUI for architectural consistency</reason>
+      </artifact>
+      <artifact>
+        <path>resources/ui_theme.tres</path>
+        <kind>theme-resource</kind>
+        <symbol>ui_theme</symbol>
+        <lines>N/A</lines>
+        <reason>Centralized theme resource for consistent styling across all UI components</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/ui/MainMenu.gd</path>
+        <kind>controller</kind>
+        <symbol>MainMenu</symbol>
+        <lines>120-134</lines>
+        <reason>Reference implementation for keyboard navigation and focus management</reason>
+      </artifact>
+      <artifact>
+        <path>tests/godot/test_main_menu.gd</path>
+        <kind>test</kind>
+        <symbol>test_main_menu</symbol>
+        <lines>1-50</lines>
+        <reason>Reference test structure and patterns for UI component testing</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem>Godot</ecosystem>
+      <packages>
+        <package name="Godot Engine" version="4.5" />
+        <package name="GUT Testing Framework" version="9.5.0" />
+      </packages>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>CharacterCreation.gd must extend BaseUI.gd for architectural consistency</constraint>
+    <constraint>Use ui_theme.tres for all styling to maintain visual consistency</constraint>
+    <constraint>Implement Tween animations with proper cleanup (tween.kill()) to prevent memory leaks</constraint>
+    <constraint>Support keyboard navigation with proper focus indicators for accessibility</constraint>
+    <constraint>Character names must be validated (3-12 characters, alphanumeric only) to prevent injection issues</constraint>
+    <constraint>All animations must support reduced motion settings for accessibility compliance</constraint>
+    <constraint>Maintain 60fps performance target during all character creation interactions</constraint>
+    <constraint>Follow 8px grid system for layout and spacing consistency</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GameManager Interface</name>
+      <kind>autoload-interface</kind>
+      <signature>func new_game(player_name: String, player_class: String) -&gt; void</signature>
+      <path>scripts/globals/GameManager.gd</path>
+    </interface>
+    <interface>
+      <name>BaseUI Interface</name>
+      <kind>base-class-interface</kind>
+      <signature>func _initialize_theme() -&gt; void, func _setup_animations() -&gt; void</signature>
+      <path>scripts/ui/BaseUI.gd</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      <paragraph>Comprehensive test coverage following GUT framework patterns. Unit tests for component logic, integration tests for workflows, visual tests for UI consistency, performance tests for animation frame rates, and accessibility tests for keyboard navigation and contrast ratios.</paragraph>
+    </standards>
+    <locations>
+      <location>tests/godot/test_*.gd</location>
+      <location>tests/godot/integration/*.gd</location>
+    </locations>
+    <ideas>
+      <idea ac="AC-3.2.1">Test class selection UI displays icons and descriptions correctly</idea>
+      <idea ac="AC-3.2.2">Test stat preview updates in real-time when class is selected</idea>
+      <idea ac="AC-3.2.3">Test navigation between creation steps is smooth and responsive</idea>
+      <idea ac="AC-3.2.4">Test complete character creation workflow feels guided and modern</idea>
+      <idea ac="All">Test keyboard navigation works for all interactive elements</idea>
+      <idea ac="All">Test reduced motion settings properly disable animations</idea>
+      <idea ac="All">Test WCAG AA contrast ratios are maintained for all text</idea>
+    </ideas>
+  </tests>
+</story-context>

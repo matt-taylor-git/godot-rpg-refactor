@@ -4,6 +4,10 @@
 [ext_resource type="Script" path="res://scripts/ui/CharacterCreation.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/hero.png" id="3"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="4"]
+[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/ui/icons/hero.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/ui/icons/warrior.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/ui/icons/mage.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/ui/icons/rogue.png" id="8"]
 
 [node name="CharacterCreation" type="Control"]
 layout_mode = 3
@@ -81,18 +85,22 @@ theme_override_constants/separation = 5
 [node name="HeroButton" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "Hero"
+icon = ExtResource("5")
 
 [node name="WarriorButton" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "Warrior"
+icon = ExtResource("6")
 
 [node name="MageButton" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "Mage"
+icon = ExtResource("7")
 
 [node name="RogueButton" parent="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "Rogue"
+icon = ExtResource("8")
 
 [node name="RightPanel" type="VBoxContainer" parent="CenterContainer/CreationPanel/VBoxContainer/Content"]
 layout_mode = 2
@@ -139,6 +147,77 @@ text = "Attack: 12
 Defense: 6
 Dexterity: 6"
 
+[node name="StatsLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Stat Progress"
+horizontal_alignment = 1
+theme_type_variation = "H3"
+
+[node name="StrengthLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Strength:"
+horizontal_alignment = 0
+
+[node name="StrengthBar" type="ProgressBar" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+min_value = 0
+max_value = 20
+value = 0
+step = 1
+show_percentage = true
+
+[node name="DefenseLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Defense:"
+horizontal_alignment = 0
+
+[node name="DefenseBar" type="ProgressBar" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+min_value = 0
+max_value = 20
+value = 0
+step = 1
+show_percentage = true
+
+[node name="DexterityLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Dexterity:"
+horizontal_alignment = 0
+
+[node name="DexterityBar" type="ProgressBar" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+min_value = 0
+max_value = 20
+value = 0
+step = 1
+show_percentage = true
+
+[node name="ConstitutionLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Constitution:"
+horizontal_alignment = 0
+
+[node name="ConstitutionBar" type="ProgressBar" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+min_value = 0
+max_value = 20
+value = 0
+step = 1
+show_percentage = true
+
+[node name="IntelligenceLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Intelligence:"
+horizontal_alignment = 0
+
+[node name="IntelligenceBar" type="ProgressBar" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+min_value = 0
+max_value = 20
+value = 0
+step = 1
+show_percentage = true
+
 [node name="SkillsLabel" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
 layout_mode = 2
 text = "Starting Skills"
@@ -150,9 +229,39 @@ layout_mode = 2
 text = "Slash
 Heal"
 
+[node name="StepIndicator" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Step 1/4"
+horizontal_alignment = 1
+theme_type_variation = "H3"
+
+[node name="StepDescription" type="Label" parent="CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer"]
+layout_mode = 2
+text = "Name Input"
+horizontal_alignment = 1
+theme_type_variation = "Caption"
+
 [node name="Footer" type="HBoxContainer" parent="CenterContainer/CreationPanel/VBoxContainer"]
 layout_mode = 2
 alignment = 1
+
+[node name="PrevButton" parent="CenterContainer/CreationPanel/VBoxContainer/Footer" instance=ExtResource("4")]
+layout_mode = 2
+text = "Previous"
+disabled = true
+
+[node name="NextButton" parent="CenterContainer/CreationPanel/VBoxContainer/Footer" instance=ExtResource("4")]
+layout_mode = 2
+text = "Next"
+
+[node name="ConfirmButton" parent="CenterContainer/CreationPanel/VBoxContainer/Footer" instance=ExtResource("4")]
+layout_mode = 2
+text = "Confirm"
+disabled = true
+
+[node name="CancelButton" parent="CenterContainer/CreationPanel/VBoxContainer/Footer" instance=ExtResource("4")]
+layout_mode = 2
+text = "Cancel"
 
 [node name="BackButton" parent="CenterContainer/CreationPanel/VBoxContainer/Footer" instance=ExtResource("4")]
 layout_mode = 2
@@ -170,3 +279,7 @@ text = "Start Adventure"
 [connection signal="pressed" from="CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton" to="." method="_on_class_selected" binds= ["Rogue"]]
 [connection signal="pressed" from="CenterContainer/CreationPanel/VBoxContainer/Footer/BackButton" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="CenterContainer/CreationPanel/VBoxContainer/Footer/StartGameButton" to="." method="_on_start_game_pressed"]
+[connection signal="pressed" from="CenterContainer/CreationPanel/VBoxContainer/Footer/PrevButton" to="." method="_on_prev_step"]
+[connection signal="pressed" from="CenterContainer/CreationPanel/VBoxContainer/Footer/NextButton" to="." method="_on_next_step"]
+[connection signal="pressed" from="CenterContainer/CreationPanel/VBoxContainer/Footer/ConfirmButton" to="." method="_on_confirm_character"]
+[connection signal="pressed" from="CenterContainer/CreationPanel/VBoxContainer/Footer/CancelButton" to="." method="_on_cancel_creation"]

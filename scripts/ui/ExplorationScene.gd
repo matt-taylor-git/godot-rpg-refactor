@@ -143,18 +143,21 @@ func _on_inventory_pressed():
 	# Open inventory dialog
 	var inventory_dialog = preload("res://scenes/ui/inventory_dialog.tscn").instantiate()
 	add_child(inventory_dialog)
+	inventory_dialog.popup_centered()
 	print("Inventory dialog opened")
 
 func _on_shop_pressed():
 	# Open shop dialog
 	var shop_dialog = preload("res://scenes/ui/shop_dialog.tscn").instantiate()
 	add_child(shop_dialog)
+	shop_dialog.popup_centered()
 	print("Shop dialog opened")
 
 func _on_quest_log_pressed():
 	# Open quest log dialog
 	var quest_log_dialog = preload("res://scenes/ui/quest_log_dialog.tscn").instantiate()
 	add_child(quest_log_dialog)
+	quest_log_dialog.popup_centered()
 	print("Quest log dialog opened")
 
 func _on_talk_pressed():
@@ -171,6 +174,7 @@ func _on_codex_pressed():
 	# Open codex dialog
 	var codex_dialog = preload("res://scenes/ui/codex_dialog.tscn").instantiate()
 	add_child(codex_dialog)
+	codex_dialog.popup_centered()
 	print("Codex dialog opened")
 
 func _on_menu_pressed():
