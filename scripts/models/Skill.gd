@@ -1,5 +1,5 @@
-extends Resource
 class_name Skill
+extends Resource
 
 # Skill - Abilities that can be used in combat
 
@@ -38,12 +38,12 @@ func use(user, target) -> Dictionary:
 		"healing": 0,
 		"effects": []
 	}
-	
+
 	if not can_use(user):
 		return result
-	
+
 	result.success = true
-	
+
 	match effect_type:
 		"damage":
 			var damage = int(user.get_attack_power() * damage_multiplier)
@@ -53,7 +53,7 @@ func use(user, target) -> Dictionary:
 			user.heal(healing_amount)
 			result.healing = healing_amount
 		# Add more effect types as needed
-	
+
 	current_cooldown = cooldown
 	return result
 

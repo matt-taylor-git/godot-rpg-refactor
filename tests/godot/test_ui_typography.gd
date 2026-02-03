@@ -3,13 +3,13 @@ extends GutTest
 # TestUITypography - Unit tests for UITypography resource class
 # Tests font hierarchy, spacing constants, and validation functions
 
-var UITypographyClass = null
+var ui_typography_class = null
 var typography = null
 
 func before_each():
-	if UITypographyClass == null:
-		UITypographyClass = load("res://scripts/components/UITypography.gd")
-	typography = UITypographyClass.new()
+	if ui_typography_class == null:
+		ui_typography_class = load("res://scripts/components/UITypography.gd")
+	typography = ui_typography_class.new()
 
 func after_each():
 	typography = null

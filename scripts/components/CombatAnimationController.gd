@@ -1,5 +1,5 @@
-extends Node
 class_name CombatAnimationController
+extends Node
 
 # CombatAnimationController - Coordinates combat animations
 # AC-2.2.2: Combat Animation Polish
@@ -15,12 +15,6 @@ signal animation_completed(animation_id: String)
 signal damage_number_spawned(value: int, position: Vector2)
 signal spell_impact(spell_type: String, target: CanvasItem)
 
-# References
-var player_node: CanvasItem
-var monster_node: CanvasItem
-var camera_node: Node # For screen shake, if available. Or shake the root control.
-var particle_container: Node # Container for particle effects
-
 # Configuration
 const ATTACK_DURATION = 0.3
 const SHAKE_DURATION = 0.1
@@ -31,12 +25,20 @@ const IMPACT_DURATION = 0.2
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/components/damage_number_popup.tscn")
 
 # Particle pooling - AC-2.2.2, AC-2.2.4
-var spell_particle_pool: Array[GPUParticles2D] = []
-var impact_particle_pool: Array[GPUParticles2D] = []
 const MAX_SPELL_PARTICLES = 10 # Per effect type
 const MAX_IMPACT_PARTICLES = 10
 const MAX_PARTICLES_PER_EFFECT = 100 # Per constraint
 const MAX_TOTAL_PARTICLES = 300 # Per constraint
+
+# References
+var player_node: CanvasItem
+var monster_node: CanvasItem
+var camera_node: Node # For screen shake, if available. Or shake the root control.
+var particle_container: Node # Container for particle effects
+
+# Particle pools
+var spell_particle_pool: Array[GPUParticles2D] = []
+var impact_particle_pool: Array[GPUParticles2D] = []
 
 # Accessibility - AC-2.2.5
 var reduced_motion: bool = false
@@ -56,7 +58,7 @@ func setup(player: CanvasItem, monster: CanvasItem, camera: Node = null, contain
 	monster_node = monster
 	camera_node = camera
 	particle_container = container if container else get_parent()
-	
+
 	_connect_signals()
 
 func _check_reduced_motion() -> void:
@@ -73,7 +75,7 @@ func _initialize_particle_pools() -> void:
 		var particle = _create_spell_particle()
 		particle.emitting = false
 		spell_particle_pool.append(particle)
-	
+
 	for i in range(MAX_IMPACT_PARTICLES):
 		var particle = _create_impact_particle()
 		particle.emitting = false
@@ -86,7 +88,7 @@ func _create_spell_particle() -> GPUParticles2D:
 	particle.explosiveness = 0.8
 	particle.lifetime = SPELL_DURATION
 	particle.emitting = false
-	
+
 	# Create particle process material
 	var material = ParticleProcessMaterial.new()
 	material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
@@ -99,9 +101,9 @@ func _create_spell_particle() -> GPUParticles2D:
 	material.scale_min = 0.5
 	material.scale_max = 1.5
 	material.color = Color(1.0, 0.8, 0.2, 1.0) # Default golden color
-	
+
 	particle.process_material = material
-	
+
 	return particle
 
 func _create_impact_particle() -> GPUParticles2D:
@@ -111,7 +113,7 @@ func _create_impact_particle() -> GPUParticles2D:
 	particle.explosiveness = 1.0
 	particle.lifetime = IMPACT_DURATION
 	particle.emitting = false
-	
+
 	var material = ParticleProcessMaterial.new()
 	material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
 	material.emission_sphere_radius = 10.0
@@ -123,9 +125,9 @@ func _create_impact_particle() -> GPUParticles2D:
 	material.scale_min = 0.3
 	material.scale_max = 1.0
 	material.color = Color(1.0, 0.5, 0.0, 1.0) # Orange impact
-	
+
 	particle.process_material = material
-	
+
 	return particle
 
 func _connect_signals() -> void:
@@ -141,14 +143,14 @@ func _on_player_attacked(damage: int, is_critical: bool) -> void:
 		# Instant feedback without animation - AC-2.2.5
 		spawn_damage_number(monster_node, damage, "damage", is_critical)
 		return
-	
+
 	_play_attack_animation(player_node, monster_node)
-	
+
 	# Delay damage number slightly to match impact
 	await get_tree().create_timer(ATTACK_DURATION * 0.5).timeout
-	
+
 	spawn_damage_number(monster_node, damage, "damage", is_critical)
-	
+
 	if is_critical or damage > 20: # Arbitrary threshold for "impactful"
 		_play_screen_shake()
 
@@ -157,49 +159,49 @@ func _on_monster_attacked(damage: int) -> void:
 	if reduced_motion:
 		spawn_damage_number(player_node, damage, "damage", false)
 		return
-	
+
 	_play_attack_animation(monster_node, player_node)
-	
+
 	await get_tree().create_timer(ATTACK_DURATION * 0.5).timeout
-	
+
 	spawn_damage_number(player_node, damage, "damage", false)
 
 func _play_attack_animation(attacker: CanvasItem, target: CanvasItem) -> void:
 	if not attacker or not target: return
-	
+
 	var anim_id = _generate_animation_id("attack")
 	active_animations[anim_id] = true
 	emit_signal("animation_started", anim_id)
-	
+
 	var original_pos = attacker.position
 	var target_pos = target.position
-	
+
 	# Handle different node types for position
 	if attacker is Control:
 		original_pos = attacker.global_position
 		target_pos = target.global_position if target is Control else target.position
-	
+
 	var direction = (target_pos - original_pos).normalized()
 	var lunge_distance = 50.0
-	
+
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_QUAD)
 	tween.set_ease(Tween.EASE_OUT)
-	
+
 	# Lunge forward
 	var lunge_target = original_pos + (direction * lunge_distance)
 	if attacker is Control:
 		tween.tween_property(attacker, "global_position", lunge_target, ATTACK_DURATION * 0.5)
 	else:
 		tween.tween_property(attacker, "position", lunge_target, ATTACK_DURATION * 0.5)
-	
+
 	# Return back
 	tween.set_ease(Tween.EASE_IN)
 	if attacker is Control:
 		tween.tween_property(attacker, "global_position", original_pos, ATTACK_DURATION * 0.5)
 	else:
 		tween.tween_property(attacker, "position", original_pos, ATTACK_DURATION * 0.5)
-	
+
 	tween.tween_callback(func():
 		active_animations.erase(anim_id)
 		emit_signal("animation_completed", anim_id)
@@ -208,26 +210,26 @@ func _play_attack_animation(attacker: CanvasItem, target: CanvasItem) -> void:
 
 func _play_screen_shake() -> void:
 	if reduced_motion: return # AC-2.2.5
-	
+
 	var target = camera_node if camera_node else get_parent() # Fallback to shaking parent (CombatScene)
 	if not target: return
-	
+
 	var original_pos = target.position if target is Node2D else Vector2.ZERO
 	if target is Control:
 		original_pos = target.position
-	
+
 	var tween = create_tween()
-	
+
 	for i in range(5):
 		var offset = Vector2(randf_range(-SHAKE_INTENSITY, SHAKE_INTENSITY), randf_range(-SHAKE_INTENSITY, SHAKE_INTENSITY))
 		tween.tween_property(target, "position", original_pos + offset, SHAKE_DURATION / 5)
-	
+
 	tween.tween_property(target, "position", original_pos, 0.02)
 	tween.tween_callback(func(): tween.kill())
 
 func spawn_damage_number(target: CanvasItem, value: int, type: String, is_critical: bool) -> void:
 	if not target: return
-	
+
 	var popup = DAMAGE_NUMBER_SCENE.instantiate()
 	# Add to the same parent as target so it overlays correctly
 	var parent = target.get_parent()
@@ -235,7 +237,7 @@ func spawn_damage_number(target: CanvasItem, value: int, type: String, is_critic
 		parent.add_child(popup)
 	else:
 		add_child(popup)
-	
+
 	# Position at center of target
 	var center_offset = Vector2.ZERO
 	if target is Control:
@@ -243,9 +245,9 @@ func spawn_damage_number(target: CanvasItem, value: int, type: String, is_critic
 		popup.position = target.position + center_offset
 	else:
 		popup.position = target.position
-	
+
 	popup.setup(value, type, is_critical)
-	
+
 	emit_signal("damage_number_spawned", value, popup.position)
 
 # Spell casting with particle effects - AC-2.2.2
@@ -254,20 +256,20 @@ func play_spell_cast(caster: CanvasItem, target: CanvasItem, spell_type: String)
 		# Instant feedback without animation - AC-2.2.5
 		emit_signal("spell_impact", spell_type, target)
 		return
-	
+
 	var anim_id = _generate_animation_id("spell_" + spell_type)
 	active_animations[anim_id] = true
 	emit_signal("animation_started", anim_id)
-	
+
 	# 1. Caster cast pose/glow (300ms) - AC-2.2.2
 	await _play_cast_pose(caster, spell_type)
-	
+
 	# 2. Particle projectile traveling to target (500ms) - AC-2.2.2
 	await _play_spell_projectile(caster, target, spell_type)
-	
+
 	# 3. Impact effect at target
 	_play_impact_effect(target, spell_type)
-	
+
 	active_animations.erase(anim_id)
 	emit_signal("animation_completed", anim_id)
 	emit_signal("spell_impact", spell_type, target)
@@ -275,20 +277,20 @@ func play_spell_cast(caster: CanvasItem, target: CanvasItem, spell_type: String)
 func _play_cast_pose(caster: CanvasItem, spell_type: String) -> void:
 	# Glow effect based on spell type
 	var glow_color = _get_spell_color(spell_type)
-	
+
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_SINE)
 	tween.set_ease(Tween.EASE_OUT)
-	
+
 	# Glow up
 	tween.tween_property(caster, "modulate", glow_color, 0.15)
 	# Hold briefly
 	tween.tween_interval(0.1)
 	# Return to normal
 	tween.tween_property(caster, "modulate", Color.WHITE, 0.05)
-	
+
 	tween.tween_callback(func(): tween.kill())
-	
+
 	await get_tree().create_timer(ATTACK_DURATION).timeout
 
 func _play_spell_projectile(caster: CanvasItem, target: CanvasItem, spell_type: String) -> void:
@@ -298,80 +300,80 @@ func _play_spell_projectile(caster: CanvasItem, target: CanvasItem, spell_type: 
 		# Fallback: no particle available, just wait
 		await get_tree().create_timer(PARTICLE_TRAVEL_DURATION).timeout
 		return
-	
+
 	# Configure particle color for spell type
 	var spell_color = _get_spell_color(spell_type)
 	if particle.process_material is ParticleProcessMaterial:
 		particle.process_material.color = spell_color
-	
+
 	# Get positions
 	var start_pos = _get_center_position(caster)
 	var end_pos = _get_center_position(target)
-	
+
 	# Add particle to scene
 	var container = particle_container if particle_container else get_parent()
 	if container and particle.get_parent() != container:
 		if particle.get_parent():
 			particle.get_parent().remove_child(particle)
 		container.add_child(particle)
-	
+
 	particle.position = start_pos
 	particle.emitting = true
-	
+
 	# Animate particle traveling along curved path to target (500ms)
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_QUAD)
 	tween.set_ease(Tween.EASE_IN_OUT)
-	
+
 	# Create curved path using control point
 	var midpoint = (start_pos + end_pos) / 2
 	var perpendicular = Vector2(-(end_pos.y - start_pos.y), end_pos.x - start_pos.x).normalized()
 	var control_point = midpoint + perpendicular * 50 # Arc height
-	
+
 	# Bezier-like motion using multiple points
 	var quarter_pos = _bezier_point(start_pos, control_point, end_pos, 0.25)
 	var half_pos = _bezier_point(start_pos, control_point, end_pos, 0.5)
 	var three_quarter_pos = _bezier_point(start_pos, control_point, end_pos, 0.75)
-	
+
 	tween.tween_property(particle, "position", quarter_pos, PARTICLE_TRAVEL_DURATION * 0.25)
 	tween.tween_property(particle, "position", half_pos, PARTICLE_TRAVEL_DURATION * 0.25)
 	tween.tween_property(particle, "position", three_quarter_pos, PARTICLE_TRAVEL_DURATION * 0.25)
 	tween.tween_property(particle, "position", end_pos, PARTICLE_TRAVEL_DURATION * 0.25)
-	
+
 	tween.tween_callback(func():
 		particle.emitting = false
 		_return_spell_particle_to_pool(particle)
 		tween.kill()
 	)
-	
+
 	await get_tree().create_timer(PARTICLE_TRAVEL_DURATION).timeout
 
 func _play_impact_effect(target: CanvasItem, spell_type: String) -> void:
 	var particle = _get_impact_particle_from_pool()
 	if not particle: return
-	
+
 	var spell_color = _get_spell_color(spell_type)
 	if particle.process_material is ParticleProcessMaterial:
 		particle.process_material.color = spell_color
-	
+
 	var impact_pos = _get_center_position(target)
-	
+
 	var container = particle_container if particle_container else get_parent()
 	if container and particle.get_parent() != container:
 		if particle.get_parent():
 			particle.get_parent().remove_child(particle)
 		container.add_child(particle)
-	
+
 	particle.position = impact_pos
 	particle.emitting = true
-	
+
 	# Screen flash for impact - subtle
 	if target:
 		var flash_tween = create_tween()
 		flash_tween.tween_property(target, "modulate", Color(2.0, 2.0, 2.0), 0.05)
 		flash_tween.tween_property(target, "modulate", Color.WHITE, 0.15)
 		flash_tween.tween_callback(func(): flash_tween.kill())
-	
+
 	# Return particle to pool after effect
 	await get_tree().create_timer(IMPACT_DURATION + 0.1).timeout
 	particle.emitting = false
@@ -397,8 +399,7 @@ func _get_spell_color(spell_type: String) -> Color:
 func _get_center_position(node: CanvasItem) -> Vector2:
 	if node is Control:
 		return node.global_position + node.size / 2
-	else:
-		return node.position
+	return node.position
 
 func _bezier_point(p0: Vector2, p1: Vector2, p2: Vector2, t: float) -> Vector2:
 	# Quadratic bezier curve
@@ -444,19 +445,19 @@ func play_healing_effect(target: CanvasItem, heal_amount: int) -> void:
 	if reduced_motion:
 		spawn_damage_number(target, heal_amount, "healing", false)
 		return
-	
+
 	var anim_id = _generate_animation_id("heal")
 	active_animations[anim_id] = true
 	emit_signal("animation_started", anim_id)
-	
+
 	# Green glow
 	var tween = create_tween()
 	tween.tween_property(target, "modulate", Color(0.5, 1.5, 0.5), 0.2)
 	tween.tween_property(target, "modulate", Color.WHITE, 0.3)
 	tween.tween_callback(func(): tween.kill())
-	
+
 	spawn_damage_number(target, heal_amount, "healing", false)
-	
+
 	await get_tree().create_timer(0.5).timeout
 	active_animations.erase(anim_id)
 	emit_signal("animation_completed", anim_id)

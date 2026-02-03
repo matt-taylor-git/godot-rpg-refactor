@@ -2,17 +2,45 @@ extends PanelContainer
 
 # ShopDialog - Updated for new layout and ItemList
 
+var shop_items = []
+
 @onready var player_gold_label = $VBoxContainer/PlayerGold
 @onready var shop_list = $VBoxContainer/MainContent/ShopInventory/VBoxContainer/ShopList
 @onready var player_item_list = $VBoxContainer/MainContent/PlayerInventory/VBoxContainer/PlayerItemList
-
-var shop_items = []
+@onready var buy_button = $VBoxContainer/ActionButtons/BuyButton
+@onready var sell_button = $VBoxContainer/ActionButtons/SellButton
+@onready var close_button = $VBoxContainer/ActionButtons/CloseButton
 
 func _ready():
     print("ShopDialog ready")
     _populate_shop_items()
     _populate_player_inventory()
     _update_player_gold()
+    _setup_focus_navigation()
+
+func _setup_focus_navigation():
+    # Lists navigate right/left between each other
+    shop_list.set("focus_neighbor_right", player_item_list.get_path())
+    player_item_list.set("focus_neighbor_left", shop_list.get_path())
+
+    # Lists navigate down to action buttons
+    shop_list.set("focus_neighbor_bottom", buy_button.get_path())
+    player_item_list.set("focus_neighbor_bottom", sell_button.get_path())
+
+    # Action buttons horizontal chain: Buy <-> Sell <-> Close
+    buy_button.set("focus_neighbor_right", sell_button.get_path())
+    buy_button.set("focus_neighbor_left", close_button.get_path())
+    buy_button.set("focus_neighbor_top", shop_list.get_path())
+
+    sell_button.set("focus_neighbor_left", buy_button.get_path())
+    sell_button.set("focus_neighbor_right", close_button.get_path())
+    sell_button.set("focus_neighbor_top", player_item_list.get_path())
+
+    close_button.set("focus_neighbor_left", sell_button.get_path())
+    close_button.set("focus_neighbor_right", buy_button.get_path())
+    close_button.set("focus_neighbor_top", player_item_list.get_path())
+
+    shop_list.grab_focus()
 
 func _update_player_gold():
     var player = GameManager.get_player()

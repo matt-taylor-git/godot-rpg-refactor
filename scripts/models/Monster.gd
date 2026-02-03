@@ -1,5 +1,5 @@
-extends Resource
 class_name Monster
+extends Resource
 
 # Monster - Enemy data and behavior
 
@@ -44,8 +44,7 @@ func get_ai_action() -> String:
 		"defensive":
 			if health < max_health * 0.3:
 				return "defend"
-			else:
-				return "attack"
+			return "attack"
 		_:
 			return "attack"
 

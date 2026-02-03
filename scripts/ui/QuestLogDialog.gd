@@ -2,15 +2,16 @@ extends PanelContainer
 
 # QuestLogDialog - Redesigned for new layout
 
+var current_tab = 0  # 0 = Active, 1 = Completed
+var quests = []
+
 @onready var tab_bar = $VBoxContainer/MainContent/QuestListContainer/TabBar
 @onready var quest_list = $VBoxContainer/MainContent/QuestListContainer/QuestList
 @onready var quest_title = $VBoxContainer/MainContent/QuestDetailsContainer/QuestTitle
 @onready var quest_description = $VBoxContainer/MainContent/QuestDetailsContainer/QuestDescription
 @onready var quest_objectives = $VBoxContainer/MainContent/QuestDetailsContainer/QuestObjectives
 @onready var quest_rewards = $VBoxContainer/MainContent/QuestDetailsContainer/QuestRewards
-
-var current_tab = 0  # 0 = Active, 1 = Completed
-var quests = []
+@onready var close_button = $VBoxContainer/CloseButton
 
 func _ready():
     print("QuestLogDialog ready")
@@ -19,6 +20,20 @@ func _ready():
     QuestManager.connect("quest_progress_updated", Callable(self, "_on_quest_updated"))
     _refresh_quest_list()
     _clear_quest_details()
+    _setup_focus_navigation()
+
+func _setup_focus_navigation():
+    # Vertical chain: TabBar -> QuestList -> CloseButton (wrapping)
+    tab_bar.set("focus_neighbor_bottom", quest_list.get_path())
+    tab_bar.set("focus_neighbor_top", close_button.get_path())
+
+    quest_list.set("focus_neighbor_top", tab_bar.get_path())
+    quest_list.set("focus_neighbor_bottom", close_button.get_path())
+
+    close_button.set("focus_neighbor_top", quest_list.get_path())
+    close_button.set("focus_neighbor_bottom", tab_bar.get_path())
+
+    tab_bar.grab_focus()
 
 func _on_tab_changed(tab_index: int):
     current_tab = tab_index
@@ -48,7 +63,7 @@ func _clear_quest_details():
     quest_objectives.text = ""
     quest_rewards.text = ""
 
-func _on_quest_updated(quest_title: String, current: int = 0, target: int = 0):
+func _on_quest_updated(_quest_title: String, _current: int = 0, _target: int = 0):
     _refresh_quest_list()
     _clear_quest_details()
 

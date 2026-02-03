@@ -2,9 +2,14 @@ extends Control
 
 # InventoryDialog - New layout and theme
 
+var selected_item_index = -1
+var selected_item = null
+
 @onready var attack_value = $MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/AttackValue
 @onready var defense_value = $MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DefenseValue
-@onready var dexterity_value = $MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DexterityValue
+@onready var dexterity_value = get_node(
+	"MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DexterityValue"
+)
 
 @onready var weapon_slot = $MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/WeaponSlot
 @onready var armor_slot = $MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/ArmorSlot
@@ -14,9 +19,7 @@ extends Control
 @onready var use_button = $MainContainer/RightPanel/ActionButtons/UseButton
 @onready var equip_button = $MainContainer/RightPanel/ActionButtons/EquipButton
 @onready var drop_button = $MainContainer/RightPanel/ActionButtons/DropButton
-
-var selected_item_index = -1
-var selected_item = null
+@onready var close_button = $MainContainer/RightPanel/CloseButton
 
 func _ready():
     print("InventoryDialog ready")
@@ -24,6 +27,7 @@ func _ready():
     _update_equipment_display()
     _populate_inventory_grid()
     _update_action_buttons()
+    _setup_focus_navigation()
 
 func _update_character_stats():
     var player = GameManager.get_player()
@@ -65,6 +69,7 @@ func _populate_inventory_grid():
         var slot_button = Button.new()
         slot_button.custom_minimum_size = Vector2(80, 80)
         slot_button.theme_type_variation = "ItemSlot"
+        slot_button.focus_mode = Control.FOCUS_ALL
 
         if item:
             slot_button.text = item.name
@@ -135,6 +140,66 @@ func _on_drop_pressed():
 func _on_close_pressed():
     queue_free()
 
+func _setup_focus_navigation():
+    # Setup grid focus navigation for inventory slots
+    var slots = inventory_grid.get_children()
+    var columns = inventory_grid.columns if inventory_grid.columns > 0 else 5
+
+    for i in range(slots.size()):
+        var col = i % columns
+        var row = i / columns
+        # Right neighbor
+        if col < columns - 1 and i + 1 < slots.size():
+            slots[i].set("focus_neighbor_right", slots[i + 1].get_path())
+        elif col == columns - 1 and i - col >= 0:
+            slots[i].set("focus_neighbor_right", slots[i - col].get_path())
+        # Left neighbor
+        if col > 0:
+            slots[i].set("focus_neighbor_left", slots[i - 1].get_path())
+        else:
+            var row_end = min(i + columns - 1, slots.size() - 1)
+            slots[i].set("focus_neighbor_left", slots[row_end].get_path())
+        # Bottom neighbor
+        if i + columns < slots.size():
+            slots[i].set("focus_neighbor_bottom", slots[i + columns].get_path())
+        else:
+            slots[i].set("focus_neighbor_bottom", use_button.get_path())
+        # Top neighbor
+        if i - columns >= 0:
+            slots[i].set("focus_neighbor_top", slots[i - columns].get_path())
+
+    # Action buttons horizontal chain: Use <-> Equip <-> Drop
+    use_button.set("focus_neighbor_right", equip_button.get_path())
+    use_button.set("focus_neighbor_left", drop_button.get_path())
+    use_button.set("focus_neighbor_bottom", close_button.get_path())
+
+    equip_button.set("focus_neighbor_left", use_button.get_path())
+    equip_button.set("focus_neighbor_right", drop_button.get_path())
+    equip_button.set("focus_neighbor_bottom", close_button.get_path())
+
+    drop_button.set("focus_neighbor_left", equip_button.get_path())
+    drop_button.set("focus_neighbor_right", use_button.get_path())
+    drop_button.set("focus_neighbor_bottom", close_button.get_path())
+
+    # Close button wraps back to action buttons
+    close_button.set("focus_neighbor_top", use_button.get_path())
+
+    # Connect action buttons back up to grid
+    if slots.size() > 0:
+        use_button.set("focus_neighbor_top", slots[min(0, slots.size() - 1)].get_path())
+        equip_button.set("focus_neighbor_top", slots[min(1, slots.size() - 1)].get_path())
+        drop_button.set("focus_neighbor_top", slots[min(2, slots.size() - 1)].get_path())
+
+    # Default focus: first non-disabled slot, or close button
+    var focused = false
+    for slot in slots:
+        if not slot.disabled:
+            slot.grab_focus()
+            focused = true
+            break
+    if not focused:
+        close_button.grab_focus()
+
 func refresh_inventory():
     selected_item = null
     selected_item_index = -1
@@ -142,3 +207,4 @@ func refresh_inventory():
     _update_equipment_display()
     _populate_inventory_grid()
     _update_action_buttons()
+    _setup_focus_navigation()

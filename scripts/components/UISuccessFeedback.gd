@@ -1,8 +1,12 @@
-extends Node
 class_name UISuccessFeedback
+extends Node
 
 # UISuccessFeedback - Success confirmation feedback component
 # Provides bounce/glow animations, green color coding, and sound integration
+
+# Signals
+signal feedback_shown  # Emitted when feedback animation starts
+signal feedback_complete  # Emitted when feedback animation completes
 
 # Configuration
 @export var auto_show: bool = false  # Automatically show on ready
@@ -10,10 +14,6 @@ class_name UISuccessFeedback
 @export var bounce_scale: Vector2 = Vector2(1.5, 1.5)  # Final scale after bounce
 @export var sound_effect: AudioStream = null  # Sound effect to play
 @export var position_offset: Vector2 = Vector2(0, -50)  # Offset from anchor node
-
-# Signals
-signal feedback_shown  # Emitted when feedback animation starts
-signal feedback_complete  # Emitted when feedback animation completes
 
 # Internal state
 var animation_system: UIAnimationSystem = null

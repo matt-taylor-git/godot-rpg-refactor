@@ -1,5 +1,5 @@
-extends Node
 class_name UIAnimationSystem
+extends Node
 
 # UIAnimationSystem - Centralized animation management for visual feedback system
 # Provides consistent animation timing, tween management, and feedback coordination
@@ -18,14 +18,14 @@ const MAX_CONCURRENT_TWEENS = 10  # Limit concurrent animations to prevent perfo
 const TARGET_FPS = 60              # Maintain 60fps during animations
 const MAX_PERFORMANCE_IMPACT = 0.05  # Less than 5% frame time impact
 
-# Internal state
-var active_tweens: Array = []  # Track all active tweens for cleanup and performance monitoring
-var tween_counter: int = 0     # Track number of concurrent tweens
-
 # Feedback prefabs
 const SUCCESS_ICON_PATH = "res://assets/ui/icons/checkmark.png"
 const ERROR_ICON_PATH = "res://assets/ui/icons/error.png"
 const WARNING_ICON_PATH = "res://assets/ui/icons/warning.png"
+
+# Internal state
+var active_tweens: Array = []  # Track all active tweens for cleanup and performance monitoring
+var tween_counter: int = 0     # Track number of concurrent tweens
 
 # Feedback colors (from UITheme integration)
 var success_color: Color = Color(0.2, 0.8, 0.2, 1.0)  # Green
@@ -266,7 +266,7 @@ func _create_feedback_icon(icon_path: String, tint_color: Color, position: Vecto
 	return icon
 
 # Create loading overlay (AC-UI-010)
-func create_loading_overlay(parent: Control, show_delay: float = LOADING_INDICATOR_DURATION) -> Control:
+func create_loading_overlay(parent: Control, _show_delay: float = LOADING_INDICATOR_DURATION) -> Control:
 	"""
 	Create a loading overlay with semi-transparent background and spinner:
 	- Shows after 500ms delay (threshold)

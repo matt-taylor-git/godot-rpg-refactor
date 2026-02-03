@@ -1,12 +1,12 @@
-extends Button
 class_name UIButton
+extends Button
 
 # UIButton - Modern button component with hover effects, animations, and accessibility
 # Extends Control for full customization while maintaining button-like behavior
 
-# Preload UIAnimationSystem for hover animations
-const UIAnimationSystemClass = preload("res://scripts/components/UIAnimationSystem.gd")
-var animation_system = UIAnimationSystemClass.new()
+# Signals
+signal state_changed(new_state: ButtonState, old_state: ButtonState)  # State transition
+# Note: pressed, button_down, button_up signals inherited from Button class
 
 # State enum for button states
 enum ButtonState {
@@ -16,11 +16,12 @@ enum ButtonState {
 	DISABLED
 }
 
-# Signals
-signal state_changed(new_state: ButtonState, old_state: ButtonState)  # State transition
-# Note: pressed, button_down, button_up signals inherited from Button class
+# Preload UIAnimationSystem for hover animations
+const UIAnimationSystemClass = preload("res://scripts/components/UIAnimationSystem.gd")
 
 # Use Button's built-in properties: text, disabled, theme_override
+
+var animation_system = UIAnimationSystemClass.new()
 
 # Internal state
 var current_state: ButtonState = ButtonState.NORMAL
@@ -221,7 +222,7 @@ func _apply_theme_colors():
 	# Note: background color is set via StyleBoxFlat below, not Panel.color property
 	if label:
 		animation_system.animate_property(label, "modulate", label.modulate, font_color, 0.1)
-	
+
 	# For now, let's create a simple StyleBoxFlat to apply these colors.
 	# This replaces the complex _get_state_stylebox logic.
 	var stylebox = StyleBoxFlat.new()
@@ -235,7 +236,7 @@ func _apply_theme_colors():
 	stylebox.corner_radius_top_right = 4
 	stylebox.corner_radius_bottom_right = 4
 	stylebox.corner_radius_bottom_left = 4
-	
+
 	if background:
 		background.add_theme_stylebox_override("panel", stylebox)
 
@@ -391,7 +392,7 @@ func _animate_state_transition(old_state: ButtonState, new_state: ButtonState):
 		[ButtonState.PRESSED, ButtonState.NORMAL]:
 			animation_system.animate_property(self, "scale", scale, Vector2.ONE, 0.1)
 
-func _animate_scale(from_scale: Vector2, to_scale: Vector2, duration: float):
+func _animate_scale(_from_scale: Vector2, to_scale: Vector2, duration: float):
 	# Kill any existing tween
 	if active_tween and active_tween.is_valid():
 		active_tween.kill()
@@ -407,7 +408,7 @@ func _animate_scale(from_scale: Vector2, to_scale: Vector2, duration: float):
 	# Clean up tween when finished
 	active_tween.finished.connect(func(): active_tween = null)
 
-func _animate_color(from_color: Color, to_color: Color, duration: float):
+func _animate_color(_from_color: Color, to_color: Color, duration: float):
 	# Kill any existing tween
 	if active_tween and active_tween.is_valid():
 		active_tween.kill()

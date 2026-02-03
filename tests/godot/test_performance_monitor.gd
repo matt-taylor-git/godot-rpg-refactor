@@ -24,13 +24,13 @@ func test_initialization():
 
 func test_start_monitoring():
 	monitor.start_monitoring()
-	
+
 	assert_true(monitor.is_monitoring, "Should be monitoring after start")
 
 func test_stop_monitoring():
 	monitor.start_monitoring()
 	monitor.stop_monitoring()
-	
+
 	assert_false(monitor.is_monitoring, "Should not be monitoring after stop")
 
 # ===== Configuration Tests =====
@@ -45,12 +45,12 @@ func test_configuration_constants():
 
 func test_get_stats():
 	monitor.start_monitoring()
-	
+
 	# Wait a bit for some samples
 	await get_tree().create_timer(0.6).timeout
-	
+
 	var stats = monitor.get_stats()
-	
+
 	assert_true("current_fps" in stats, "Stats should include current_fps")
 	assert_true("average_fps" in stats, "Stats should include average_fps")
 	assert_true("current_memory_mb" in stats, "Stats should include current_memory_mb")
@@ -59,9 +59,9 @@ func test_get_stats():
 func test_stats_have_valid_values():
 	monitor.start_monitoring()
 	await get_tree().create_timer(0.6).timeout
-	
+
 	var stats = monitor.get_stats()
-	
+
 	assert_true(stats.current_fps > 0, "Current FPS should be positive")
 	assert_true(stats.current_memory_mb > 0, "Memory usage should be positive")
 
@@ -69,22 +69,22 @@ func test_stats_have_valid_values():
 
 func test_animation_timing_tracking():
 	watch_signals(monitor)
-	
+
 	monitor.start_monitoring()
 	monitor.start_animation_timing("test_anim_1")
-	
+
 	# Simulate animation duration
 	await get_tree().create_timer(0.1).timeout
-	
+
 	monitor.end_animation_timing("test_anim_1")
-	
+
 	# Should emit performance_log
 	assert_signal_emitted(monitor, "performance_log")
 
 func test_animation_timing_not_in_dict_after_end():
 	monitor.start_animation_timing("test_anim")
 	assert_true("test_anim" in monitor.animation_timings, "Animation should be tracked")
-	
+
 	monitor.end_animation_timing("test_anim")
 	assert_false("test_anim" in monitor.animation_timings, "Animation should be removed after end")
 
@@ -104,10 +104,10 @@ func test_performance_log_signal_exists():
 func test_is_performance_acceptable():
 	monitor.start_monitoring()
 	await get_tree().create_timer(0.1).timeout
-	
+
 	# In normal test conditions, performance should be acceptable
 	var is_acceptable = monitor.is_performance_acceptable()
-	
+
 	# We can't guarantee this in all environments, so just check it returns boolean
 	assert_true(is_acceptable == true or is_acceptable == false, "Should return boolean")
 
@@ -115,10 +115,10 @@ func test_is_performance_acceptable():
 
 func test_toggle_overlay():
 	assert_false(monitor.show_overlay, "Overlay should start hidden")
-	
+
 	monitor.toggle_overlay()
 	assert_true(monitor.show_overlay, "Overlay should be visible after toggle")
-	
+
 	monitor.toggle_overlay()
 	assert_false(monitor.show_overlay, "Overlay should be hidden after second toggle")
 
@@ -133,11 +133,11 @@ func test_debug_overlay_created():
 
 func test_samples_bounded():
 	monitor.start_monitoring()
-	
+
 	# Force many samples (this is a bit artificial)
 	for i in range(150):
 		monitor._take_sample(60.0)
-	
+
 	# Should not exceed MAX_SAMPLES (120)
 	assert_true(monitor.fps_samples.size() <= 120, "FPS samples should be bounded")
 	assert_true(monitor.memory_samples.size() <= 120, "Memory samples should be bounded")
@@ -146,7 +146,7 @@ func test_samples_bounded():
 
 func test_memory_usage_retrieval():
 	var memory_mb = monitor._get_memory_usage_mb()
-	
+
 	# Should return a positive value
 	assert_true(memory_mb > 0, "Memory usage should be positive")
 	# Should be reasonable (not ridiculously high in tests)
@@ -156,14 +156,14 @@ func test_memory_usage_retrieval():
 
 func test_consecutive_frame_counter_resets():
 	monitor.start_monitoring()
-	
+
 	# Simulate low FPS
 	monitor.low_fps_consecutive_count = 2
-	
+
 	# Process with good FPS (would reset counter in real scenario)
 	# We can't easily test _process directly, but we can verify the counter exists
 	assert_eq(monitor.low_fps_consecutive_count, 2, "Counter should be set")
-	
+
 	# Reset
 	monitor.low_fps_consecutive_count = 0
 	assert_eq(monitor.low_fps_consecutive_count, 0, "Counter should reset")

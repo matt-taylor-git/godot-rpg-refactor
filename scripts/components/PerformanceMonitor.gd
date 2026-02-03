@@ -1,5 +1,5 @@
-extends Node
 class_name PerformanceMonitor
+extends Node
 
 # PerformanceMonitor - Tracks animation performance metrics
 # AC-2.2.4: Animation Performance
@@ -37,7 +37,7 @@ var overlay_label: Label = null
 func _ready() -> void:
 	# Check if in debug/development mode
 	is_debug_mode = OS.is_debug_build()
-	
+
 	# Create debug overlay (hidden by default)
 	_create_debug_overlay()
 
@@ -48,13 +48,13 @@ func _create_debug_overlay() -> void:
 	overlay_label.position = Vector2(10, 10)
 	overlay_label.z_index = 1000 # Always on top
 	overlay_label.visible = false
-	
+
 	# Style the label
 	overlay_label.add_theme_color_override("font_color", Color.WHITE)
 	overlay_label.add_theme_color_override("font_shadow_color", Color.BLACK)
 	overlay_label.add_theme_constant_override("shadow_offset_x", 1)
 	overlay_label.add_theme_constant_override("shadow_offset_y", 1)
-	
+
 	# Add a background panel
 	var panel = Panel.new()
 	panel.name = "OverlayBackground"
@@ -62,7 +62,7 @@ func _create_debug_overlay() -> void:
 	panel.modulate = Color(0, 0, 0, 0.7)
 	panel.z_index = 999
 	panel.visible = false
-	
+
 	add_child(panel)
 	add_child(overlay_label)
 
@@ -93,10 +93,10 @@ func stop_monitoring() -> void:
 func _process(delta: float) -> void:
 	if not is_monitoring:
 		return
-	
+
 	# Always track FPS for warning system
 	var current_fps = Engine.get_frames_per_second()
-	
+
 	# Check for frame drops - AC-2.2.4
 	if current_fps < WARNING_FPS_THRESHOLD:
 		low_fps_consecutive_count += 1
@@ -104,28 +104,28 @@ func _process(delta: float) -> void:
 			_trigger_fps_warning(current_fps)
 	else:
 		low_fps_consecutive_count = 0
-	
+
 	# Sample at interval for efficiency
 	sample_timer += delta
 	if sample_timer >= SAMPLE_INTERVAL:
 		sample_timer = 0.0
 		_take_sample(current_fps)
-	
+
 	# Update overlay if visible
 	if show_overlay and overlay_label:
 		_update_overlay(current_fps)
 
 func _take_sample(current_fps: float) -> void:
 	fps_samples.append(current_fps)
-	
+
 	# Get memory usage
 	var memory_mb = _get_memory_usage_mb()
 	memory_samples.append(memory_mb)
-	
+
 	# Check memory warning
 	if memory_mb > MEMORY_WARNING_MB:
 		_trigger_memory_warning(memory_mb)
-	
+
 	# Keep sample arrays bounded
 	const MAX_SAMPLES = 120 # ~60 seconds at 0.5s interval
 	if fps_samples.size() > MAX_SAMPLES:
@@ -140,9 +140,9 @@ func _get_memory_usage_mb() -> float:
 
 func _trigger_fps_warning(fps: float) -> void:
 	if is_debug_mode:
-		push_warning("Performance Warning: FPS dropped to %.1f (threshold: %.1f)" % [fps, WARNING_FPS_THRESHOLD])
+		print("Performance Warning: FPS dropped to %.1f (threshold: %.1f)" % [fps, WARNING_FPS_THRESHOLD])
 	emit_signal("fps_warning", fps)
-	
+
 	# Log the event
 	var log_entry = {
 		"type": "fps_warning",
@@ -156,7 +156,7 @@ func _trigger_memory_warning(memory_mb: float) -> void:
 	if is_debug_mode:
 		push_warning("Performance Warning: Memory usage at %.1f MB (threshold: %.1f MB)" % [memory_mb, MEMORY_WARNING_MB])
 	emit_signal("memory_warning", memory_mb)
-	
+
 	var log_entry = {
 		"type": "memory_warning",
 		"memory_mb": memory_mb,
@@ -167,8 +167,9 @@ func _trigger_memory_warning(memory_mb: float) -> void:
 func _update_overlay(fps: float) -> void:
 	var memory_mb = _get_memory_usage_mb()
 	var fps_color = "green" if fps >= TARGET_FPS else ("yellow" if fps >= WARNING_FPS_THRESHOLD else "red")
-	var mem_color = "green" if memory_mb < MEMORY_WARNING_MB * 0.8 else ("yellow" if memory_mb < MEMORY_WARNING_MB else "red")
-	
+	var mem_color = "green" if memory_mb < MEMORY_WARNING_MB * 0.8 \
+		else ("yellow" if memory_mb < MEMORY_WARNING_MB else "red")
+
 	overlay_label.text = "FPS: %.0f [color=%s]●[/color]\nMem: %.1f MB [color=%s]●[/color]\nAnims: %d" % [
 		fps, fps_color, memory_mb, mem_color, animation_timings.size()
 	]
@@ -183,7 +184,7 @@ func end_animation_timing(animation_id: String) -> void:
 		var end_time = Time.get_ticks_msec()
 		var duration_ms = end_time - start_time
 		animation_timings.erase(animation_id)
-		
+
 		# Log animation completion
 		var log_entry = {
 			"type": "animation_completed",
@@ -192,7 +193,7 @@ func end_animation_timing(animation_id: String) -> void:
 			"timestamp": Time.get_unix_time_from_system()
 		}
 		emit_signal("performance_log", log_entry)
-		
+
 		# Warn if animation took too long (blocking potential)
 		if duration_ms > 600: # > 600ms is suspicious
 			if is_debug_mode:
@@ -205,13 +206,13 @@ func get_stats() -> Dictionary:
 		for fps in fps_samples:
 			avg_fps += fps
 		avg_fps /= fps_samples.size()
-	
+
 	var avg_memory = 0.0
 	if memory_samples.size() > 0:
 		for mem in memory_samples:
 			avg_memory += mem
 		avg_memory /= memory_samples.size()
-	
+
 	return {
 		"current_fps": Engine.get_frames_per_second(),
 		"average_fps": avg_fps,

@@ -1,5 +1,5 @@
-extends Resource
 class_name UITypography
+extends Resource
 
 # UITypography - Centralized typography definitions for consistent text styling
 # Provides font sizes and spacing constants following design system guidelines
@@ -17,6 +17,9 @@ const SPACING_SM = 8   # Small
 const SPACING_MD = 16  # Medium
 const SPACING_LG = 24  # Large
 const SPACING_XL = 32  # Extra large
+
+# Contrast ratio validation constants (AC-UI-008)
+const WCAG_AA_MINIMUM_CONTRAST = 4.5
 
 # Font size getters for programmatic access
 func get_heading_large_size() -> int:
@@ -82,17 +85,13 @@ func is_valid_spacing(spacing: int) -> bool:
 func get_font_hierarchy_type(size: int) -> String:
 	if size >= FONT_SIZE_HEADING_LARGE:
 		return "heading_large"
-	elif size >= FONT_SIZE_HEADING_MEDIUM:
+	if size >= FONT_SIZE_HEADING_MEDIUM:
 		return "heading_medium"
-	elif size >= FONT_SIZE_BODY_LARGE:
+	if size >= FONT_SIZE_BODY_LARGE:
 		return "body_large"
-	elif size >= FONT_SIZE_BODY_REGULAR:
+	if size >= FONT_SIZE_BODY_REGULAR:
 		return "body_regular"
-	else:
-		return "caption"
-
-# Contrast ratio validation functions (AC-UI-008)
-const WCAG_AA_MINIMUM_CONTRAST = 4.5
+	return "caption"
 
 # Calculate relative luminance from RGB color
 func _calculate_relative_luminance(color: Color) -> float:

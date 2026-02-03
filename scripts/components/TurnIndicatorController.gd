@@ -1,5 +1,5 @@
-extends Node
 class_name TurnIndicatorController
+extends Node
 
 # TurnIndicatorController - Manages turn indicator visual effects
 # AC-2.2.3: Turn Indicator Clarity
@@ -39,11 +39,11 @@ func _connect_signals() -> void:
 		if GameManager.has_signal("player_turn_started"):
 			if not GameManager.is_connected("player_turn_started", Callable(self, "_on_player_turn")):
 				GameManager.connect("player_turn_started", Callable(self, "_on_player_turn"))
-		
+
 		if GameManager.has_signal("monster_turn_started"):
 			if not GameManager.is_connected("monster_turn_started", Callable(self, "_on_monster_turn")):
 				GameManager.connect("monster_turn_started", Callable(self, "_on_monster_turn"))
-		
+
 		# Also connect to combat signals for fallback
 		if not GameManager.is_connected("combat_started", Callable(self, "_on_combat_started")):
 			GameManager.connect("combat_started", Callable(self, "_on_combat_started"))
@@ -70,26 +70,26 @@ func _on_monster_turn() -> void:
 func set_active_turn(active: CanvasItem) -> void:
 	if current_active == active:
 		return
-	
+
 	_cleanup_tweens()
-	
+
 	var previous_active = current_active
 	current_active = active
-	
+
 	if reduced_motion:
 		# Instant transition - AC-2.2.5
 		_instant_transition(previous_active, active)
 	else:
 		# Smooth animated transition - AC-2.2.3
 		_animated_transition(previous_active, active)
-	
+
 	emit_signal("turn_changed", active)
 
 func _instant_transition(previous: CanvasItem, active: CanvasItem) -> void:
 	# Immediately set visual states
 	if previous and is_instance_valid(previous):
 		previous.modulate = INACTIVE_DIM_COLOR
-	
+
 	if active and is_instance_valid(active):
 		active.modulate = ACTIVE_GLOW_COLOR
 
@@ -102,7 +102,7 @@ func _animated_transition(previous: CanvasItem, active: CanvasItem) -> void:
 		dim_tween.tween_property(previous, "modulate", INACTIVE_DIM_COLOR, TRANSITION_DURATION)
 		dim_tween.tween_callback(func(): _remove_tween(dim_tween))
 		active_tweens.append(dim_tween)
-	
+
 	# Glow the newly active node
 	if active and is_instance_valid(active):
 		var glow_tween = create_tween()
@@ -111,7 +111,7 @@ func _animated_transition(previous: CanvasItem, active: CanvasItem) -> void:
 		glow_tween.tween_property(active, "modulate", ACTIVE_GLOW_COLOR, TRANSITION_DURATION)
 		glow_tween.tween_callback(func(): _remove_tween(glow_tween))
 		active_tweens.append(glow_tween)
-	
+
 	# Dim the other node if not already processed
 	var other = monster_node if active == player_node else player_node
 	if other and is_instance_valid(other) and other != previous and other != active:
@@ -125,7 +125,7 @@ func _animated_transition(previous: CanvasItem, active: CanvasItem) -> void:
 func _reset_indicators() -> void:
 	_cleanup_tweens()
 	current_active = null
-	
+
 	if player_node and is_instance_valid(player_node):
 		player_node.modulate = NORMAL_COLOR
 	if monster_node and is_instance_valid(monster_node):

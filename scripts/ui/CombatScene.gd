@@ -3,6 +3,20 @@ extends Control
 # CombatScene - Redesigned turn-based combat interface
 # Integrates animation systems from Story 2.2
 
+const SKILLS_DIALOG = preload("res://scenes/ui/skills_dialog.tscn")
+const HERO_TEXTURE = preload("res://assets/Hero.png")
+const GOBLIN_TEXTURE = preload("res://assets/goblin.png")
+
+var skills_dialog_instance = null
+
+# Animation Controllers - AC-2.2.2, AC-2.2.3
+var animation_controller: CombatAnimationController = null
+var turn_indicator: TurnIndicatorController = null
+var performance_monitor: PerformanceMonitor = null
+
+# Accessibility setting - AC-2.2.5
+var reduced_motion: bool = false
+
 @onready var player_portrait = $MainContainer/ArenaPanel/HBoxContainer/PlayerPortrait
 @onready var monster_portrait = $MainContainer/ArenaPanel/HBoxContainer/MonsterPortrait
 
@@ -14,23 +28,17 @@ extends Control
 
 @onready var combat_log = $MainContainer/BottomPanel/CombatLogPanel/CombatLog
 
-const SKILLS_DIALOG = preload("res://scenes/ui/skills_dialog.tscn")
-var skills_dialog_instance = null
-
-# Animation Controllers - AC-2.2.2, AC-2.2.3
-var animation_controller: CombatAnimationController = null
-var turn_indicator: TurnIndicatorController = null
-var performance_monitor: PerformanceMonitor = null
-
-# Accessibility setting - AC-2.2.5
-var reduced_motion: bool = false
+@onready var attack_button = $MainContainer/BottomPanel/ActionPanel/ActionButtons/AttackButton
+@onready var skills_button = $MainContainer/BottomPanel/ActionPanel/ActionButtons/SkillsButton
+@onready var items_button = $MainContainer/BottomPanel/ActionPanel/ActionButtons/ItemsButton
+@onready var run_button = $MainContainer/BottomPanel/ActionPanel/ActionButtons/RunButton
 
 func _ready():
 	print("CombatScene ready")
-	
+
 	# Initialize animation systems
 	_setup_animation_systems()
-	
+
 	# Connect to GameManager signals
 	GameManager.connect("combat_started", Callable(self, "_on_combat_started"))
 	GameManager.connect("player_attacked", Callable(self, "_on_player_attacked"))
@@ -42,7 +50,8 @@ func _ready():
 	GameManager.connect("boss_defeated", Callable(self, "_on_boss_defeated"))
 
 	_update_ui()
-	
+	_setup_focus_navigation()
+
 	# Start performance monitoring for combat
 	if performance_monitor:
 		performance_monitor.start_monitoring()
@@ -50,31 +59,35 @@ func _ready():
 func _setup_animation_systems() -> void:
 	# Check for reduced motion preference
 	reduced_motion = ProjectSettings.get_setting("accessibility/reduced_motion", false)
-	
+
 	# Create CombatAnimationController - AC-2.2.1, AC-2.2.2
 	animation_controller = CombatAnimationController.new()
 	animation_controller.name = "CombatAnimationController"
 	add_child(animation_controller)
-	animation_controller.setup(player_portrait.get_node("PortraitPanel/PortraitImage"), monster_portrait.get_node("PortraitPanel/PortraitImage"), null, self)
+	var player_image = player_portrait.get_node("PortraitPanel/PortraitImage")
+	var monster_image = monster_portrait.get_node("PortraitPanel/PortraitImage")
+	animation_controller.setup(player_image, monster_image, null, self)
 	animation_controller.set_reduced_motion(reduced_motion)
-	
+
 	# Connect animation signals for logging/debugging
 	animation_controller.animation_started.connect(_on_animation_started)
 	animation_controller.animation_completed.connect(_on_animation_completed)
 	animation_controller.damage_number_spawned.connect(_on_damage_number_spawned)
-	
+
 	# Create TurnIndicatorController - AC-2.2.3
 	turn_indicator = TurnIndicatorController.new()
 	turn_indicator.name = "TurnIndicatorController"
 	add_child(turn_indicator)
-	turn_indicator.setup(player_portrait.get_node("PortraitPanel/PortraitImage"), monster_portrait.get_node("PortraitPanel/PortraitImage"))
+	var p_image = player_portrait.get_node("PortraitPanel/PortraitImage")
+	var m_image = monster_portrait.get_node("PortraitPanel/PortraitImage")
+	turn_indicator.setup(p_image, m_image)
 	turn_indicator.set_reduced_motion(reduced_motion)
-	
+
 	# Create PerformanceMonitor - AC-2.2.4
 	performance_monitor = PerformanceMonitor.new()
 	performance_monitor.name = "PerformanceMonitor"
 	add_child(performance_monitor)
-	
+
 	# Connect performance signals
 	performance_monitor.fps_warning.connect(_on_fps_warning)
 	performance_monitor.memory_warning.connect(_on_memory_warning)
@@ -124,12 +137,12 @@ func _update_player_ui():
 	player_health_bar.max_value = player.max_health
 	# Use animated value change for smooth health transitions
 	player_health_bar.set_value_animated(player.health, true)
-	
+
 	# Update player portrait
 	if player_portrait:
 		var health_pct = (float(player.health) / float(player.max_health)) * 100.0
 		player_portrait.set_character_data(player.name, _get_player_portrait_texture(player), health_pct)
-		
+
 		# Update status effects from player
 		_update_player_status_effects(player)
 
@@ -150,13 +163,13 @@ func _update_monster_ui():
 	monster_health_bar.max_value = monster.max_health
 	# Use animated value change for smooth health transitions
 	monster_health_bar.set_value_animated(monster.health, true)
-	
+
 	# Update monster portrait
 	if monster_portrait:
 		monster_portrait.visible = true
 		var health_pct = (float(monster.health) / float(monster.max_health)) * 100.0
 		monster_portrait.set_character_data(name_text, _get_monster_portrait_texture(monster), health_pct)
-		
+
 		# Update status effects from monster
 		_update_monster_status_effects(monster)
 
@@ -165,10 +178,10 @@ func _append_to_log(message: String):
 		combat_log.text += "\n" + message
 		combat_log.scroll_to_line(combat_log.get_line_count() - 1)
 
-func _on_combat_started(monster_name_param: String):
+func _on_combat_started(_monster_name_param: String):
 	_update_ui()
 	_append_to_log("[center]Combat begins![/center]")
-	
+
 	# Set player as active turn - AC-2.2.3
 	if turn_indicator:
 		turn_indicator.highlight_player()
@@ -177,15 +190,15 @@ func _on_combat_started(monster_name_param: String):
 	if monster_portrait:
 		monster_portrait.is_active = false
 
-func _on_player_attacked(damage: int, is_critical: bool):
+func _on_player_attacked(_damage: int, _is_critical: bool):
 	_append_to_log(GameManager.get_combat_log())
 	_update_ui()
-	
+
 	# Animation controller handles damage numbers automatically via signal connection
 	# Wait for animations before monster turn - AC-2.2.2
 	if animation_controller and not reduced_motion:
 		await animation_controller.wait_for_animations()
-	
+
 	if GameManager.in_combat:
 		# Switch to monster turn indicator - AC-2.2.3
 		if turn_indicator:
@@ -194,16 +207,16 @@ func _on_player_attacked(damage: int, is_critical: bool):
 			player_portrait.is_active = false
 		if monster_portrait:
 			monster_portrait.is_active = true
-		
+
 		await get_tree().create_timer(0.5).timeout # Reduced from 1.0 since we wait for animations
 		var monster_attack_msg = GameManager.monster_attack()
 		_append_to_log(monster_attack_msg)
 		_update_ui()
-		
+
 		# Wait for monster attack animation
 		if animation_controller and not reduced_motion:
 			await animation_controller.wait_for_animations()
-		
+
 		# Return to player turn if combat continues - AC-2.2.3
 		if GameManager.in_combat and turn_indicator:
 			turn_indicator.highlight_player()
@@ -212,7 +225,7 @@ func _on_player_attacked(damage: int, is_critical: bool):
 		if monster_portrait:
 			monster_portrait.is_active = false
 
-func _on_monster_attacked(damage: int):
+func _on_monster_attacked(_damage: int):
 	_append_to_log(GameManager.get_combat_log())
 	_update_ui()
 	# Animation controller handles damage numbers automatically
@@ -221,7 +234,7 @@ func _on_combat_ended(player_won: bool):
 	# Stop performance monitoring
 	if performance_monitor:
 		performance_monitor.stop_monitoring()
-	
+
 	var message = ""
 	if player_won:
 		message = "[color=green]Victory! You defeated the monster![/color]"
@@ -250,12 +263,39 @@ func _on_player_leveled_up(new_level: int):
 	_append_to_log("[color=blue]Level up! You are now level " + str(new_level) + "![/color]")
 	_update_ui()
 
-func _on_boss_phase_changed(phase: int, description: String):
+func _on_boss_phase_changed(_phase: int, description: String):
 	_append_to_log("[color=red]" + description + "[/color]")
 	_update_ui()
 
 func _on_boss_defeated():
 	_append_to_log("[color=gold]THE DARK OVERLORD HAS BEEN DEFEATED![/color]")
+
+func _setup_focus_navigation():
+	# 2x2 grid: Attack | Skills
+	#            Items  | Run
+	# Row 1
+	attack_button.set("focus_neighbor_right", skills_button.get_path())
+	attack_button.set("focus_neighbor_left", skills_button.get_path())
+	attack_button.set("focus_neighbor_bottom", items_button.get_path())
+	attack_button.set("focus_neighbor_top", items_button.get_path())
+
+	skills_button.set("focus_neighbor_left", attack_button.get_path())
+	skills_button.set("focus_neighbor_right", attack_button.get_path())
+	skills_button.set("focus_neighbor_bottom", run_button.get_path())
+	skills_button.set("focus_neighbor_top", run_button.get_path())
+
+	# Row 2
+	items_button.set("focus_neighbor_right", run_button.get_path())
+	items_button.set("focus_neighbor_left", run_button.get_path())
+	items_button.set("focus_neighbor_top", attack_button.get_path())
+	items_button.set("focus_neighbor_bottom", attack_button.get_path())
+
+	run_button.set("focus_neighbor_left", items_button.get_path())
+	run_button.set("focus_neighbor_right", items_button.get_path())
+	run_button.set("focus_neighbor_top", skills_button.get_path())
+	run_button.set("focus_neighbor_bottom", skills_button.get_path())
+
+	attack_button.grab_focus()
 
 func _on_attack_pressed():
 	if not GameManager.in_combat: return
@@ -274,6 +314,7 @@ func _on_skills_pressed():
 		add_child(skills_dialog_instance)
 		skills_dialog_instance.connect("skill_selected", Callable(self, "_on_skill_selected"))
 		skills_dialog_instance.connect("cancelled", Callable(self, "_on_skills_cancelled"))
+		skills_dialog_instance.tree_exited.connect(func(): attack_button.grab_focus())
 
 func _on_items_pressed():
 	if not GameManager.in_combat: return
@@ -302,16 +343,18 @@ func _on_skill_selected(skill_index: int):
 	var skill_name = ""
 	if player and skill_index >= 0 and skill_index < player.skills.size():
 		skill_name = player.skills[skill_index].name
-	
+
 	# Play spell cast animation before using skill - AC-2.2.2
 	if animation_controller and not reduced_motion and skill_name != "":
-		await animation_controller.play_spell_cast(player_portrait.get_node("PortraitPanel/PortraitImage"), monster_portrait.get_node("PortraitPanel/PortraitImage"), skill_name)
-	
+		var p_img = player_portrait.get_node("PortraitPanel/PortraitImage")
+		var m_img = monster_portrait.get_node("PortraitPanel/PortraitImage")
+		await animation_controller.play_spell_cast(p_img, m_img, skill_name)
+
 	var result = GameManager.player_use_skill(skill_index)
 	_append_to_log(result)
 	_update_ui()
 	skills_dialog_instance = null
-	
+
 	# Handle monster turn after skill
 	if GameManager.in_combat:
 		if turn_indicator:
@@ -320,15 +363,15 @@ func _on_skill_selected(skill_index: int):
 			player_portrait.is_active = false
 		if monster_portrait:
 			monster_portrait.is_active = true
-		
+
 		await get_tree().create_timer(0.5).timeout
 		var monster_attack_msg = GameManager.monster_attack()
 		_append_to_log(monster_attack_msg)
 		_update_ui()
-		
+
 		if animation_controller and not reduced_motion:
 			await animation_controller.wait_for_animations()
-		
+
 		if GameManager.in_combat and turn_indicator:
 			turn_indicator.highlight_player()
 		if player_portrait:
@@ -349,56 +392,49 @@ func _get_player_portrait_texture(player) -> Texture2D:
 		"Rogue":
 			return load("res://assets/rogue.png")
 		"Hero":
-			return load("res://assets/Hero.png")
+			return HERO_TEXTURE
 		_:
-			return load("res://assets/Hero.png")  # Default fallback
+			return HERO_TEXTURE  # Default fallback
 
 func _get_monster_portrait_texture(monster) -> Texture2D:
-	# Get portrait texture based on monster type
-	match monster.name.to_lower():
-		"goblin":
-			return load("res://assets/goblin.png")
-		"orc":
-			return load("res://assets/orc.png")
-		"skeleton":
-			return load("res://assets/skeleton.png")
-		"slime":
-			return load("res://assets/slime.png")
-		"spider":
-			return load("res://assets/spider.png")
-		"wolf":
-			return load("res://assets/wolf.png")
-		"golem":
-			return load("res://assets/golem.png")
-		"bandit":
-			return load("res://assets/bandit.png")
-		"boss":
-			return load("res://assets/boss.png")
-		"final boss":
-			return load("res://assets/final_boss.png")
-		_:
-			return load("res://assets/goblin.png")  # Default fallback
+	# Get portrait texture based on monster type using dictionary lookup
+	var monster_textures := {
+		"goblin": "res://assets/goblin.png",
+		"orc": "res://assets/orc.png",
+		"skeleton": "res://assets/skeleton.png",
+		"slime": "res://assets/slime.png",
+		"spider": "res://assets/spider.png",
+		"wolf": "res://assets/wolf.png",
+		"golem": "res://assets/golem.png",
+		"bandit": "res://assets/bandit.png",
+		"boss": "res://assets/boss.png",
+		"final boss": "res://assets/final_boss.png",
+	}
+	var key = monster.name.to_lower()
+	if monster_textures.has(key):
+		return load(monster_textures[key])
+	return GOBLIN_TEXTURE  # Default fallback
 
-func _update_player_status_effects(player):
+func _update_player_status_effects(_player):
 	# Update player status effects on portrait
 	if not player_portrait:
 		return
-	
+
 	# Clear existing status effects
 	player_portrait.clear_status_effects()
-	
+
 	# Add current status effects (if player has status effects system)
 	# This would need to be implemented in Player class
 	# For now, we'll skip as status effects aren't fully implemented yet
 
-func _update_monster_status_effects(monster):
+func _update_monster_status_effects(_monster):
 	# Update monster status effects on portrait
 	if not monster_portrait:
 		return
-	
+
 	# Clear existing status effects
 	monster_portrait.clear_status_effects()
-	
+
 	# Add current status effects (if monster has status effects system)
 	# This would need to be implemented in Monster class
 	# For now, we'll skip as status effects aren't fully implemented yet

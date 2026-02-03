@@ -2,55 +2,6 @@ extends Control
 
 # CharacterCreation - Character creation scene with class selection and customization
 
-# BaseUI-like functionality for this custom scene
-@onready var error_feedback = null
-@onready var success_feedback = null
-
-func set_title(title: String):
-	# Simple title setting - this scene doesn't have a dynamic title label
-	print("Character Creation title set to: " + title)
-
-func set_back_button_visible(visible: bool):
-	# Handle back button visibility if it exists
-	var back_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/BackButton
-	if back_button:
-		back_button.visible = visible
-
-func clear_form_errors():
-	# Clear any error feedback
-	pass
-
-func show_success_feedback(message: String = "Success!"):
-	print("Success: " + message)
-
-func show_error_feedback(message: String = "Error occurred"):
-	print("Error: " + message)
-
-func validate_form_field(field: Control, is_valid: bool, error_message: String = ""):
-	return is_valid
-
-@onready var name_input = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/NameSection/NameInput
-@onready var character_sprite = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/PreviewSection/VBoxContainer/CharacterSprite
-@onready var stats_text = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StatsText
-@onready var skills_text = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/SkillsText
-@onready var start_game_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/StartGameButton
-
-# Class sprite mappings
-@onready var class_sprites = {
-	"Hero": preload("res://assets/Hero.png"),
-	"Warrior": preload("res://assets/warrior.png"),
-	"Mage": preload("res://assets/mage.png"),
-	"Rogue": preload("res://assets/rogue.png")
-}
-
-# Class icon mappings (64x64px)
-@onready var class_icons = {
-	"Hero": preload("res://assets/ui/icons/hero.png"),
-	"Warrior": preload("res://assets/ui/icons/warrior.png"),
-	"Mage": preload("res://assets/ui/icons/mage.png"),
-	"Rogue": preload("res://assets/ui/icons/rogue.png")
-}
-
 # Class descriptions for tooltips
 var class_descriptions = {
 	"Hero": "The Hero - A balanced warrior with healing abilities. Strong in both offense and defense.",
@@ -85,7 +36,10 @@ var class_skills = {
 
 # Stat descriptions and gameplay impact information
 var stat_descriptions = {
-	"Strength": "Determines melee attack power and carrying capacity. Higher strength allows for heavier weapons and armor.",
+	"Strength": (
+		"Determines melee attack power and carrying capacity."
+		+ " Higher strength allows for heavier weapons and armor."
+	),
 	"Defense": "Reduces incoming damage from physical attacks. Affects armor effectiveness and blocking ability.",
 	"Dexterity": "Improves attack speed, accuracy, and evasion. Critical for ranged attacks and dodging.",
 	"Constitution": "Increases maximum health and resistance to status effects. Vital for survivability.",
@@ -100,13 +54,6 @@ var class_stat_modifiers = {
 	"Rogue": {"strength": 8, "defense": 6, "dexterity": 12, "constitution": 10, "intelligence": 8}
 }
 
-# References to UI elements for animated stats
-@onready var strength_bar = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StrengthBar
-@onready var defense_bar = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/DefenseBar
-@onready var dexterity_bar = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/DexterityBar
-@onready var constitution_bar = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/ConstitutionBar
-@onready var intelligence_bar = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/IntelligenceBar
-
 var selected_class = ""
 var character_name = ""
 var current_tween: Tween = null
@@ -120,14 +67,6 @@ var step_descriptions = {
 	3: "Stat Review",
 	4: "Confirmation"
 }
-
-# References to step navigation UI elements
-@onready var step_indicator = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StepIndicator
-@onready var step_description = $CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StepDescription
-@onready var next_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/NextButton
-@onready var prev_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/PrevButton
-@onready var confirm_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/ConfirmButton
-@onready var cancel_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/CancelButton
 
 # Character creation confirmation state
 var character_confirmed = false
@@ -152,6 +91,92 @@ var focus_indicator_animation_speed = 0.5
 # Contrast ratio settings (WCAG AA compliance)
 var min_contrast_ratio = 4.5  # WCAG AA minimum for normal text
 var large_text_min_contrast = 3.0  # WCAG AA minimum for large text
+
+# BaseUI-like functionality for this custom scene
+@onready var error_feedback = null
+@onready var success_feedback = null
+
+@onready var name_input = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/NameSection/NameInput
+)
+@onready var character_sprite = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/PreviewSection/VBoxContainer/CharacterSprite
+)
+@onready var stats_text = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StatsText
+)
+@onready var skills_text = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/SkillsText
+)
+@onready var start_game_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/StartGameButton
+
+# Class sprite mappings
+@onready var class_sprites = {
+	"Hero": preload("res://assets/Hero.png"),
+	"Warrior": preload("res://assets/warrior.png"),
+	"Mage": preload("res://assets/mage.png"),
+	"Rogue": preload("res://assets/rogue.png")
+}
+
+# Class icon mappings (64x64px)
+@onready var class_icons = {
+	"Hero": preload("res://assets/ui/icons/hero.png"),
+	"Warrior": preload("res://assets/ui/icons/warrior.png"),
+	"Mage": preload("res://assets/ui/icons/mage.png"),
+	"Rogue": preload("res://assets/ui/icons/rogue.png")
+}
+
+# References to UI elements for animated stats
+@onready var strength_bar = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StrengthBar
+)
+@onready var defense_bar = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/DefenseBar
+)
+@onready var dexterity_bar = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/DexterityBar
+)
+@onready var constitution_bar = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/ConstitutionBar
+)
+@onready var intelligence_bar = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/IntelligenceBar
+)
+
+# References to step navigation UI elements
+@onready var step_indicator = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StepIndicator
+)
+@onready var step_description = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StepDescription
+)
+@onready var next_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/NextButton
+@onready var prev_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/PrevButton
+@onready var confirm_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/ConfirmButton
+@onready var cancel_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/CancelButton
+
+func set_title(title: String):
+	# Simple title setting - this scene doesn't have a dynamic title label
+	print("Character Creation title set to: " + title)
+
+func set_back_button_visible(visible: bool):
+	# Handle back button visibility if it exists
+	var back_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/BackButton
+	if back_button:
+		back_button.visible = visible
+
+func clear_form_errors():
+	# Clear any error feedback
+	pass
+
+func show_success_feedback(message: String = "Success!"):
+	print("Success: " + message)
+
+func show_error_feedback(message: String = "Error occurred"):
+	print("Error: " + message)
+
+func validate_form_field(_field: Control, is_valid: bool, _error_message: String = ""):
+	return is_valid
 
 func _ready():
 	print("CharacterCreation ready")
@@ -217,11 +242,17 @@ func _on_class_selected(selected_name: String):
 
 		# Add stat descriptions
 		enhanced_stats_text += "**Stat Descriptions:**\n"
-		enhanced_stats_text += "Strength: %d - %s\n" % [class_stat_modifiers[selected_name].strength, stat_descriptions["Strength"]]
-		enhanced_stats_text += "Defense: %d - %s\n" % [class_stat_modifiers[selected_name].defense, stat_descriptions["Defense"]]
-		enhanced_stats_text += "Dexterity: %d - %s\n" % [class_stat_modifiers[selected_name].dexterity, stat_descriptions["Dexterity"]]
-		enhanced_stats_text += "Constitution: %d - %s\n" % [class_stat_modifiers[selected_name].constitution, stat_descriptions["Constitution"]]
-		enhanced_stats_text += "Intelligence: %s - %s\n" % [str(class_stat_modifiers[selected_name].intelligence), stat_descriptions["Intelligence"]]
+		var mods = class_stat_modifiers[selected_name]
+		enhanced_stats_text += "Strength: %d - %s\n" % [
+			mods.strength, stat_descriptions["Strength"]]
+		enhanced_stats_text += "Defense: %d - %s\n" % [
+			mods.defense, stat_descriptions["Defense"]]
+		enhanced_stats_text += "Dexterity: %d - %s\n" % [
+			mods.dexterity, stat_descriptions["Dexterity"]]
+		enhanced_stats_text += "Constitution: %d - %s\n" % [
+			mods.constitution, stat_descriptions["Constitution"]]
+		enhanced_stats_text += "Intelligence: %s - %s\n" % [
+			str(mods.intelligence), stat_descriptions["Intelligence"]]
 
 		stats_text.text = enhanced_stats_text
 
@@ -266,10 +297,12 @@ func _on_start_game_pressed():
 
 func _connect_tooltips():
 	# Get references to class buttons
-	var hero_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton
-	var warrior_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton
-	var mage_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton
-	var rogue_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton
+	var btns_path = "CenterContainer/CreationPanel/VBoxContainer/Content"
+	btns_path += "/LeftPanel/ClassSection/ClassButtons"
+	var hero_button = get_node(btns_path + "/HeroButton")
+	var warrior_button = get_node(btns_path + "/WarriorButton")
+	var mage_button = get_node(btns_path + "/MageButton")
+	var rogue_button = get_node(btns_path + "/RogueButton")
 
 	# Connect mouse_entered signals for tooltips
 	if hero_button:
@@ -304,10 +337,12 @@ func _on_class_button_hovered(class_type: String):
 
 func _update_class_button_highlighting(selected_class_name: String):
 	# Get references to all class buttons
-	var hero_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton
-	var warrior_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton
-	var mage_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton
-	var rogue_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton
+	var btns_path = "CenterContainer/CreationPanel/VBoxContainer/Content"
+	btns_path += "/LeftPanel/ClassSection/ClassButtons"
+	var hero_button = get_node(btns_path + "/HeroButton")
+	var warrior_button = get_node(btns_path + "/WarriorButton")
+	var mage_button = get_node(btns_path + "/MageButton")
+	var rogue_button = get_node(btns_path + "/RogueButton")
 
 	# Reset all buttons to default style
 	if hero_button:
@@ -336,38 +371,41 @@ func _on_class_button_exited():
 
 func _setup_keyboard_navigation():
 	# Get references to class buttons
-	var hero_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton
-	var warrior_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton
-	var mage_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton
-	var rogue_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton
+	var btns_path = "CenterContainer/CreationPanel/VBoxContainer/Content"
+	btns_path += "/LeftPanel/ClassSection/ClassButtons"
+	var hero_button = get_node(btns_path + "/HeroButton")
+	var warrior_button = get_node(btns_path + "/WarriorButton")
+	var mage_button = get_node(btns_path + "/MageButton")
+	var rogue_button = get_node(btns_path + "/RogueButton")
 
 	# Set up focus navigation between class buttons
 	if hero_button and warrior_button:
-		hero_button.focus_neighbor_bottom = warrior_button
-		warrior_button.focus_neighbor_top = hero_button
+		hero_button.focus_neighbor_bottom = hero_button.get_path_to(warrior_button)
+		warrior_button.focus_neighbor_top = warrior_button.get_path_to(hero_button)
 
 	if warrior_button and mage_button:
-		warrior_button.focus_neighbor_bottom = mage_button
-		mage_button.focus_neighbor_top = warrior_button
+		warrior_button.focus_neighbor_bottom = warrior_button.get_path_to(mage_button)
+		mage_button.focus_neighbor_top = mage_button.get_path_to(warrior_button)
 
 	if mage_button and rogue_button:
-		mage_button.focus_neighbor_bottom = rogue_button
-		rogue_button.focus_neighbor_top = mage_button
+		mage_button.focus_neighbor_bottom = mage_button.get_path_to(rogue_button)
+		rogue_button.focus_neighbor_top = rogue_button.get_path_to(mage_button)
 
 	# Set up focus navigation from name input to first class button
 	if name_input and hero_button:
-		name_input.focus_neighbor_bottom = hero_button
-		hero_button.focus_neighbor_top = name_input
+		name_input.focus_neighbor_bottom = name_input.get_path_to(hero_button)
+		hero_button.focus_neighbor_top = hero_button.get_path_to(name_input)
 
 	# Set up focus navigation from last class button to start game button
 	if rogue_button and start_game_button:
-		rogue_button.focus_neighbor_bottom = start_game_button
-		start_game_button.focus_neighbor_top = rogue_button
+		rogue_button.focus_neighbor_bottom = rogue_button.get_path_to(start_game_button)
+		start_game_button.focus_neighbor_top = start_game_button.get_path_to(rogue_button)
 
 	# Set up focus navigation from start game button to back button
-	if start_game_button and $CenterContainer/CreationPanel/VBoxContainer/Footer/BackButton:
-		start_game_button.focus_neighbor_left = $CenterContainer/CreationPanel/VBoxContainer/Footer/BackButton
-		$CenterContainer/CreationPanel/VBoxContainer/Footer/BackButton.focus_neighbor_right = start_game_button
+	var back_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/BackButton
+	if start_game_button and back_button:
+		start_game_button.focus_neighbor_left = start_game_button.get_path_to(back_button)
+		back_button.focus_neighbor_right = back_button.get_path_to(start_game_button)
 
 func _update_name_validation_feedback():
 	var is_valid = _validate_character_name(character_name)
@@ -430,14 +468,14 @@ func _initialize_step_navigation():
 		name_input.grab_focus()
 
 func _connect_step_navigation_signals():
-	# Connect step navigation button signals if they exist
-	if next_button:
+	# Connect step navigation button signals if they exist (guard against double-connect)
+	if next_button and not next_button.is_connected("pressed", Callable(self, "_on_next_step")):
 		next_button.connect("pressed", Callable(self, "_on_next_step"))
-	if prev_button:
+	if prev_button and not prev_button.is_connected("pressed", Callable(self, "_on_prev_step")):
 		prev_button.connect("pressed", Callable(self, "_on_prev_step"))
-	if confirm_button:
+	if confirm_button and not confirm_button.is_connected("pressed", Callable(self, "_on_confirm_character")):
 		confirm_button.connect("pressed", Callable(self, "_on_confirm_character"))
-	if cancel_button:
+	if cancel_button and not cancel_button.is_connected("pressed", Callable(self, "_on_cancel_creation")):
 		cancel_button.connect("pressed", Callable(self, "_on_cancel_creation"))
 
 func _update_step_navigation_buttons():
@@ -552,7 +590,10 @@ func _show_confirmation_dialog():
 	# Create and show confirmation dialog
 	var confirmation_dialog = ConfirmationDialog.new()
 	confirmation_dialog.title = "Confirm Character Creation"
-	confirmation_dialog.dialog_text = "Are you sure you want to create this character?\n\nName: %s\nClass: %s" % [character_name, selected_class]
+	confirmation_dialog.dialog_text = (
+		"Are you sure you want to create this character?"
+		+ "\n\nName: %s\nClass: %s" % [character_name, selected_class]
+	)
 
 	# Connect signals
 	confirmation_dialog.connect("confirmed", Callable(self, "_on_creation_confirmed"))
@@ -643,10 +684,12 @@ func _stop_background_animation():
 
 func _enhance_focus_indicators():
 	# Enhance focus indicators for better accessibility
-	var hero_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton
-	var warrior_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton
-	var mage_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton
-	var rogue_button = $CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton
+	var btns_path = "CenterContainer/CreationPanel/VBoxContainer/Content"
+	btns_path += "/LeftPanel/ClassSection/ClassButtons"
+	var hero_button = get_node(btns_path + "/HeroButton")
+	var warrior_button = get_node(btns_path + "/WarriorButton")
+	var mage_button = get_node(btns_path + "/MageButton")
+	var rogue_button = get_node(btns_path + "/RogueButton")
 
 	# Apply focus indicator styling to all buttons
 	var buttons = [hero_button, warrior_button, mage_button, rogue_button]
@@ -654,15 +697,6 @@ func _enhance_focus_indicators():
 	for button in buttons:
 		if button:
 			button.focus_mode = Control.FOCUS_ALL
-			button.focus_progress_ratio = 0.5
-			button.focus_color = focus_indicator_color
-			button.focus_width = focus_indicator_width
-
-			# Add focus animation
-			var focus_tween = create_tween()
-			focus_tween.set_loops(true)
-			focus_tween.tween_property(button, "focus_progress_ratio", 0.3, focus_indicator_animation_speed)
-			focus_tween.tween_property(button, "focus_progress_ratio", 0.7, focus_indicator_animation_speed)
 
 func _verify_contrast_ratios():
 	# Verify WCAG AA contrast ratios for all text elements

@@ -37,7 +37,7 @@ func complete_quest(quest) -> void:
 
 	emit_signal("quest_completed", quest.title)
 	print("Completed quest: ", quest.title)
-	
+
 	# Show completion dialog
 	_show_quest_completion_dialog(quest)
 
@@ -82,7 +82,7 @@ func on_item_collected(item_name: String) -> void:
 			if item_name.to_lower().contains("herb") and quest.title.contains("Herbal"):
 				update_quest_progress(quest)
 
-func on_level_up(new_level: int) -> void:
+func on_level_up(_new_level: int) -> void:
 	# Could trigger level-based quests or milestones
 	pass
 

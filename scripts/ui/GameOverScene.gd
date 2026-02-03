@@ -2,14 +2,14 @@ extends Control
 
 # GameOverScene - Game over screen displayed when player dies
 
+var stats = {}
+
 @onready var game_over_title = $VBoxContainer/GameOverHeader/GameOverTitle
 @onready var game_over_message = $VBoxContainer/GameOverHeader/GameOverMessage
 @onready var stats_grid = $VBoxContainer/StatsGrid
 @onready var button_container = $VBoxContainer/ButtonContainer
 @onready var restart_button = $VBoxContainer/ButtonContainer/RestartButton
 @onready var menu_button = $VBoxContainer/ButtonContainer/MenuButton
-
-var stats = {}
 
 func _ready():
 	print("GameOverScene ready")
@@ -27,6 +27,7 @@ func _ready():
 	# Populate UI
 	_populate_statistics()
 	_setup_buttons()
+	_setup_focus_navigation()
 
 func _populate_statistics():
 	# Update stat labels in grid
@@ -74,12 +75,12 @@ func _on_menu_pressed():
 	# Return to main menu
 	GameManager.change_scene("main_menu")
 
-func _input(event: InputEvent):
-	if event is InputEventKey and event.pressed:
-		match event.keycode:
-			KEY_SPACE, KEY_ENTER:
-				_on_restart_pressed()
-				get_tree().root.set_input_as_handled()
-			KEY_ESCAPE:
-				_on_menu_pressed()
-				get_tree().root.set_input_as_handled()
+func _setup_focus_navigation():
+	# Horizontal chain with wrapping: Restart <-> Menu
+	restart_button.set("focus_neighbor_right", menu_button.get_path())
+	restart_button.set("focus_neighbor_left", menu_button.get_path())
+
+	menu_button.set("focus_neighbor_left", restart_button.get_path())
+	menu_button.set("focus_neighbor_right", restart_button.get_path())
+
+	restart_button.grab_focus()

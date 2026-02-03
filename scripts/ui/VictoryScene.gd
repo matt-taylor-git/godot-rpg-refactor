@@ -2,6 +2,8 @@ extends Control
 
 # VictoryScene - Victory screen displaying endgame statistics
 
+var stats = {}
+
 @onready var victory_title = $VBoxContainer/VictoryHeader/VictoryTitle
 @onready var victory_message = $VBoxContainer/VictoryHeader/VictoryMessage
 @onready var stats_grid = $VBoxContainer/StatsGrid
@@ -9,11 +11,9 @@ extends Control
 @onready var continue_button = $VBoxContainer/ButtonContainer/ContinueButton
 @onready var menu_button = $VBoxContainer/ButtonContainer/MenuButton
 
-var stats = {}
-
 func _ready():
 	print("VictoryScene ready")
-	
+
 	# Gather statistics from GameManager
 	stats = {
 		"final_level": GameManager.get_player().level if GameManager.get_player() else 1,
@@ -23,10 +23,11 @@ func _ready():
 		"gold_earned": GameManager.get_gold_earned(),
 		"quests_completed": GameManager.get_quests_completed()
 	}
-	
+
 	# Populate UI
 	_populate_statistics()
 	_setup_buttons()
+	_setup_focus_navigation()
 
 func _populate_statistics():
 	# Update stat labels in grid
@@ -73,12 +74,12 @@ func _on_menu_pressed():
 	# Return to main menu
 	GameManager.change_scene("main_menu")
 
-func _input(event: InputEvent):
-	if event is InputEventKey and event.pressed:
-		match event.keycode:
-			KEY_SPACE, KEY_ENTER:
-				_on_continue_pressed()
-				get_tree().root.set_input_as_handled()
-			KEY_ESCAPE:
-				_on_menu_pressed()
-				get_tree().root.set_input_as_handled()
+func _setup_focus_navigation():
+	# Horizontal chain with wrapping: Menu <-> Continue
+	menu_button.set("focus_neighbor_right", continue_button.get_path())
+	menu_button.set("focus_neighbor_left", continue_button.get_path())
+
+	continue_button.set("focus_neighbor_left", menu_button.get_path())
+	continue_button.set("focus_neighbor_right", menu_button.get_path())
+
+	continue_button.grab_focus()

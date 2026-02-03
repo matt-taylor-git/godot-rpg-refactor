@@ -3,6 +3,13 @@ extends "res://scripts/ui/BaseUI.gd"
 # MainMenu - Modern main menu scene with navigation options
 # Implements BaseUI patterns for consistent UI functionality
 
+const SAVE_SLOT_DIALOG = preload("res://scenes/ui/save_slot_dialog.tscn")
+
+# Animation and visual settings
+var background_animation_tween: Tween = null
+var menu_transition_tween: Tween = null
+var reduce_motion: bool = false
+
 @onready var new_game_button = $Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer/NewGameButton
 @onready var load_game_button = $Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer/LoadGameButton
 @onready var options_button = $Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer/OptionsButton
@@ -11,40 +18,33 @@ extends "res://scripts/ui/BaseUI.gd"
 @onready var menu_panel = $Content/VBoxContainer/MainContent/MenuPanel
 @onready var vbox_container = $Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer
 
-const SAVE_SLOT_DIALOG = preload("res://scenes/ui/save_slot_dialog.tscn")
-
-# Animation and visual settings
-var background_animation_tween: Tween = null
-var menu_transition_tween: Tween = null
-var reduce_motion: bool = false
-
 func _ready():
 	# Call BaseUI ready first (initializes feedback systems, etc.)
 	super._ready()
-	
+
 	print("MainMenu ready")
-	
+
 	# Hide back button for main menu
 	set_back_button_visible(false)
-	
+
 	# Set title
 	set_title("Pyrpg-Godot")
-	
+
 	# Setup reduced motion setting
 	_setup_accessibility()
-	
+
 	# Setup 8px grid-based spacing for modern layout
 	_setup_layout_spacing()
-	
+
 	# Apply theme styling
 	_apply_theme_styling()
-	
+
 	# Setup focus navigation
 	_setup_focus_navigation()
-	
+
 	# Setup background atmosphere
 	_animate_background()
-	
+
 	# Animate menu entrance
 	_animate_menu_in()
 
@@ -55,7 +55,7 @@ func _setup_accessibility():
 	"""
 	# Check system reduced motion setting using ProjectSettings
 	reduce_motion = ProjectSettings.get_setting("accessibility/reduced_motion", false)
-	
+
 	print("Reduced motion setting: ", reduce_motion)
 
 func _setup_layout_spacing():
@@ -64,16 +64,16 @@ func _setup_layout_spacing():
 	const SPACING_8PX = 8
 	const SPACING_16PX = 16
 	const SPACING_24PX = 24
-	
+
 	# Set VBox separator spacing (8px = 1 unit, using 3 units = 24px)
 	vbox_container.set("theme_override_constants/separation", SPACING_24PX)
-	
+
 	# Set MenuPanel margins for proper padding (2 units = 16px)
 	menu_panel.set("theme_override_constants/margin_left", SPACING_16PX)
 	menu_panel.set("theme_override_constants/margin_top", SPACING_16PX)
 	menu_panel.set("theme_override_constants/margin_right", SPACING_16PX)
 	menu_panel.set("theme_override_constants/margin_bottom", SPACING_16PX)
-	
+
 	# Support 16:9 aspect ratio scaling per AC-3.1.4
 	_adjust_for_aspect_ratio()
 
@@ -81,11 +81,11 @@ func _adjust_for_aspect_ratio():
 	"""Adjust layout for different screen aspect ratios per AC-3.1.4"""
 	var viewport_size = get_viewport_rect().size
 	var aspect_ratio = viewport_size.x / viewport_size.y
-	
+
 	# Standard 16:9 aspect ratio
 	const TARGET_ASPECT = 16.0 / 9.0
 	const TOLERANCE = 0.1
-	
+
 	# Adjust menu panel width based on aspect ratio
 	if aspect_ratio > TARGET_ASPECT + TOLERANCE:  # Wider than 16:9
 		# Wide screen - limit panel width
@@ -102,18 +102,18 @@ func _apply_theme_styling():
 	# Theme is already applied at scene root, ensure it propagates
 	if theme == null:
 		theme = load("res://resources/ui_theme.tres")
-	
+
 	# Apply consistent typography
 	# Title uses H1 (24px heading) - Title label is in BaseUI
 	if title_label:
 		title_label.set("theme_type_variation", "H1")
 		title_label.set("theme_override_font_sizes/font_size", 24)  # H1 = 24px
-	
+
 	# WCAG AA Contrast Ratio Verification (AC-3.1.4):
 	# - text_primary (#f5f5f5) on primary_action (#6f2dbd) = ~11.5:1 ✓
 	# - text_primary (#f5f5f5) on background (#1a1a1d) = ~15.8:1 ✓
 	# All combinations meet 4.5:1 minimum for normal text
-	
+
 	# Ensure background uses theme colors
 	background_panel.self_modulate = Color.WHITE  # Use theme's background color
 
@@ -121,18 +121,19 @@ func _setup_focus_navigation():
 	"""Setup keyboard navigation per AC-3.1.4"""
 	# Set default focus to "New Game" button
 	new_game_button.grab_focus()
-	
-	# Setup focus neighbors for arrow key navigation
-	# Use set() method to properly assign focus properties in Godot 4
-	new_game_button.set("focus_neighbor_down", load_game_button.get_path())
-	
-	load_game_button.set("focus_neighbor_up", new_game_button.get_path())
-	load_game_button.set("focus_neighbor_down", options_button.get_path())
-	
-	options_button.set("focus_neighbor_up", load_game_button.get_path())
-	options_button.set("focus_neighbor_down", exit_button.get_path())
-	
-	exit_button.set("focus_neighbor_up", options_button.get_path())
+
+	# Setup focus neighbors for arrow key navigation (vertical chain with wrapping)
+	new_game_button.set("focus_neighbor_bottom", load_game_button.get_path())
+	new_game_button.set("focus_neighbor_top", exit_button.get_path())
+
+	load_game_button.set("focus_neighbor_top", new_game_button.get_path())
+	load_game_button.set("focus_neighbor_bottom", options_button.get_path())
+
+	options_button.set("focus_neighbor_top", load_game_button.get_path())
+	options_button.set("focus_neighbor_bottom", exit_button.get_path())
+
+	exit_button.set("focus_neighbor_top", options_button.get_path())
+	exit_button.set("focus_neighbor_bottom", new_game_button.get_path())
 
 func _animate_background():
 	"""Setup background atmosphere per AC-3.1.3"""
@@ -141,19 +142,19 @@ func _animate_background():
 		var shader_material = background_panel.material as ShaderMaterial
 		if shader_material.shader:
 			shader_material.set_shader_parameter("reduce_motion", reduce_motion)
-	
+
 	# Skip additional animation effects if reduce motion is enabled
 	if reduce_motion:
 		background_panel.modulate = Color.WHITE
 		return
-	
+
 	# Create subtle pulsing effect on background (very subtle, ~0.95 to 1.0 opacity)
 	background_animation_tween = create_tween()
 	background_animation_tween.set_loops()
 	background_animation_tween.set_trans(Tween.TRANS_SINE)
 	background_animation_tween.tween_property(background_panel, "modulate:a", 0.95, 3.0)
 	background_animation_tween.tween_property(background_panel, "modulate:a", 1.0, 3.0)
-	background_animation_tween.finished.connect(func(): 
+	background_animation_tween.finished.connect(func():
 		if background_animation_tween:
 			background_animation_tween.kill()
 	)
@@ -163,7 +164,7 @@ func _animate_menu_in():
 	if title_label:
 		title_label.modulate.a = 0.0
 		title_label.position.y -= 50
-	
+
 	# Animate buttons
 	new_game_button.modulate.a = 0.0
 	load_game_button.modulate.a = 0.0
@@ -175,7 +176,7 @@ func _animate_menu_in():
 	if title_label:
 		title_tween.tween_property(title_label, "modulate:a", 1.0, 0.5)
 		title_tween.parallel().tween_property(title_label, "position:y", title_label.position.y + 50, 0.5)
-	
+
 	title_tween.finished.connect(func(): title_tween.kill())
 
 	# Button animations with stagger
@@ -225,7 +226,7 @@ func _on_options_pressed():
 	print("Options pressed")
 	_animate_button_press(options_button)
 	await get_tree().create_timer(0.2).timeout
-	
+
 	# Options menu not implemented in this story (Epic 3.3)
 	# Showing a placeholder message or log for now
 	# If we have a feedback system via BaseUI, we could use it
@@ -250,6 +251,9 @@ func _show_save_slot_dialog():
 	# Connect signals
 	dialog.connect("slot_selected", Callable(self, "_on_save_slot_selected"))
 	dialog.connect("cancelled", Callable(self, "_on_save_slot_cancelled"))
+
+	# Restore focus to load game button when dialog closes
+	dialog.tree_exited.connect(func(): load_game_button.grab_focus())
 
 func _on_save_slot_selected(slot_number: int):
 	print("Loading from slot ", slot_number)

@@ -18,7 +18,7 @@ func before_each():
 	main_menu = MAIN_MENU_SCENE.instantiate()
 	add_child(main_menu)
 	await get_tree().process_frame  # Wait for _ready()
-	
+
 	# Get references to UI elements using new BaseUI structure
 	# Path: Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer/...
 	var menu_vbox = main_menu.get_node("Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer")
@@ -26,7 +26,7 @@ func before_each():
 	load_game_button = menu_vbox.get_node("LoadGameButton")
 	options_button = menu_vbox.get_node("OptionsButton")
 	exit_button = menu_vbox.get_node("ExitButton")
-	
+
 	# Title is now in Header
 	title_label = main_menu.get_node("Content/VBoxContainer/Header/Title")
 	background_panel = main_menu.get_node("Background")
@@ -63,7 +63,7 @@ func test_main_menu_panel_has_proper_margins():
 	var margin_top = menu_panel.get_theme_constant("margin_top")
 	var margin_right = menu_panel.get_theme_constant("margin_right")
 	var margin_bottom = menu_panel.get_theme_constant("margin_bottom")
-	
+
 	# Should all be 16 (2x 8px units)
 	assert_eq(margin_left, 16, "Left margin should be 16px (2x 8px)")
 	assert_eq(margin_top, 16, "Top margin should be 16px (2x 8px)")
@@ -80,17 +80,17 @@ func test_new_game_button_exists_and_is_ui_button():
 func test_load_game_button_exists():
 	"""Test that Load Game button exists (AC-3.1.2)"""
 	assert_not_null(load_game_button, "Load Game button should exist")
-	assert_eq(load_game_button.text, "Load Game", "Load Game button should have correct text")
+	assert_eq(load_game_button.button_text, "Load Game", "Load Game button should have correct text")
 
 func test_options_button_exists():
 	"""Test that Options button exists (AC-3.1.2 - Added in Review Follow-up)"""
 	assert_not_null(options_button, "Options button should exist")
-	assert_eq(options_button.text, "Options", "Options button should have correct text")
+	assert_eq(options_button.button_text, "Options", "Options button should have correct text")
 
 func test_exit_button_exists():
 	"""Test that Exit button exists (AC-3.1.2)"""
 	assert_not_null(exit_button, "Exit button should exist")
-	assert_eq(exit_button.text, "Exit", "Exit button should have correct text")
+	assert_eq(exit_button.button_text, "Exit", "Exit button should have correct text")
 
 func test_button_signals_are_connected():
 	"""Test that button signals are connected to script methods (AC-3.1.2)"""
@@ -127,12 +127,13 @@ func test_background_has_shader_material():
 
 func test_menu_animates_on_entry():
 	"""Test that menu has entrance animation (AC-3.1.3, ~500ms transitions)"""
-	# Initial state should have opacity at 0 or in animation
-	# Since title_label might finish animating by the time we check, we check logic or initial state
-	# But in _ready, it calls _animate_menu_in which starts at 0.
-	# We wait a tiny bit to ensure animation started but not finished?
-	# Or just check properties.
-	assert_not_null(main_menu.menu_transition_tween, "Animation tween should be created") # Note: MainMenu var name might vary, checking logic
+	# _animate_menu_in() uses local tweens, not the menu_transition_tween var.
+	# Verify that the menu has the reduce_motion property (animation system exists)
+	# and that the background_animation_tween is created for non-reduced-motion mode.
+	assert_true("reduce_motion" in main_menu, "MainMenu should have reduce_motion for animation control")
+	# The background animation tween should be created (unless reduce_motion is true)
+	if not main_menu.reduce_motion:
+		assert_not_null(main_menu.background_animation_tween, "Background animation tween should be created")
 
 # AC-3.1.4: Accessibility Tests
 func test_keyboard_focus_default_is_new_game_button():
@@ -145,29 +146,30 @@ func test_keyboard_focus_default_is_new_game_button():
 func test_focus_neighbors_are_set():
 	"""Test that focus neighbors support keyboard navigation (AC-3.1.4)"""
 	# Check chain: New -> Load -> Options -> Exit
-	assert_eq(new_game_button.focus_neighbor_down, new_game_button.get_path_to(load_game_button))
-	
-	assert_eq(load_game_button.focus_neighbor_up, load_game_button.get_path_to(new_game_button))
-	assert_eq(load_game_button.focus_neighbor_down, load_game_button.get_path_to(options_button))
-	
-	assert_eq(options_button.focus_neighbor_up, options_button.get_path_to(load_game_button))
-	assert_eq(options_button.focus_neighbor_down, options_button.get_path_to(exit_button))
-	
-	assert_eq(exit_button.focus_neighbor_up, exit_button.get_path_to(options_button))
+	# MainMenu sets focus_neighbor_bottom/top with absolute paths via get_path()
+	assert_eq(new_game_button.get("focus_neighbor_bottom"), load_game_button.get_path())
+
+	assert_eq(load_game_button.get("focus_neighbor_top"), new_game_button.get_path())
+	assert_eq(load_game_button.get("focus_neighbor_bottom"), options_button.get_path())
+
+	assert_eq(options_button.get("focus_neighbor_top"), load_game_button.get_path())
+	assert_eq(options_button.get("focus_neighbor_bottom"), exit_button.get_path())
+
+	assert_eq(exit_button.get("focus_neighbor_top"), options_button.get_path())
 
 func test_reduced_motion_setting_exists():
 	"""Test that MainMenu respects reduce_motion setting (AC-3.1.4)"""
 	assert_true("reduce_motion" in main_menu, "MainMenu should have reduce_motion property")
-	
+
 	# Test that reduced motion is correctly read from ProjectSettings
 	ProjectSettings.set_setting("accessibility/reduced_motion", true)
 	main_menu._setup_accessibility()
-	assert_true(main_menu.reduce_motion, 
+	assert_true(main_menu.reduce_motion,
 		"MainMenu should detect reduced motion when accessibility/reduced_motion is true")
-	
+
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 	main_menu._setup_accessibility()
-	assert_false(main_menu.reduce_motion, 
+	assert_false(main_menu.reduce_motion,
 		"MainMenu should detect normal motion when accessibility/reduced_motion is false")
 
 func test_16_9_aspect_ratio_support():
@@ -199,7 +201,7 @@ func test_main_menu_scene_structure():
 	assert_true(main_menu.has_node("Content/VBoxContainer"), "Should have VBoxContainer")
 	assert_true(main_menu.has_node("Content/VBoxContainer/Header/Title"), "Should have Title")
 	assert_true(main_menu.has_node("Content/VBoxContainer/MainContent/MenuPanel"), "Should have MenuPanel")
-	
+
 	var button_vbox = "Content/VBoxContainer/MainContent/MenuPanel/VBoxContainer"
 	assert_true(main_menu.has_node(button_vbox + "/NewGameButton"), "Should have NewGameButton")
 	assert_true(main_menu.has_node(button_vbox + "/LoadGameButton"), "Should have LoadGameButton")
@@ -208,6 +210,7 @@ func test_main_menu_scene_structure():
 
 func test_button_minimum_size_wcag():
 	"""Test that buttons meet WCAG minimum touch target size (44px) (AC-3.1.4)"""
-	var button_size = new_game_button.get_minimum_size()
-	assert_gte(button_size.y, 44, "Button height should meet WCAG minimum (44px)")
-	assert_gte(button_size.x, 44, "Button width should meet WCAG minimum (44px)")
+	# UIButton sets custom_minimum_size in _ready() with at least 44px height
+	var min_size = new_game_button.custom_minimum_size
+	assert_gte(min_size.y, 44, "Button height should meet WCAG minimum (44px)")
+	assert_gte(min_size.x, 44, "Button width should meet WCAG minimum (44px)")

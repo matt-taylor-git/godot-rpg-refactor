@@ -81,7 +81,7 @@ func _connect_manager_signals():
 	# Connect enemy kill signals
 	connect("combat_ended", Callable(_forward_combat_signals_to_managers))
 
-func _forward_combat_signals_to_managers(player_won: bool):
+func _forward_combat_signals_to_managers(_player_won: bool):
 	if current_monster:
 		QuestManager.on_combat_end(current_monster.name)
 		StoryManager.on_enemy_killed(current_monster.name)
@@ -203,8 +203,7 @@ func _load_from_file(save_slot: int) -> Variant:
 			var error = json.parse(json_string)
 			if error == OK:
 				return json.data
-			else:
-				print("JSON parse error: ", json.get_error_message())
+			print("JSON parse error: ", json.get_error_message())
 		else:
 			print("Failed to open save file")
 	else:
@@ -300,7 +299,9 @@ func start_boss_combat(level: int = 1) -> String:
 	current_monster = MonsterFactory.create_final_boss(level)
 
 	in_combat = true
-	combat_log = "Combat started! " + current_monster.get_phase_description() + "\n" + current_monster.name + " (Level " + str(current_monster.level) + ") appears!"
+	combat_log = "Combat started! " + current_monster.get_phase_description() \
+		+ "\n" + current_monster.name + " (Level " \
+		+ str(current_monster.level) + ") appears!"
 
 	game_data.combat_state.current_monster = current_monster.to_dict()
 	game_data.combat_state.in_combat = true
@@ -343,7 +344,9 @@ func player_attack() -> String:
 		if current_monster.check_phase_transition():
 			var new_phase = current_monster.current_phase
 			var phase_desc = current_monster.get_phase_description()
-			attack_msg += "\n[color=red]" + current_monster.name + " has transitioned to Phase " + str(new_phase) + "! " + phase_desc + "[/color]"
+			attack_msg += "\n[color=red]" + current_monster.name \
+				+ " has transitioned to Phase " + str(new_phase) \
+				+ "! " + phase_desc + "[/color]"
 			emit_signal("boss_phase_changed", new_phase, phase_desc)
 
 	if current_monster.health <= 0:
@@ -403,35 +406,53 @@ func monster_attack() -> String:
 	# Handle boss abilities
 	if is_boss_combat():
 		var action = current_monster.get_ai_action()
-		
+
 		match action:
 			"power_strike":
-				var damage = _calculate_damage(int(current_monster.attack * 1.5), current_monster.level, game_data.player.get_defense_power())
+				var damage = _calculate_damage(
+					int(current_monster.attack * 1.5),
+					current_monster.level,
+					game_data.player.get_defense_power())
 				game_data.player.take_damage(damage)
 				total_damage = damage
-				attack_msg = "[color=orange]" + current_monster.name + " uses Power Strike for " + str(damage) + " damage![/color]"
-			
+				attack_msg = "[color=orange]" + current_monster.name \
+					+ " uses Power Strike for " \
+					+ str(damage) + " damage![/color]"
+
 			"dark_curse":
 				attack_msg = "[color=purple]" + current_monster.name + " casts Dark Curse! Your attack power is reduced![/color]"
 				# TODO: Implement status effect system
-			
+
 			"whirlwind":
-				var damage1 = _calculate_damage(int(current_monster.attack * 0.8), current_monster.level, game_data.player.get_defense_power())
-				var damage2 = _calculate_damage(int(current_monster.attack * 0.8), current_monster.level, game_data.player.get_defense_power())
+				var damage1 = _calculate_damage(
+					int(current_monster.attack * 0.8),
+					current_monster.level,
+					game_data.player.get_defense_power())
+				var damage2 = _calculate_damage(
+					int(current_monster.attack * 0.8),
+					current_monster.level,
+					game_data.player.get_defense_power())
 				total_damage = damage1 + damage2
 				game_data.player.take_damage(total_damage)
-				attack_msg = "[color=orange]" + current_monster.name + " uses Whirlwind! " + str(damage1) + " + " + str(damage2) + " damage![/color]"
-			
+				attack_msg = "[color=orange]" + current_monster.name \
+					+ " uses Whirlwind! " + str(damage1) \
+					+ " + " + str(damage2) + " damage![/color]"
+
 			"last_stand":
 				attack_msg = "[color=yellow]" + current_monster.name + " takes a defensive stance![/color]"
 				# TODO: Implement defense boost
-			
+
 			"realm_collapse":
-				var damage = _calculate_damage(int(current_monster.attack * 2.0), current_monster.level, game_data.player.get_defense_power())
+				var damage = _calculate_damage(
+					int(current_monster.attack * 2.0),
+					current_monster.level,
+					game_data.player.get_defense_power())
 				game_data.player.take_damage(damage)
 				total_damage = damage
-				attack_msg = "[color=red]" + current_monster.name + " unleashes Realm Collapse for " + str(damage) + " massive damage![/color]"
-			
+				attack_msg = "[color=red]" + current_monster.name \
+					+ " unleashes Realm Collapse for " \
+					+ str(damage) + " massive damage![/color]"
+
 			_:  # Regular attack
 				var damage = _calculate_damage(current_monster.attack, current_monster.level, game_data.player.get_defense_power())
 				game_data.player.take_damage(damage)
@@ -465,10 +486,9 @@ func get_combat_result() -> String:
 
 	if game_data.player.health <= 0:
 		return "defeat"
-	elif current_monster.health <= 0:
+	if current_monster.health <= 0:
 		return "victory"
-	else:
-		return "ongoing"
+	return "ongoing"
 
 func end_combat():
 	if not in_combat:
@@ -531,7 +551,7 @@ func _give_combat_rewards():
 	# Give gold
 	var gold_gained = current_monster.gold_reward
 	game_data.player.gold += gold_gained
-	
+
 	# Track statistics
 	stats["enemies_defeated"] += 1
 	stats["gold_earned"] += gold_gained

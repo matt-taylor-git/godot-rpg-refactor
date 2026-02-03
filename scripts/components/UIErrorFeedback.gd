@@ -1,8 +1,12 @@
-extends Node
 class_name UIErrorFeedback
+extends Node
 
 # UIErrorFeedback - Error state feedback component
 # Provides shake/red flash animations, red color coding, and error persistence
+
+# Signals
+signal error_shown  # Emitted when error is shown
+signal error_dismissed  # Emitted when error is dismissed
 
 # Configuration
 @export var error_color: Color = Color(0.8, 0.2, 0.2, 1.0)  # Red color coding
@@ -11,10 +15,6 @@ class_name UIErrorFeedback
 @export var persists_until_corrected: bool = true  # Stay visible until error is fixed
 @export var sound_effect: AudioStream = null  # Error sound effect
 @export var position_offset: Vector2 = Vector2(0, -50)  # Offset from anchor node
-
-# Signals
-signal error_shown  # Emitted when error is shown
-signal error_dismissed  # Emitted when error is dismissed
 
 # Internal state
 var animation_system: UIAnimationSystem = null
@@ -208,7 +208,10 @@ func _play_sound() -> void:
 
 # Factory methods
 
-static func create_and_show(parent: Node, message: String, anchor: Node = null, sound: AudioStream = null) -> UIErrorFeedback:
+static func create_and_show(
+	parent: Node, message: String,
+	anchor: Node = null,
+	sound: AudioStream = null) -> UIErrorFeedback:
 	"""
 	Factory method: Create and immediately show error feedback
 	"""

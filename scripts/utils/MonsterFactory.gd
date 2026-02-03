@@ -1,11 +1,11 @@
-extends Node
 class_name MonsterFactory
+extends Node
 
 # MonsterFactory - Creates monster instances
 
 static func create_monster(monster_type: String, level: int = 1) -> Monster:
 	var monster = Monster.new()
-	
+
 	match monster_type:
 		"goblin":
 			monster.name = "Goblin"
@@ -20,7 +20,7 @@ static func create_monster(monster_type: String, level: int = 1) -> Monster:
 			# Add loot table
 			var potion = ItemFactory.create_item("health_potion")
 			monster.loot_table.append({"item": potion, "chance": 0.3})
-		
+
 		"orc":
 			monster.name = "Orc"
 			monster.level = level
@@ -31,7 +31,7 @@ static func create_monster(monster_type: String, level: int = 1) -> Monster:
 			monster.dexterity = 2 + level
 			monster.experience_reward = 15 + level
 			monster.gold_reward = 8 + level
-		
+
 		"skeleton":
 			monster.name = "Skeleton"
 			monster.level = level
@@ -42,7 +42,7 @@ static func create_monster(monster_type: String, level: int = 1) -> Monster:
 			monster.dexterity = 5 + level
 			monster.experience_reward = 10 + level
 			monster.gold_reward = 5 + level
-		
+
 		_:
 			# Default monster
 			monster.name = "Unknown Monster"
@@ -54,7 +54,7 @@ static func create_monster(monster_type: String, level: int = 1) -> Monster:
 			monster.dexterity = 3 + level
 			monster.experience_reward = 12 + level
 			monster.gold_reward = 6 + level
-	
+
 	return monster
 
 static func get_random_monster_type() -> String:

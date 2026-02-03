@@ -1,5 +1,5 @@
-extends Resource
 class_name Item
+extends Resource
 
 # Item - Equipment and consumables
 

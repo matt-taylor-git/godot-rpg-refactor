@@ -1,8 +1,13 @@
-extends Control
 class_name UILoadingIndicator
+extends Control
 
 # UILoadingIndicator - Loading indicator component with spinner animation and progress feedback
 # Provides 500ms threshold detection, progress support, and smooth 60fps animations
+
+# Signals
+signal loading_started  # Emitted when loading starts (after threshold)
+signal loading_completed  # Emitted when loading completes
+signal progress_updated(progress: float, status: String)  # Progress updates
 
 # Configuration
 @export var spinner_size: int = 32  # Size of spinner in pixels
@@ -10,11 +15,6 @@ class_name UILoadingIndicator
 @export var progress_text: String = "Loading..."  # Text to display
 @export var threshold_ms: float = 500.0  # Milliseconds before showing indicator
 @export var fade_in_duration: float = 0.2  # Fade-in animation duration
-
-# Signals
-signal loading_started  # Emitted when loading starts (after threshold)
-signal loading_completed  # Emitted when loading completes
-signal progress_updated(progress: float, status: String)  # Progress updates
 
 # Internal state
 var animation_player: AnimationPlayer = null

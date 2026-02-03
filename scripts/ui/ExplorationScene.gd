@@ -2,14 +2,6 @@ extends Control
 
 # ExplorationScene - World exploration interface with random encounters and rest mechanics
 
-@onready var player_sprite = $Background/WorldArea/PlayerSprite
-@onready var area_label = $Background/WorldArea/AreaLabel
-@onready var player_stats_label = $UI/TopBar/PlayerStats
-@onready var steps_label = $UI/TopBar/StepsLabel
-@onready var encounter_chance_label = $UI/BottomBar/EncounterChanceLabel
-@onready var explore_button = $UI/BottomBar/ActionButtons/ExploreButton
-@onready var rest_button = $UI/BottomBar/ActionButtons/RestButton
-
 # Exploration state
 var steps_taken = 0
 var encounter_chance = 0.0  # Percentage chance per step
@@ -23,6 +15,20 @@ var movement_speed = 200.0
 var is_moving = false
 var target_position = Vector2.ZERO
 
+@onready var player_sprite = $Background/WorldArea/PlayerSprite
+@onready var area_label = $Background/WorldArea/AreaLabel
+@onready var player_stats_label = $UI/TopBar/PlayerStats
+@onready var steps_label = $UI/TopBar/StepsLabel
+@onready var encounter_chance_label = $UI/BottomBar/EncounterChanceLabel
+@onready var explore_button = $UI/BottomBar/ActionButtons/ExploreButton
+@onready var rest_button = $UI/BottomBar/ActionButtons/RestButton
+@onready var inventory_button = $UI/BottomBar/ActionButtons/InventoryButton
+@onready var shop_button = $UI/BottomBar/ActionButtons/ShopButton
+@onready var quest_log_button = $UI/BottomBar/ActionButtons/QuestLogButton
+@onready var talk_button = $UI/BottomBar/ActionButtons/TalkButton
+@onready var codex_button = $UI/BottomBar/ActionButtons/CodexButton
+@onready var menu_button = $UI/BottomBar/ActionButtons/MenuButton
+
 func _ready():
 	print("ExplorationScene ready")
 
@@ -35,6 +41,8 @@ func _ready():
 
 	# Connect to GameManager signals
 	GameManager.connect("game_loaded", Callable(self, "_on_game_loaded"))
+
+	_setup_focus_navigation()
 
 func _process(delta):
 	if is_moving and player_sprite:
@@ -112,11 +120,23 @@ func _trigger_encounter():
 func _on_reached_destination():
 	_take_step()
 
+func _setup_focus_navigation():
+	# Horizontal chain with wrapping for all 8 action buttons
+	var buttons = [
+		explore_button, rest_button, inventory_button, shop_button,
+		quest_log_button, talk_button, codex_button, menu_button]
+	for i in range(buttons.size()):
+		var prev_idx = (i - 1 + buttons.size()) % buttons.size()
+		var next_idx = (i + 1) % buttons.size()
+		buttons[i].set("focus_neighbor_left", buttons[prev_idx].get_path())
+		buttons[i].set("focus_neighbor_right", buttons[next_idx].get_path())
+	explore_button.grab_focus()
+
 func _on_explore_pressed():
 	# Manual exploration - take multiple steps
 	for i in range(5):
 		_take_step()
-	
+
 	# Randomly offer a quest during exploration
 	if randf() < 0.3:  # 30% chance to get a quest
 		_offer_random_quest()
@@ -144,6 +164,7 @@ func _on_inventory_pressed():
 	var inventory_dialog = preload("res://scenes/ui/inventory_dialog.tscn").instantiate()
 	add_child(inventory_dialog)
 	inventory_dialog.popup_centered()
+	inventory_dialog.tree_exited.connect(func(): inventory_button.grab_focus())
 	print("Inventory dialog opened")
 
 func _on_shop_pressed():
@@ -151,6 +172,7 @@ func _on_shop_pressed():
 	var shop_dialog = preload("res://scenes/ui/shop_dialog.tscn").instantiate()
 	add_child(shop_dialog)
 	shop_dialog.popup_centered()
+	shop_dialog.tree_exited.connect(func(): shop_button.grab_focus())
 	print("Shop dialog opened")
 
 func _on_quest_log_pressed():
@@ -158,16 +180,18 @@ func _on_quest_log_pressed():
 	var quest_log_dialog = preload("res://scenes/ui/quest_log_dialog.tscn").instantiate()
 	add_child(quest_log_dialog)
 	quest_log_dialog.popup_centered()
+	quest_log_dialog.tree_exited.connect(func(): quest_log_button.grab_focus())
 	print("Quest log dialog opened")
 
 func _on_talk_pressed():
 	# Open dialogue scene with a random NPC
 	var npcs = ["village_elder", "merchant", "knight_commander"]
 	var random_npc = npcs[randi() % npcs.size()]
-	
+
 	var dialogue_scene = preload("res://scenes/ui/dialogue_scene.tscn").instantiate()
 	add_child(dialogue_scene)
 	dialogue_scene.start_dialogue(random_npc)
+	dialogue_scene.tree_exited.connect(func(): talk_button.grab_focus())
 	print("Started dialogue with: ", random_npc)
 
 func _on_codex_pressed():
@@ -175,6 +199,7 @@ func _on_codex_pressed():
 	var codex_dialog = preload("res://scenes/ui/codex_dialog.tscn").instantiate()
 	add_child(codex_dialog)
 	codex_dialog.popup_centered()
+	codex_dialog.tree_exited.connect(func(): codex_button.grab_focus())
 	print("Codex dialog opened")
 
 func _on_menu_pressed():
@@ -203,7 +228,7 @@ func _offer_random_quest():
 	var player_level = 1
 	if GameManager.get_player():
 		player_level = GameManager.get_player().level
-	
+
 	var quest = QuestFactory.get_random_quest(player_level)
 	QuestManager.accept_quest(quest)
 	print("Offered quest: ", quest.title)

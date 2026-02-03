@@ -25,6 +25,9 @@ build/
 doc/
 **/doc_classes/
 
+# Web export build artifacts
+webexport/
+
 # Python
 __pycache__/
 *.pyc

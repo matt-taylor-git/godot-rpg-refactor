@@ -104,9 +104,8 @@ func move_to_direction(direction: String) -> bool:
 	if direction in connections:
 		enter_area(direction)
 		return true
-	else:
-		print("Cannot move to ", direction, " from ", current_area)
-		return false
+	print("Cannot move to ", direction, " from ", current_area)
+	return false
 
 func take_exploration_step():
 	if not GameManager.is_game_active():
@@ -119,7 +118,9 @@ func take_exploration_step():
 	var area_data = exploration_areas.get(current_area, {})
 	if area_data.type == "dangerous":
 		var encounter_chance = area_data.get("encounter_chance", 10.0)
-		var adjusted_chance = encounter_chance * (1.0 - (exploration_state.steps_since_last_encounter * 0.01))  # Reduce chance after encounters
+		# Reduce chance after encounters
+		var adjusted_chance = encounter_chance \
+			* (1.0 - (exploration_state.steps_since_last_encounter * 0.01))
 
 		if randf() * 100 < adjusted_chance:
 			trigger_random_encounter(area_data)

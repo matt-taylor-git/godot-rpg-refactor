@@ -1,5 +1,5 @@
-extends Control
 class_name StatusEffectIcon
+extends Control
 
 # StatusEffectIcon - 24x24px overlay icon for status effects on progress bars
 # Provides visual indication of active effects with tooltips

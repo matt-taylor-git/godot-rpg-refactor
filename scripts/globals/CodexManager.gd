@@ -20,7 +20,10 @@ func load_lore_entries() -> void:
 			"id": "goblin_history",
 			"title": "The Goblin Tribes",
 			"category": "creatures",
-			"content": "Goblins are small, cunning creatures that dwell in caves and forests. They are known for their tribal society and territorial nature. Ancient texts suggest they were once peaceful forest dwellers before being corrupted by dark magic.",
+			"content": "Goblins are small, cunning creatures that dwell in caves " +
+				"and forests. They are known for their tribal society and " +
+				"territorial nature. Ancient texts suggest they were once " +
+				"peaceful forest dwellers before being corrupted by dark magic.",
 			"unlock_condition": "enemy_killed",
 			"unlock_target": "goblin",
 			"unlock_count": 1
@@ -29,7 +32,10 @@ func load_lore_entries() -> void:
 			"id": "eldridge_founding",
 			"title": "Founding of Eldridge",
 			"category": "history",
-			"content": "Eldridge Village was founded 200 years ago by settlers fleeing the great wars. The village elder's family has maintained the founding scrolls, which speak of a 'great darkness' that the founders sought to escape.",
+			"content": "Eldridge Village was founded 200 years ago by settlers " +
+				"fleeing the great wars. The village elder's family has " +
+				"maintained the founding scrolls, which speak of a " +
+				"'great darkness' that the founders sought to escape.",
 			"unlock_condition": "dialogue",
 			"unlock_target": "village_elder",
 			"unlock_count": 1
@@ -38,7 +44,10 @@ func load_lore_entries() -> void:
 			"id": "ancient_evil",
 			"title": "The Ancient Evil",
 			"category": "lore",
-			"content": "Whispers speak of an ancient evil that sleeps beneath the mountains. Some say it was imprisoned by heroes of old, but its influence still seeps into the world, corrupting creatures and twisting the land.",
+			"content": "Whispers speak of an ancient evil that sleeps beneath " +
+				"the mountains. Some say it was imprisoned by heroes of " +
+				"old, but its influence still seeps into the world, " +
+				"corrupting creatures and twisting the land.",
 			"unlock_condition": "story_event",
 			"unlock_target": "ancient_evil",
 			"unlock_count": 1
@@ -47,7 +56,9 @@ func load_lore_entries() -> void:
 			"id": "magic_crystal",
 			"title": "Magic Crystals",
 			"category": "items",
-			"content": "These rare crystals pulse with magical energy. They are said to be fragments of the ancient world's magic, capable of powering artifacts or enhancing spells.",
+			"content": "These rare crystals pulse with magical energy. " +
+				"They are said to be fragments of the ancient world's " +
+				"magic, capable of powering artifacts or enhancing spells.",
 			"unlock_condition": "item_found",
 			"unlock_target": "magic_crystal",
 			"unlock_count": 1
@@ -56,7 +67,10 @@ func load_lore_entries() -> void:
 			"id": "hero_legacy",
 			"title": "The Hero's Legacy",
 			"category": "history",
-			"content": "Legends tell of heroes who once wielded great power to protect the realm. Their bloodline continues, though their powers have diminished over generations. Some believe the ancient evil seeks to eradicate this lineage.",
+			"content": "Legends tell of heroes who once wielded great power " +
+				"to protect the realm. Their bloodline continues, though " +
+				"their powers have diminished over generations. Some " +
+				"believe the ancient evil seeks to eradicate this lineage.",
 			"unlock_condition": "level_reached",
 			"unlock_target": 10,
 			"unlock_count": 1

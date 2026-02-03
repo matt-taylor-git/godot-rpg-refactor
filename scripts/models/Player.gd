@@ -1,5 +1,5 @@
-extends Resource
 class_name Player
+extends Resource
 
 # Player - Player character data and stats
 
@@ -199,9 +199,9 @@ func from_dict(data: Dictionary) -> void:
 	mana = data.get("mana", 0)
 	max_mana = data.get("max_mana", 0)
 	gold = data.get("gold", 0)
-	
+
 	# Load inventory
-	inventory = data.get("inventory", []).map(func(item_data): 
+	inventory = data.get("inventory", []).map(func(item_data):
 		if item_data:
 			var item = Item.new()
 			item.from_dict(item_data)
@@ -209,10 +209,10 @@ func from_dict(data: Dictionary) -> void:
 		return null
 	)
 	inventory.resize(20)
-	
+
 	# Load equipment
 	equipment = data.get("equipment", {})
-	
+
 	# Load skills
 	skills = data.get("skills", []).map(func(skill_data):
 		if skill_data:

@@ -2,13 +2,15 @@
 
 ## Project Overview
 
-**Pyrpg-Godot** is a turn-based RPG game built with Godot 4.5, refactored from a Python implementation. This document provides comprehensive guidance for AI assistants (like Claude) working on this codebase.
+**Pyrpg-Godot** is a turn-based RPG game built with Godot 4.6, refactored from a Python implementation. This document provides comprehensive guidance for AI assistants (like Claude) working on this codebase.
 
-- **Engine**: Godot 4.5
+- **Engine**: Godot 4.6
 - **Language**: GDScript
 - **Project Type**: Turn-based RPG with exploration, combat, quests, and narrative systems
 - **Main Scene**: `res://scenes/main.tscn`
 - **Architecture**: Scene-based with autoload singleton managers
+- **Testing**: GUT 9.5.0 (Godot Unit Testing)
+- **Linting**: gdtoolkit 4.5.0 (`gdlint`)
 
 ---
 
@@ -27,10 +29,13 @@ godot-rpg-refactor/
 │   ├── ui/             # UI scenes (menus, dialogs, game screens)
 │   └── components/     # Reusable UI component scenes
 ├── resources/           # Game data and resource definitions
+│   └── ui_theme.tres   # Centralized UI theme (colors, fonts, styles)
 ├── assets/              # Game assets (fonts, sprites, audio)
 ├── tests/               # GUT (Godot Unit Testing) test files
+│   └── godot/          # All GUT test scripts (test_*.gd)
 ├── docs/                # Comprehensive project documentation
 ├── addons/              # Third-party plugins (GUT testing framework)
+├── .gdlintrc            # GDScript linter configuration
 └── project.godot        # Godot project configuration
 ```
 
@@ -42,6 +47,7 @@ godot-rpg-refactor/
   - `DialogueManager.gd`: Dialogue system
   - `StoryManager.gd`: Story progression and events
   - `CodexManager.gd`: In-game encyclopedia/codex
+  - `UIThemeManager.gd`: Centralized theme color access (wraps `resources/ui_theme.tres`)
 
 - **scripts/models/**: Data model classes extending `Resource`
   - `Player.gd`: Player character with stats, inventory, equipment
@@ -76,14 +82,15 @@ DialogueManager.show_dialogue(dialogue_data)
 - **DialogueManager**: Dialogue trees and interactions
 - **StoryManager**: Story events and progression
 - **CodexManager**: Knowledge base and discoveries
+- **UIThemeManager**: Theme color lookups via `get_color("color_name")`
 
 ### 2. Resource-Based Models
 
 All game entities extend Godot's `Resource` class for easy serialization:
 
 ```gdscript
-extends Resource
 class_name Player
+extends Resource
 
 # Use to_dict() and from_dict() for serialization
 func to_dict() -> Dictionary:
@@ -160,10 +167,12 @@ var boss = FinalBossClass.new()
 Use `class_name` for classes that need to be referenced elsewhere:
 
 ```gdscript
-extends Resource
 class_name Player
+extends Resource
 # Now "Player" can be used as a type anywhere
 ```
+
+**Important**: `class_name` must come BEFORE `extends` per gdlint's `class-definitions-order` rule.
 
 ### Signal Connections
 
@@ -183,6 +192,30 @@ var health: int = 100
 var player: Player = null
 func get_damage(base: int) -> int:
     return base * 2
+```
+
+### GDScript Class Definition Order
+
+The project follows gdlint's `class-definitions-order` rule. Members within a `.gd` file must appear in this order:
+
+1. `class_name`
+2. `extends`
+3. `signal` declarations
+4. `enum` definitions
+5. `const` constants
+6. `@export` variables
+7. Public variables
+8. Private variables (`_prefixed`)
+9. `@onready` variables
+10. Functions (`_ready`, `_process`, etc., then custom)
+
+### Unused Function Arguments
+
+Prefix unused function arguments with `_` to satisfy the `unused-argument` lint rule:
+
+```gdscript
+func _on_button_pressed(_event):
+    do_something()
 ```
 
 ---
@@ -281,7 +314,7 @@ The `MainScene.gd` (attached to `main.tscn`) listens to `GameManager.scene_chang
 
 ## Testing
 
-This project uses **GUT (Godot Unit Testing)** framework located in `addons/gut/`.
+This project uses **GUT 9.5.0 (Godot Unit Testing)** framework located in `addons/gut/`.
 
 ### Test Structure
 
@@ -302,12 +335,184 @@ func test_monster_creation():
 
 ### Running Tests
 
-Tests are located in `tests/godot/`. Use GUT's test runner through the Godot editor or command line.
+Tests are located in `tests/godot/`. Run the full suite from the command line:
 
-### Key Test Files
+```bash
+# Run all tests
+godot --headless --script addons/gut/gut_cmdln.gd -gdir=res://tests/godot/ -glog=1
 
-- `test_scene_transitions.gd`: Tests scene navigation flow
-- `test_navigation.gd`: Tests navigation logic
+# Run a single test file
+godot --headless --script addons/gut/gut_cmdln.gd -gtest=res://tests/godot/test_ui_button.gd -glog=1
+```
+
+**Note**: The GUT `gut_loader.gd` emits a harmless `SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'` on startup. This is a known GUT 9.5.0 / Godot 4.6 compatibility issue and does not affect test execution.
+
+### Test Files
+
+| Test File | Tests | What It Covers |
+|-----------|-------|----------------|
+| `test_character_creation.gd` | 10 | Character creation UI and flow |
+| `test_character_portrait_container.gd` | 18 | Portrait component, status effects, signals |
+| `test_combat_scene_integration.gd` | 10 | Combat scene setup, portraits, UI elements |
+| `test_main_menu.gd` | 10 | Main menu buttons, focus, animations |
+| `test_scene_transitions.gd` | 3 | Scene navigation and GameManager state |
+| `test_ui_animation.gd` | 17 | Animation system, loading indicators, feedback |
+| `test_ui_button.gd` | 12 | UIButton component states, signals, themes |
+| `test_ui_progress_bar.gd` | 14 | Progress bar values, animations, accessibility |
+| `test_ui_theme_accessibility.gd` | 14 | WCAG contrast ratios, theme color validation |
+| `test_navigation.gd` | 20 | Navigation logic |
+
+### Testing Gotchas
+
+1. **Headless mode FPS**: When running `--headless`, FPS is very low (1-13 fps). Performance tests should use generous thresholds (e.g., >= 1.0 fps, not 30+ fps).
+
+2. **`push_warning()` in tested code**: GUT captures `push_warning()` calls as "Unexpected Errors" and fails the test. Use `print()` instead when you need diagnostic output in code that will be tested.
+
+3. **`await obj.ready` hangs**: When `_ready()` fires synchronously during `add_child()`, the `ready` signal has already been emitted. Awaiting it will hang forever. Use `await get_tree().process_frame` instead.
+
+4. **UIButton text property**: `UIButton` clears `self.text` in `_ready()` and stores the display text in `button_text`. Always read/write `button.button_text`, not `button.text`.
+
+5. **Theme inheritance**: In Godot 4, child nodes inherit themes from parents automatically. `child.theme` returns `null` because the child uses the parent's theme. Check `child.get_theme_color()` to verify inheritance works.
+
+6. **Signal testing**: Use GUT's `watch_signals()` and `assert_signal_emitted()` rather than manual lambda tracking. Calling a signal handler directly (e.g., `_on_mouse_entered()`) does NOT emit the corresponding signal.
+
+7. **Timing-sensitive tests**: Use `assert_almost_eq()` with generous epsilon values for timing assertions. Headless mode timing varies significantly.
+
+---
+
+## GDScript Linting
+
+The project uses **gdtoolkit 4.5.0** for GDScript linting. Configuration is in `.gdlintrc`.
+
+### Running the Linter
+
+```bash
+# Lint all game scripts
+gdlint scripts/
+
+# Lint test files
+gdlint tests/
+
+# Lint a specific file
+gdlint scripts/ui/MainMenu.gd
+```
+
+### Configuration (`.gdlintrc`)
+
+```
+max-line-length: 120
+max-public-methods: 50
+max-returns: 10
+```
+
+### Key Lint Rules
+
+- **`class-definitions-order`**: class_name before extends, constants before vars, etc. (see Class Definition Order above)
+- **`max-line-length`**: 120 characters max. Break long lines with backslash continuation or extract variables.
+- **`unused-argument`**: Prefix unused args with `_` (e.g., `_event`, `_delta`)
+- **`no-else-return` / `no-elif-return`**: Don't use `else`/`elif` after a `return` statement; use early returns instead.
+- **`duplicated-load`**: Extract repeated `load()` / `preload()` calls into class-level constants.
+- **`trailing-whitespace`**: No trailing whitespace on any line.
+
+### Installing gdtoolkit
+
+```bash
+pip install gdtoolkit
+```
+
+---
+
+## UI Theme System
+
+The game uses a centralized theme defined in `resources/ui_theme.tres` and managed by the `UIThemeManager` autoload singleton.
+
+### Theme Colors
+
+Colors are stored in the theme resource under the `Global` type prefix:
+
+```
+Global/colors/background = Color(0.101961, 0.101961, 0.113725, 1)
+Global/colors/text_primary = Color(0.960784, 0.960784, 0.960784, 1)
+Global/colors/primary_action = Color(0.435294, 0.176471, 0.741176, 1)
+Global/colors/secondary = Color(0.545, 0.561, 0.659, 1)
+Global/colors/accent = Color(0.788235, 0.635294, 0.152941, 1)
+Global/colors/success = Color(0.360784, 0.721569, 0.360784, 1)
+Global/colors/danger = Color(0.90, 0.35, 0.33, 1)
+```
+
+### Accessing Theme Colors
+
+```gdscript
+# Via UIThemeManager singleton
+var bg_color = UIThemeManager.get_color("background")
+var text_color = UIThemeManager.get_color("text_primary")
+
+# Direct theme access (e.g., in tests)
+var theme = load("res://resources/ui_theme.tres")
+var color = theme.get_color("background", "Global")
+```
+
+### WCAG Accessibility
+
+Theme colors are validated against **WCAG AA** contrast requirements (4.5:1 ratio for normal text). The `test_ui_theme_accessibility.gd` test file verifies all color pairings meet minimum contrast ratios. Disabled/inactive UI elements are exempt from AA requirements (3:1 minimum per WCAG).
+
+### Theme Gotcha
+
+When editing `ui_theme.tres`, do NOT add inline comments on color lines. The Godot theme parser may fail to load colors that have comments appended.
+
+---
+
+## Web Export & Browser Testing
+
+The game can be exported to web (HTML5/WASM) and served locally for browser-based testing, including automated testing with `agent-browser`.
+
+### Prerequisites
+
+- **Godot CLI**: `godot.windows.opt.tools.64.exe` is on the user PATH (from `D:\Steam2TB\steamapps\common\Godot Engine`)
+- **Python 3**: Required for the local HTTP server
+- **Export preset**: "Web" preset is configured in `export_presets.cfg`, outputting to `webexport/rpg.html`
+
+### Quick Start
+
+```powershell
+# Full pipeline: export game + start server
+.\Export-AndServe.ps1
+
+# Serve an existing build (skip export)
+.\Export-AndServe.ps1 -SkipExport
+
+# Export only (no server)
+.\Export-AndServe.ps1 -ExportOnly
+
+# Custom port
+.\Export-AndServe.ps1 -Port 9090
+```
+
+### Testing URL
+
+Once the server is running, the game is available at:
+```
+http://localhost:8060/rpg.html
+```
+
+Use `agent-browser` to navigate to this URL for automated browser testing.
+
+### Server Details (`serve_web.py`)
+
+The Python server (`serve_web.py`) handles Godot-specific requirements:
+- Correct MIME types for `.wasm` and `.pck` files (overrides Windows registry defaults)
+- `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers
+- No-cache headers to avoid stale builds during development
+- Prints `SERVER_READY http://localhost:8060/rpg.html` when ready
+
+```bash
+# Direct usage (if you only need the server)
+python serve_web.py --port 8060 --dir webexport
+```
+
+### Game Viewport
+
+The web export renders at **800x600** pixels.
 
 ---
 
@@ -408,14 +613,15 @@ func _animate_menu_in():
 - Scene files (.tscn) stay in `scenes/`
 - Keep related script and scene names consistent (e.g., `MainMenu.gd` → `main_menu.tscn`)
 
-### Godot 4 Migration Notes
+### Godot 4.6 Syntax
 
-This project uses Godot 4.x syntax:
+This project uses Godot 4.6 syntax:
 - Use `Callable(object, "method_name")` instead of old-style signal connections
 - Use `@export` instead of `export`
 - Use `@onready` instead of `onready`
 - Use `PackedStringArray` instead of `PoolStringArray`
 - Scene paths use `res://` protocol
+- `class_name` must come before `extends` (enforced by gdlint)
 
 ### Signal Connections
 
@@ -571,6 +777,14 @@ For more detailed information, see:
 
 7. **Skill Cooldowns**: Call `GameManager.tick_skill_cooldowns()` after each combat turn.
 
+8. **UIButton text**: `UIButton` clears `self.text` in `_ready()`. Use `button.button_text` to get/set the displayed text.
+
+9. **Theme colors require type prefix**: Colors in `ui_theme.tres` use `Global/colors/name` format. Access via `theme.get_color("name", "Global")` or `UIThemeManager.get_color("name")`.
+
+10. **`push_warning()` breaks GUT tests**: GUT captures warnings as "Unexpected Errors". Use `print()` for diagnostics in code under test.
+
+11. **Lint before committing**: Run `gdlint scripts/ tests/` to catch style issues. The project maintains zero lint errors.
+
 ---
 
 ## Performance Considerations
@@ -602,10 +816,14 @@ When working on this codebase:
 2. Search for similar implementations in the codebase
 3. Follow established patterns (factories, signals, serialization)
 4. Add tests for new features
-5. Update this documentation when adding major features
+5. Run `gdlint` on modified files before committing
+6. Verify tests pass: `godot --headless --script addons/gut/gut_cmdln.gd -gdir=res://tests/godot/ -glog=1`
+7. Update this documentation when adding major features
 
 ---
 
-**Last Updated**: 2025-11-18
-**Godot Version**: 4.5
+**Last Updated**: 2026-02-03
+**Godot Version**: 4.6
+**GUT Version**: 9.5.0
+**gdtoolkit Version**: 4.5.0
 **Project Version**: 1.0

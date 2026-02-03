@@ -39,7 +39,8 @@ func load_dialogues() -> void:
 				]
 			},
 			"about_village": {
-				"text": "This is Eldridge Village, founded by our ancestors generations ago. We've lived in peace, until recently...",
+				"text": "This is Eldridge Village, founded by our ancestors " +
+				"generations ago. We've lived in peace, until recently...",
 				"options": [
 					{"text": "What happened recently?", "next": "recent_events"},
 					{"text": "Back to main topic.", "next": "greeting"}
@@ -63,14 +64,19 @@ func load_dialogues() -> void:
 				]
 			},
 			"about_wares": {
-				"text": "I carry healing potions, mana potions, swords, shields, and armor. Everything an adventurer needs! You can browse my selection using the Shop button when you're ready to buy.",
+				"text": "I carry healing potions, mana potions, swords, " +
+				"shields, and armor. Everything an adventurer needs! " +
+				"You can browse my selection using the Shop button " +
+				"when you're ready to buy.",
 				"options": [
 					{"text": "Thanks for the information.", "next": "greeting"},
 					{"text": "Goodbye.", "action": "end"}
 				]
 			},
 			"advice": {
-				"text": "Stay on the main roads at night, and always check your gear before heading into caves. Oh, and don't forget to save your game!",
+				"text": "Stay on the main roads at night, and always check " +
+				"your gear before heading into caves. Oh, and don't " +
+				"forget to save your game!",
 				"options": [
 					{"text": "Good advice, thanks!", "next": "greeting"},
 					{"text": "Goodbye.", "action": "end"}
@@ -87,7 +93,8 @@ func load_dialogues() -> void:
 				]
 			},
 			"dark_threat": {
-				"text": "A great darkness has been stirring in the ancient crypt beneath the castle. We fear an ancient evil awakens.",
+				"text": "A great darkness has been stirring in the ancient " +
+				"crypt beneath the castle. We fear an ancient evil awakens.",
 				"options": [
 					{"text": "I will stop this evil.", "action": "accept_quest", "quest_type": "explore_cave"},
 					{"text": "That is beyond my abilities.", "next": "greeting"},
@@ -134,7 +141,7 @@ func show_dialogue(dialogue_key: String) -> void:
 	if not dialogue_data.has(current_npc):
 		end_dialogue()
 		return
-	
+
 	var npc_dialogue = dialogue_data[current_npc]
 	if not npc_dialogue.has(dialogue_key):
 		end_dialogue()

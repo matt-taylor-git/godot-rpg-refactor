@@ -1,24 +1,21 @@
-extends Control
 class_name BaseUI
+extends Control
 
 # BaseUI - Base class for all UI scenes
 # Provides common functionality and responsive layout
 
 signal back_pressed
 
-@onready var title_label: Label = $Content/VBoxContainer/Header/Title
-@onready var back_button: Button = $Content/VBoxContainer/Footer/BackButton
-@onready var main_content: CenterContainer = $Content/VBoxContainer/MainContent
-
 # Typography system integration
 const UITypographyClass = preload("res://scripts/components/UITypography.gd")
-var typography = UITypographyClass.new()
 
 # Visual feedback system integration
 const UIAnimationSystemClass = preload("res://scripts/components/UIAnimationSystem.gd")
 const UISuccessFeedbackClass = preload("res://scripts/components/UISuccessFeedback.gd")
 const UIErrorFeedbackClass = preload("res://scripts/components/UIErrorFeedback.gd")
 const UILoadingIndicatorClass = preload("res://scripts/components/UILoadingIndicator.gd")
+
+var typography = UITypographyClass.new()
 
 # Feedback system instances
 var animation_system: UIAnimationSystem = null
@@ -28,6 +25,10 @@ var loading_indicator: UILoadingIndicator = null
 
 var ui_title: String = "UI Title"
 var show_back_button: bool = true
+
+@onready var title_label: Label = $Content/VBoxContainer/Header/Title
+@onready var back_button: Button = $Content/VBoxContainer/Footer/BackButton
+@onready var main_content: CenterContainer = $Content/VBoxContainer/MainContent
 
 func _ready():
 	# Initialize feedback systems
@@ -93,7 +94,8 @@ func _setup_responsive_layout():
 
 func _adjust_font_sizes_recursive(node: Node, scale: float):
 	if node is Label or node is Button:
-		var current_size = node.get("theme_override_font_sizes/font_size") if node.get("theme_override_font_sizes/font_size") else 14
+		var font_size = node.get("theme_override_font_sizes/font_size")
+		var current_size = font_size if font_size else 14
 		var scaled_size = int(current_size * scale)
 		# Enforce minimum readable sizes per AC-UI-007
 		var min_size = 12 if current_size <= 12 else 14  # 12pt for captions, 14pt for body

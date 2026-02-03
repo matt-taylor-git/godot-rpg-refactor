@@ -3,9 +3,9 @@ extends Node2D
 # MainScene - Root scene that manages overall game flow
 # Handles scene transitions and global UI elements
 
-@onready var scene_manager = $SceneManager
-
 var current_scene_instance = null
+
+@onready var scene_manager = $SceneManager
 
 func _ready():
 	print("MainScene ready")

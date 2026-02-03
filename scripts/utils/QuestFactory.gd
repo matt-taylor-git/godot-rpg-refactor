@@ -1,5 +1,5 @@
-extends Node
 class_name QuestFactory
+extends Node
 
 # QuestFactory - Creates quest instances
 
@@ -13,16 +13,16 @@ class Quest extends Resource:
 	var reward_exp: int = 0
 	var reward_gold: int = 0
 	var completed: bool = false
-	
+
 	func is_completed() -> bool:
 		return current_count >= target_count
-	
+
 	func update_progress(amount: int = 1) -> void:
 		current_count += amount
 
 static func create_quest(quest_type: String, level: int = 1) -> Quest:
 	var quest = Quest.new()
-	
+
 	match quest_type:
 		"kill_goblins":
 			quest.title = "Goblin Extermination"
@@ -31,7 +31,7 @@ static func create_quest(quest_type: String, level: int = 1) -> Quest:
 			quest.target_count = 5
 			quest.reward_exp = 50 + level * 10
 			quest.reward_gold = 25 + level * 5
-		
+
 		"collect_herbs":
 			quest.title = "Herbal Collection"
 			quest.description = "Collect 3 healing herbs"
@@ -39,7 +39,7 @@ static func create_quest(quest_type: String, level: int = 1) -> Quest:
 			quest.target_count = 3
 			quest.reward_exp = 30 + level * 5
 			quest.reward_gold = 15 + level * 3
-		
+
 		"explore_cave":
 			quest.title = "Cave Exploration"
 			quest.description = "Explore the mysterious cave"
@@ -47,7 +47,7 @@ static func create_quest(quest_type: String, level: int = 1) -> Quest:
 			quest.target_count = 1
 			quest.reward_exp = 75 + level * 15
 			quest.reward_gold = 40 + level * 8
-		
+
 		_:
 			quest.title = "Unknown Quest"
 			quest.description = "Complete this mysterious task"
@@ -55,7 +55,7 @@ static func create_quest(quest_type: String, level: int = 1) -> Quest:
 			quest.target_count = 1
 			quest.reward_exp = 25
 			quest.reward_gold = 10
-	
+
 	return quest
 
 static func get_random_quest(level: int = 1) -> Quest:

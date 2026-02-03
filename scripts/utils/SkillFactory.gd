@@ -1,11 +1,11 @@
-extends Node
 class_name SkillFactory
+extends Node
 
 # SkillFactory - Creates skill instances
 
 static func create_skill(skill_type: String) -> Skill:
 	var skill = Skill.new()
-	
+
 	match skill_type:
 		"slash":
 			skill.name = "Slash"
@@ -13,7 +13,7 @@ static func create_skill(skill_type: String) -> Skill:
 			skill.required_level = 1
 			skill.cooldown = 2
 			skill.damage_multiplier = 1.5
-		
+
 		"heal":
 			skill.name = "Heal"
 			skill.description = "Restore health to self"
@@ -21,7 +21,7 @@ static func create_skill(skill_type: String) -> Skill:
 			skill.cooldown = 3
 			skill.healing_amount = 30
 			skill.effect_type = "heal"
-		
+
 		"fireball":
 			skill.name = "Fireball"
 			skill.description = "Launch a fireball at enemy"
@@ -30,7 +30,7 @@ static func create_skill(skill_type: String) -> Skill:
 			skill.cooldown = 4
 			skill.damage_multiplier = 2.0
 			skill.mana_cost = 10
-		
+
 		"stealth":
 			skill.name = "Stealth"
 			skill.description = "Become harder to hit"
@@ -38,7 +38,7 @@ static func create_skill(skill_type: String) -> Skill:
 			skill.required_class = "Rogue"
 			skill.cooldown = 5
 			skill.effect_type = "buff"
-		
+
 		_:
 			# Default skill
 			skill.name = "Unknown Skill"
@@ -46,12 +46,12 @@ static func create_skill(skill_type: String) -> Skill:
 			skill.required_level = 1
 			skill.cooldown = 1
 			skill.damage_multiplier = 1.0
-	
+
 	return skill
 
 static func get_class_skills(character_class: String) -> Array:
 	var skills = []
-	
+
 	match character_class:
 		"Hero":
 			skills = ["slash", "heal"]
@@ -63,9 +63,9 @@ static func get_class_skills(character_class: String) -> Array:
 			skills = ["stealth", "backstab"]
 		_:
 			skills = ["slash"]
-	
+
 	var skill_objects = []
 	for skill_name in skills:
 		skill_objects.append(create_skill(skill_name))
-	
+
 	return skill_objects

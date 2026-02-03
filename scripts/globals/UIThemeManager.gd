@@ -4,6 +4,7 @@ extends Node
 # Autoload singleton to manage and provide global access to the game's UI theme.
 
 const THEME_PATH = "res://resources/ui_theme.tres"
+const COLOR_TYPE = "Global"
 var theme: Theme
 
 func _ready():
@@ -13,10 +14,10 @@ func _ready():
 
 # --- Color Getters ---
 
-func get_color(name: String) -> Color:
-    if not theme:
-        return Color.MAGENTA # Error color
-    return theme.get_color(name, "Default")
+func get_color(color_name: String) -> Color:
+    if theme and theme.has_color(color_name, COLOR_TYPE):
+        return theme.get_color(color_name, COLOR_TYPE)
+    return Color.MAGENTA
 
 func get_background_color() -> Color:
     return get_color("background")
@@ -76,8 +77,7 @@ func get_contrast_ratio(fg_color: Color, bg_color: Color) -> float:
 
     if l1 > l2:
         return (l1 + 0.05) / (l2 + 0.05)
-    else:
-        return (l2 + 0.05) / (l1 + 0.05)
+    return (l2 + 0.05) / (l1 + 0.05)
 
 # Validates if a color combination meets WCAG AA standards (4.5:1).
 func validate_contrast_aa(fg_color: Color, bg_color: Color) -> bool:

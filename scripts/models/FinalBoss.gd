@@ -1,5 +1,5 @@
-extends Monster
 class_name FinalBoss
+extends Monster
 
 # FinalBoss - Enhanced Monster with multi-phase combat and special abilities
 
@@ -30,13 +30,13 @@ func set_stats_for_level(level: int) -> void:
 
 func update_phase() -> void:
 	var health_percent = int((float(health) / float(max_health)) * 100)
-	
+
 	var new_phase = 1
 	if health_percent <= 66:
 		new_phase = 2
 	if health_percent <= 33:
 		new_phase = 3
-	
+
 	if new_phase != current_phase:
 		current_phase = new_phase
 		print("Boss entering Phase %d!" % current_phase)
@@ -48,9 +48,9 @@ func get_phase_description() -> String:
 
 func get_ai_action() -> String:
 	update_phase()
-	
+
 	var health_percent = int((float(health) / float(max_health)) * 100)
-	
+
 	# Phase-based behavior
 	match current_phase:
 		1:
@@ -60,17 +60,15 @@ func get_ai_action() -> String:
 			# Phase 2: Mix of attacks and special abilities
 			if randf() < 0.3:
 				return "power_strike"
-			else:
-				return "attack"
+			return "attack"
 		3:
 			# Phase 3: Mostly special abilities
 			if randf() < 0.4:
 				return "dark_curse"
-			elif randf() < 0.4:
+			if randf() < 0.4:
 				return "power_strike"
-			else:
-				return "attack"
-	
+			return "attack"
+
 	return "attack"
 
 func to_dict() -> Dictionary:
