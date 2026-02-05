@@ -596,6 +596,37 @@ func _animate_menu_in():
 4. Add scene transition logic in relevant buttons/events
 5. Update `GameManager.change_scene()` if needed
 
+### UI Layout Best Practices (800x600 Viewport)
+
+**VBoxContainer children must opt into expanding.** In a VBoxContainer, children only get their minimum height unless they have `size_flags_vertical = 3` (EXPAND_FILL). The main content area between a header and footer should always have this flag, otherwise all three elements stack at minimum height and space is wasted.
+
+```
+# In .tscn: make Content fill space between Title and Footer
+[node name="Content" type="HBoxContainer" parent="..."]
+size_flags_vertical = 3
+```
+
+**Hide unused elements at the END of `_ready()`.** If `_ready()` hides UI elements but then calls initialization functions that re-show them, the hiding is undone. Always place visibility overrides as the last step in `_ready()` so no subsequent init code can undo them.
+
+```gdscript
+func _ready():
+    _setup_everything()
+    _initialize_systems()
+    # LAST: hide elements that aren't needed
+    if unused_button:
+        unused_button.visible = false
+```
+
+**Space budget for 800x600.** With PanelContainer padding (~8px each side) and a 22px font:
+- Available content area: ~768px W x ~568px H
+- Title (~35px) + separators (~20px) + Footer (~44px) + padding (~16px) = ~115px fixed overhead
+- ~485px remains for the main content area
+- Footer with 2 buttons (~340px) fits easily; 6+ buttons (~700px+) overflows
+
+**Don't mix visible and hidden elements in a shared container.** If a container (e.g., Footer HBoxContainer) has both always-visible buttons and conditionally-hidden buttons, the hidden buttons still affect layout calculations unless `visible = false`. Ensure hidden buttons are actually set to invisible, not just disabled.
+
+**PanelContainer children that should grow need EXPAND_FILL.** A PanelContainer child (like StatsSection) takes its minimum height by default. If it contains many elements (labels + progress bars), set `size_flags_vertical = 3` so it can grow/shrink with available space instead of overflowing.
+
 ### Adding a New Quest
 
 1. Use `QuestFactory.gd` to define quest data
@@ -784,6 +815,12 @@ For more detailed information, see:
 10. **`push_warning()` breaks GUT tests**: GUT captures warnings as "Unexpected Errors". Use `print()` for diagnostics in code under test.
 
 11. **Lint before committing**: Run `gdlint scripts/ tests/` to catch style issues. The project maintains zero lint errors.
+
+12. **`_ready()` ordering matters for visibility**: If `_ready()` hides elements early but later calls functions that set `visible = true`, the hiding is undone. Always hide unused UI elements as the last step in `_ready()`.
+
+13. **VBoxContainer children don't expand by default**: Children of a VBoxContainer only get their minimum size unless `size_flags_vertical = 3` (EXPAND_FILL) is set. Forgetting this causes content areas to collapse and waste vertical space.
+
+14. **Footer button overflow at 800x600**: The viewport is only 800px wide (~768px after padding). Each UIButton has ~100-240px minimum width. More than 3-4 buttons in a footer HBoxContainer will overflow horizontally. Hide unused buttons rather than keeping them visible but disabled.
 
 ---
 

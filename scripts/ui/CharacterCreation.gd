@@ -105,8 +105,17 @@ var large_text_min_contrast = 3.0  # WCAG AA minimum for large text
 @onready var stats_text = (
 	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StatsText
 )
+@onready var stats_label = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StatsLabel
+)
+@onready var stat_progress_label = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/StatProgressLabel
+)
 @onready var skills_text = (
 	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/SkillsText
+)
+@onready var skills_label = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/SkillsLabel
 )
 @onready var start_game_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/StartGameButton
 
@@ -180,6 +189,25 @@ func validate_form_field(_field: Control, is_valid: bool, _error_message: String
 
 func _ready():
 	print("CharacterCreation ready")
+
+	# Hide redundant elements to fit within 800x600 viewport
+	# Progress bars already display stat values; StatsText is redundant
+	if stats_text:
+		stats_text.visible = false
+	if stats_label:
+		stats_label.visible = false
+	if stat_progress_label:
+		stat_progress_label.visible = false
+	# Skills section is not critical during creation; shown in-game
+	if skills_label:
+		skills_label.visible = false
+	if skills_text:
+		skills_text.visible = false
+	# Step indicator is wizard-style nav that clutters the compact layout
+	if step_indicator:
+		step_indicator.visible = false
+	if step_description:
+		step_description.visible = false
 	# Set default selection to Hero
 	_on_class_selected("Hero")
 	_update_start_button()
@@ -194,16 +222,21 @@ func _ready():
 	# Set up keyboard navigation
 	_setup_keyboard_navigation()
 
-	# Initialize step-by-step navigation
-	_initialize_step_navigation()
-
-	# Connect step navigation signals
-	_connect_step_navigation_signals()
-
 	# Initialize visual polish and accessibility features
 	_initialize_background_animation()
 	_enhance_focus_indicators()
 	_verify_contrast_ratios()
+
+	# Hide wizard-flow footer buttons; only Back and Start Adventure are needed
+	# This must be LAST in _ready() so nothing can re-enable them
+	if next_button:
+		next_button.visible = false
+	if prev_button:
+		prev_button.visible = false
+	if confirm_button:
+		confirm_button.visible = false
+	if cancel_button:
+		cancel_button.visible = false
 
 func _on_name_input_changed(new_text: String):
 	character_name = new_text.strip_edges()
@@ -233,28 +266,12 @@ func _on_class_selected(selected_name: String):
 	if class_sprites.has(selected_name):
 		character_sprite.texture = class_sprites[selected_name]
 
-	# Update stats display with enhanced information
+	# Update stats display
 	if class_stats.has(selected_name):
 		var stats = class_stats[selected_name]
-		var enhanced_stats_text = "Attack: %d\nDefense: %d\nDexterity: %d\nHealth: %d\n\n" % [
+		stats_text.text = "Attack: %d  |  Defense: %d\nDexterity: %d  |  Health: %d" % [
 			stats.attack, stats.defense, stats.dexterity, stats.health
 		]
-
-		# Add stat descriptions
-		enhanced_stats_text += "**Stat Descriptions:**\n"
-		var mods = class_stat_modifiers[selected_name]
-		enhanced_stats_text += "Strength: %d - %s\n" % [
-			mods.strength, stat_descriptions["Strength"]]
-		enhanced_stats_text += "Defense: %d - %s\n" % [
-			mods.defense, stat_descriptions["Defense"]]
-		enhanced_stats_text += "Dexterity: %d - %s\n" % [
-			mods.dexterity, stat_descriptions["Dexterity"]]
-		enhanced_stats_text += "Constitution: %d - %s\n" % [
-			mods.constitution, stat_descriptions["Constitution"]]
-		enhanced_stats_text += "Intelligence: %s - %s\n" % [
-			str(mods.intelligence), stat_descriptions["Intelligence"]]
-
-		stats_text.text = enhanced_stats_text
 
 	# Update skills display
 	if class_skills.has(selected_name):
