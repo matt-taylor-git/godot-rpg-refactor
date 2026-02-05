@@ -21,7 +21,7 @@ func _initial_scene_change():
 func _on_scene_changed(scene_name: String):
 	# Handle the actual scene change when GameManager signals it
 	var scene_path = "res://scenes/ui/" + scene_name + ".tscn"
-	if FileAccess.file_exists(scene_path):
+	if ResourceLoader.exists(scene_path):
 		get_tree().change_scene_to_file(scene_path)
 	else:
 		print("Error: Scene file not found: ", scene_path)

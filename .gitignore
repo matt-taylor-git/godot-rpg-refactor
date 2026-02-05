@@ -46,6 +46,9 @@ Testing/
 # Emacs
 *~
 
+# Screenshots
+screenshot_*.png
+
 # OS generated files
 Thumbs.db
 ehthumbs.db

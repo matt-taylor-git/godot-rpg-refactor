@@ -244,7 +244,7 @@ func _save_to_file(save_slot: int):
 func change_scene(scene_name: String):
 	print("Changing scene to: ", scene_name)
 	var scene_path = "res://scenes/ui/" + scene_name + ".tscn"
-	if not FileAccess.file_exists(scene_path):
+	if not ResourceLoader.exists(scene_path):
 		print("Error: Scene file not found: ", scene_path)
 		return
 	current_scene = scene_name

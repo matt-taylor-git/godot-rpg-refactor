@@ -822,6 +822,10 @@ For more detailed information, see:
 
 14. **Footer button overflow at 800x600**: The viewport is only 800px wide (~768px after padding). Each UIButton has ~100-240px minimum width. More than 3-4 buttons in a footer HBoxContainer will overflow horizontally. Hide unused buttons rather than keeping them visible but disabled.
 
+15. **TSCN parent paths must be full paths from the scene root.** In `.tscn` files, the `parent` attribute is resolved relative to the scene's root node. `parent="LeftPanel"` means a direct child of the root named `LeftPanel`. If `LeftPanel` is nested (e.g., under `MainContainer`), the path must be `parent="MainContainer/LeftPanel"`. When hand-editing `.tscn` or moving nodes under a new container, update ALL descendant `parent=` and `[connection] from=` paths. Compare against a known-working scene file (e.g., `character_creation.tscn`, `shop_dialog.tscn`) to verify.
+
+16. **`popup_centered()` only exists on Window-derived nodes.** `Control`, `PanelContainer`, etc. don't have `popup_centered()`. For full-screen overlays, use full-rect anchors (`anchors_preset = 15`). For centered dialogs, use `anchors_preset = 8` (CENTER) or set anchors to 0.5 with size offsets.
+
 ---
 
 ## Performance Considerations

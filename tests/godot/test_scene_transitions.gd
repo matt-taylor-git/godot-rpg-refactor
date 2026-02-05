@@ -12,6 +12,7 @@ func test_main_menu_new_game_flow():
 	await get_tree().process_frame
 
 	main_menu._on_new_game_pressed()
+	await get_tree().create_timer(0.3).timeout
 	assert_eq(GameManager.current_scene, "character_creation", "Should change to character creation scene")
 
 	main_menu.queue_free()

@@ -251,7 +251,7 @@ func _create_feedback_icon(icon_path: String, tint_color: Color, position: Vecto
 	icon.position = position - Vector2(16, 16)  # Center on position
 
 	# Try to load icon texture
-	if FileAccess.file_exists(icon_path):
+	if ResourceLoader.exists(icon_path):
 		var texture = load(icon_path)
 		if texture:
 			icon.texture = texture

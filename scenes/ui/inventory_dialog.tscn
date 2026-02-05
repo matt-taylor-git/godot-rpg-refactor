@@ -40,76 +40,88 @@ size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.4
 theme_override_constants/separation = 20
 
-[node name="CharacterPanel" type="PanelContainer" parent="LeftPanel"]
+[node name="CharacterPanel" type="PanelContainer" parent="MainContainer/LeftPanel"]
 layout_mode = 2
 theme_type_variation = "Panel"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="LeftPanel/CharacterPanel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MainContainer/LeftPanel/CharacterPanel"]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Portrait" type="TextureRect" parent="LeftPanel/CharacterPanel/HBoxContainer"]
+[node name="Portrait" type="TextureRect" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer"]
 layout_mode = 2
 texture = ExtResource("4")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="LeftPanel/CharacterPanel/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CharacterLabel" type="Label" parent="LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer"]
+[node name="CharacterLabel" type="Label" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 text = "CHARACTER"
 theme_type_variation = "H1"
 
-[node name="StatsGrid" type="GridContainer" parent="LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer"]
+[node name="StatsGrid" type="GridContainer" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 columns = 2
 
-[node name="AttackLabel" type="Label" parent="LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="AttackLabel" type="Label" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
 layout_mode = 2
 text = "ATTACK"
 
-[node name="AttackValue" type="Label" parent="LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="AttackValue" type="Label" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
 layout_mode = 2
 text = "10"
 
-[node name="DefenseLabel" type="Label" parent="LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="DefenseLabel" type="Label" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
 layout_mode = 2
 text = "DEFENSE"
 
-[node name="DefenseValue" type="Label" parent="LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="DefenseValue" type="Label" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
 layout_mode = 2
 text = "5"
 
-[node name="DexterityLabel" type="Label" parent="LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="DexterityLabel" type="Label" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
 layout_mode = 2
 text = "DEXTERITY"
 
-[node name="DexterityValue" type="Label" parent="LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="DexterityValue" type="Label" parent="MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
 layout_mode = 2
 text = "5"
 
-[node name="EquipmentPanel" type="PanelContainer" parent="LeftPanel"]
+[node name="EquipmentPanel" type="PanelContainer" parent="MainContainer/LeftPanel"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_type_variation = "Panel"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="LeftPanel/EquipmentPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer/LeftPanel/EquipmentPanel"]
 layout_mode = 2
 
-[node name="WeaponSlot" type="PanelContainer" parent="LeftPanel/EquipmentPanel/VBoxContainer"]
+[node name="WeaponSlot" type="PanelContainer" parent="MainContainer/LeftPanel/EquipmentPanel/VBoxContainer"]
 layout_mode = 2
 theme_type_variation = "ItemSlot"
 
-[node name="ArmorSlot" type="PanelContainer" parent="LeftPanel/EquipmentPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/WeaponSlot"]
+layout_mode = 2
+text = "[Empty]"
+
+[node name="ArmorSlot" type="PanelContainer" parent="MainContainer/LeftPanel/EquipmentPanel/VBoxContainer"]
 layout_mode = 2
 theme_type_variation = "ItemSlot"
 
-[node name="AccessorySlot" type="PanelContainer" parent="LeftPanel/EquipmentPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/ArmorSlot"]
+layout_mode = 2
+text = "[Empty]"
+
+[node name="AccessorySlot" type="PanelContainer" parent="MainContainer/LeftPanel/EquipmentPanel/VBoxContainer"]
 layout_mode = 2
 theme_type_variation = "ItemSlot"
+
+[node name="Label" type="Label" parent="MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/AccessorySlot"]
+layout_mode = 2
+text = "[Empty]"
 
 [node name="RightPanel" type="VBoxContainer" parent="MainContainer"]
 layout_mode = 2
@@ -117,41 +129,41 @@ size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.6
 theme_override_constants/separation = 10
 
-[node name="InventoryLabel" type="Label" parent="RightPanel"]
+[node name="InventoryLabel" type="Label" parent="MainContainer/RightPanel"]
 layout_mode = 2
 text = "INVENTORY"
 theme_type_variation = "H1"
 
-[node name="InventoryGrid" type="GridContainer" parent="RightPanel"]
+[node name="InventoryGrid" type="GridContainer" parent="MainContainer/RightPanel"]
 layout_mode = 2
 size_flags_vertical = 3
 columns = 5
 
-[node name="ActionButtons" type="HBoxContainer" parent="RightPanel"]
+[node name="ActionButtons" type="HBoxContainer" parent="MainContainer/RightPanel"]
 layout_mode = 2
 alignment = 1
 
-[node name="UseButton" parent="RightPanel/ActionButtons" instance=ExtResource("3")]
+[node name="UseButton" parent="MainContainer/RightPanel/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "USE"
 theme_type_variation = "Small"
 
-[node name="EquipButton" parent="RightPanel/ActionButtons" instance=ExtResource("3")]
+[node name="EquipButton" parent="MainContainer/RightPanel/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "EQUIP"
 theme_type_variation = "Small"
 
-[node name="DropButton" parent="RightPanel/ActionButtons" instance=ExtResource("3")]
+[node name="DropButton" parent="MainContainer/RightPanel/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 text = "DROP"
 theme_type_variation = "Small"
 
-[node name="CloseButton" parent="RightPanel" instance=ExtResource("3")]
+[node name="CloseButton" parent="MainContainer/RightPanel" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "CLOSE"
 
-[connection signal="pressed" from="RightPanel/ActionButtons/UseButton" to="." method="_on_use_pressed"]
-[connection signal="pressed" from="RightPanel/ActionButtons/EquipButton" to="." method="_on_equip_pressed"]
-[connection signal="pressed" from="RightPanel/ActionButtons/DropButton" to="." method="_on_drop_pressed"]
-[connection signal="pressed" from="RightPanel/CloseButton" to="." method="_on_close_pressed"]
+[connection signal="pressed" from="MainContainer/RightPanel/ActionButtons/UseButton" to="." method="_on_use_pressed"]
+[connection signal="pressed" from="MainContainer/RightPanel/ActionButtons/EquipButton" to="." method="_on_equip_pressed"]
+[connection signal="pressed" from="MainContainer/RightPanel/ActionButtons/DropButton" to="." method="_on_drop_pressed"]
+[connection signal="pressed" from="MainContainer/RightPanel/CloseButton" to="." method="_on_close_pressed"]

@@ -212,6 +212,8 @@ func _animate_button_press(button: Button):
 
 func _on_new_game_pressed():
 	print("New Game pressed")
+	_animate_button_press(new_game_button)
+	await get_tree().create_timer(0.2).timeout
 	GameManager.start_new_game()
 	_change_scene("character_creation")
 

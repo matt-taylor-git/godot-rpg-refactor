@@ -150,7 +150,7 @@ func add_error_icon(node: Control) -> void:
 
 	# Try to load error icon
 	var icon_path = "res://assets/ui/icons/error.png"
-	if FileAccess.file_exists(icon_path):
+	if ResourceLoader.exists(icon_path):
 		var texture = load(icon_path)
 		if texture:
 			error_icon.texture = texture

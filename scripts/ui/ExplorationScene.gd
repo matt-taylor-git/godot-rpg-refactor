@@ -163,7 +163,6 @@ func _on_inventory_pressed():
 	# Open inventory dialog
 	var inventory_dialog = preload("res://scenes/ui/inventory_dialog.tscn").instantiate()
 	add_child(inventory_dialog)
-	inventory_dialog.popup_centered()
 	inventory_dialog.tree_exited.connect(func(): inventory_button.grab_focus())
 	print("Inventory dialog opened")
 
