@@ -170,7 +170,6 @@ func _on_shop_pressed():
 	# Open shop dialog
 	var shop_dialog = preload("res://scenes/ui/shop_dialog.tscn").instantiate()
 	add_child(shop_dialog)
-	shop_dialog.popup_centered()
 	shop_dialog.tree_exited.connect(func(): shop_button.grab_focus())
 	print("Shop dialog opened")
 
@@ -178,7 +177,6 @@ func _on_quest_log_pressed():
 	# Open quest log dialog
 	var quest_log_dialog = preload("res://scenes/ui/quest_log_dialog.tscn").instantiate()
 	add_child(quest_log_dialog)
-	quest_log_dialog.popup_centered()
 	quest_log_dialog.tree_exited.connect(func(): quest_log_button.grab_focus())
 	print("Quest log dialog opened")
 
@@ -197,7 +195,6 @@ func _on_codex_pressed():
 	# Open codex dialog
 	var codex_dialog = preload("res://scenes/ui/codex_dialog.tscn").instantiate()
 	add_child(codex_dialog)
-	codex_dialog.popup_centered()
 	codex_dialog.tree_exited.connect(func(): codex_button.grab_focus())
 	print("Codex dialog opened")
 
