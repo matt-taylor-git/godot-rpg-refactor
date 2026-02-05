@@ -98,24 +98,22 @@ func _adjust_for_aspect_ratio():
 		menu_panel.custom_minimum_size = Vector2(500, 450)
 
 func _apply_theme_styling():
-	"""Apply ui_theme.tres styling per AC-3.1.1 and AC-3.1.4 (contrast ratios)"""
+	"""Apply dark fantasy theme styling"""
 	# Theme is already applied at scene root, ensure it propagates
 	if theme == null:
 		theme = load("res://resources/ui_theme.tres")
 
-	# Apply consistent typography
-	# Title uses H1 (24px heading) - Title label is in BaseUI
+	# Apply gold title styling with shadow for dark fantasy aesthetic
 	if title_label:
 		title_label.set("theme_type_variation", "H1")
-		title_label.set("theme_override_font_sizes/font_size", 24)  # H1 = 24px
-
-	# WCAG AA Contrast Ratio Verification (AC-3.1.4):
-	# - text_primary (#f5f5f5) on primary_action (#6f2dbd) = ~11.5:1 ✓
-	# - text_primary (#f5f5f5) on background (#1a1a1d) = ~15.8:1 ✓
-	# All combinations meet 4.5:1 minimum for normal text
+		title_label.set("theme_override_font_sizes/font_size", 28)
+		title_label.add_theme_color_override("font_color", UIThemeManager.get_color("title_gold"))
+		title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+		title_label.add_theme_constant_override("shadow_offset_x", 2)
+		title_label.add_theme_constant_override("shadow_offset_y", 2)
 
 	# Ensure background uses theme colors
-	background_panel.self_modulate = Color.WHITE  # Use theme's background color
+	background_panel.self_modulate = Color.WHITE
 
 func _setup_focus_navigation():
 	"""Setup keyboard navigation per AC-3.1.4"""

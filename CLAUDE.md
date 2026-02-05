@@ -431,13 +431,15 @@ The game uses a centralized theme defined in `resources/ui_theme.tres` and manag
 Colors are stored in the theme resource under the `Global` type prefix:
 
 ```
-Global/colors/background = Color(0.101961, 0.101961, 0.113725, 1)
-Global/colors/text_primary = Color(0.960784, 0.960784, 0.960784, 1)
-Global/colors/primary_action = Color(0.435294, 0.176471, 0.741176, 1)
-Global/colors/secondary = Color(0.545, 0.561, 0.659, 1)
-Global/colors/accent = Color(0.788235, 0.635294, 0.152941, 1)
-Global/colors/success = Color(0.360784, 0.721569, 0.360784, 1)
-Global/colors/danger = Color(0.90, 0.35, 0.33, 1)
+Global/colors/background = Color(0.08, 0.07, 0.06, 1)
+Global/colors/text_primary = Color(0.95, 0.92, 0.85, 1)
+Global/colors/primary_action = Color(0.35, 0.25, 0.10, 1)
+Global/colors/secondary = Color(0.58, 0.55, 0.50, 1)
+Global/colors/accent = Color(0.85, 0.70, 0.35, 1)
+Global/colors/success = Color(0.45, 0.75, 0.45, 1)
+Global/colors/danger = Color(0.85, 0.35, 0.30, 1)
+Global/colors/border_bronze = Color(0.60, 0.45, 0.20, 1)
+Global/colors/title_gold = Color(0.85, 0.70, 0.35, 1)
 ```
 
 ### Accessing Theme Colors
@@ -446,6 +448,8 @@ Global/colors/danger = Color(0.90, 0.35, 0.33, 1)
 # Via UIThemeManager singleton
 var bg_color = UIThemeManager.get_color("background")
 var text_color = UIThemeManager.get_color("text_primary")
+var bronze = UIThemeManager.get_border_bronze_color()
+var gold = UIThemeManager.get_title_gold_color()
 
 # Direct theme access (e.g., in tests)
 var theme = load("res://resources/ui_theme.tres")
@@ -459,6 +463,45 @@ Theme colors are validated against **WCAG AA** contrast requirements (4.5:1 rati
 ### Theme Gotcha
 
 When editing `ui_theme.tres`, do NOT add inline comments on color lines. The Godot theme parser may fail to load colors that have comments appended.
+
+---
+
+## Visual Style Guide
+
+The game follows a **dark fantasy RPG aesthetic** with warm amber/bronze tones. See `docs/style-guide.md` for the complete visual reference.
+
+### Quick Color Reference
+| Purpose | Color Token | Value |
+|---------|-------------|-------|
+| Background | `background` | Color(0.08, 0.07, 0.06) |
+| Text | `text_primary` | Color(0.95, 0.92, 0.85) |
+| Buttons | `primary_action` | Color(0.35, 0.25, 0.10) |
+| Borders | `border_bronze` | Color(0.60, 0.45, 0.20) |
+| Titles/Focus | `accent` | Color(0.85, 0.70, 0.35) |
+| Success | `success` | Color(0.45, 0.75, 0.45) |
+| Danger | `danger` | Color(0.85, 0.35, 0.30) |
+
+### Design Principles
+1. **Never use pure white or black** - use warm off-whites and deep charcoals
+2. **Bronze borders everywhere** - panels, buttons, dividers
+3. **Gold for emphasis** - titles, focus states, important highlights
+4. **Subtle textures** - grain overlays, no flat solid colors
+5. **Medieval sharpness** - 2px corner radius, not rounded
+6. **Warm lighting feel** - like candlelight or firelight
+
+### Applying the Theme
+```gdscript
+# Get colors via UIThemeManager
+var bg = UIThemeManager.get_background_color()
+var gold = UIThemeManager.get_color("accent")
+var bronze = UIThemeManager.get_color("border_bronze")
+
+# Apply gold title with shadow
+label.add_theme_color_override("font_color", UIThemeManager.get_color("title_gold"))
+label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+label.add_theme_constant_override("shadow_offset_x", 2)
+label.add_theme_constant_override("shadow_offset_y", 2)
+```
 
 ---
 
@@ -825,6 +868,8 @@ For more detailed information, see:
 15. **TSCN parent paths must be full paths from the scene root.** In `.tscn` files, the `parent` attribute is resolved relative to the scene's root node. `parent="LeftPanel"` means a direct child of the root named `LeftPanel`. If `LeftPanel` is nested (e.g., under `MainContainer`), the path must be `parent="MainContainer/LeftPanel"`. When hand-editing `.tscn` or moving nodes under a new container, update ALL descendant `parent=` and `[connection] from=` paths. Compare against a known-working scene file (e.g., `character_creation.tscn`, `shop_dialog.tscn`) to verify.
 
 16. **`popup_centered()` only exists on Window-derived nodes.** `Control`, `PanelContainer`, etc. don't have `popup_centered()`. For full-screen overlays, use full-rect anchors (`anchors_preset = 15`). For centered dialogs, use `anchors_preset = 8` (CENTER) or set anchors to 0.5 with size offsets.
+
+17. **Visual consistency**: Follow `docs/style-guide.md` for colors and styling. Never use cyan, bright purple, or pure white - use the warm amber/bronze palette. All borders should be bronze, all titles gold.
 
 ---
 

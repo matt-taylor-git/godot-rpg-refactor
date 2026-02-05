@@ -198,33 +198,38 @@ func _update_visual_state():
 
 func _apply_theme_colors():
 	# Apply colors directly from the UIThemeManager singleton.
-	var bg_color = Color.WHITE
+	# Dark fantasy theme: bronze borders, warm amber/brown backgrounds
+	var bg_color = Color(0.12, 0.10, 0.08, 0.85)
 	var font_color = UIThemeManager.get_text_primary_color()
-	var border_color = UIThemeManager.get_secondary_color()
-	var scale_mod = 1.0
+	var border_color = UIThemeManager.get_border_bronze_color()
+	border_color.a = 0.4
 
 	match current_state:
 		ButtonState.NORMAL:
-			bg_color = UIThemeManager.get_primary_action_color().lightened(0.1)
+			bg_color = Color(0.12, 0.10, 0.08, 0.85)
+			border_color = UIThemeManager.get_border_bronze_color()
+			border_color.a = 0.4
 		ButtonState.HOVER:
-			bg_color = UIThemeManager.get_primary_action_color().lightened(0.2)
+			bg_color = Color(0.16, 0.13, 0.10, 0.9)
 			border_color = UIThemeManager.get_accent_color()
-			scale_mod = 1.05
+			border_color.a = 0.7
 		ButtonState.PRESSED:
-			bg_color = UIThemeManager.get_primary_action_color().darkened(0.1)
-			scale_mod = 0.95
+			bg_color = Color(0.08, 0.07, 0.05, 1.0)
+			border_color = UIThemeManager.get_accent_color()
+			border_color.a = 0.9
 		ButtonState.DISABLED:
-			bg_color = UIThemeManager.get_secondary_color()
+			bg_color = Color(0.10, 0.09, 0.07, 0.5)
 			font_color = UIThemeManager.get_color("disabled_text")
-			border_color = UIThemeManager.get_secondary_color().darkened(0.2)
+			border_color = UIThemeManager.get_secondary_color()
+			border_color.a = 0.3
 
 	# Animate visual changes
 	# Note: background color is set via StyleBoxFlat below, not Panel.color property
 	if label:
 		animation_system.animate_property(label, "modulate", label.modulate, font_color, 0.1)
 
-	# For now, let's create a simple StyleBoxFlat to apply these colors.
-	# This replaces the complex _get_state_stylebox logic.
+	# Create StyleBoxFlat with dark fantasy styling
+	# Sharp 2px corners for medieval look, bronze borders
 	var stylebox = StyleBoxFlat.new()
 	stylebox.bg_color = bg_color
 	stylebox.border_width_left = 2
@@ -232,10 +237,10 @@ func _apply_theme_colors():
 	stylebox.border_width_right = 2
 	stylebox.border_width_bottom = 2
 	stylebox.border_color = border_color
-	stylebox.corner_radius_top_left = 4
-	stylebox.corner_radius_top_right = 4
-	stylebox.corner_radius_bottom_right = 4
-	stylebox.corner_radius_bottom_left = 4
+	stylebox.corner_radius_top_left = 2
+	stylebox.corner_radius_top_right = 2
+	stylebox.corner_radius_bottom_right = 2
+	stylebox.corner_radius_bottom_left = 2
 
 	if background:
 		background.add_theme_stylebox_override("panel", stylebox)
@@ -285,18 +290,18 @@ func _update_focus_indicator():
 			focus_indicator.add_theme_stylebox_override("panel", focus_stylebox)
 
 func _create_focus_stylebox() -> StyleBoxFlat:
-	# Create focus indicator with high contrast using theme colors
+	# Create focus indicator with gold accent color for visibility
 	var stylebox = StyleBoxFlat.new()
 	stylebox.bg_color = Color.TRANSPARENT
 	stylebox.border_width_left = 2
 	stylebox.border_width_top = 2
 	stylebox.border_width_right = 2
 	stylebox.border_width_bottom = 2
-	stylebox.border_color = UIThemeManager.get_accent_color() # Use accent color for focus
-	stylebox.corner_radius_top_left = 6
-	stylebox.corner_radius_top_right = 6
-	stylebox.corner_radius_bottom_right = 6
-	stylebox.corner_radius_bottom_left = 6
+	stylebox.border_color = UIThemeManager.get_accent_color()
+	stylebox.corner_radius_top_left = 4
+	stylebox.corner_radius_top_right = 4
+	stylebox.corner_radius_bottom_right = 4
+	stylebox.corner_radius_bottom_left = 4
 	return stylebox
 
 # Public methods - Note: Don't override Button's set_text/set_disabled methods

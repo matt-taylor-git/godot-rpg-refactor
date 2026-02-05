@@ -40,6 +40,12 @@ func get_success_color() -> Color:
 func get_danger_color() -> Color:
     return get_color("danger")
 
+func get_border_bronze_color() -> Color:
+    return get_color("border_bronze")
+
+func get_title_gold_color() -> Color:
+    return get_color("title_gold")
+
 # --- Accessibility ---
 
 # Calculates the relative luminance of a color.

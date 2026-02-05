@@ -7,7 +7,14 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
 shader = ExtResource("4")
+shader_parameter/time_scale = 0.5
+shader_parameter/wave_intensity = 0.3
+shader_parameter/color_primary = Color(0.06, 0.05, 0.04, 1)
+shader_parameter/color_accent = Color(0.15, 0.10, 0.06, 1)
 shader_parameter/reduce_motion = false
+shader_parameter/grain_intensity = 0.03
+shader_parameter/ember_intensity = 0.08
+shader_parameter/ember_color = Color(0.9, 0.4, 0.1, 1)
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
