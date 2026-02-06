@@ -1,11 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://inventory_dialog"]
+[gd_scene format=3 uid="uid://dbrydq543tiqr"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
-[ext_resource type="Script" path="res://scripts/ui/InventoryDialog.gd" id="2"]
+[ext_resource type="Script" uid="uid://c0xlwoov5x4fa" path="res://scripts/ui/InventoryDialog.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
-[ext_resource type="Texture2D" path="res://assets/Hero.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://cwvajh5hyqcyw" path="res://assets/Hero.png" id="4"]
 
-[node name="InventoryDialog" type="Control"]
+[node name="InventoryDialog" type="Control" unique_id=419601584]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,164 +15,211 @@ grow_vertical = 2
 theme = ExtResource("1")
 script = ExtResource("2")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1307663478]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.5)
+color = Color(0, 0, 0, 1)
 
-[node name="DialogPanel" type="PanelContainer" parent="."]
+[node name="DialogPanel" type="PanelContainer" parent="." unique_id=533693520]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -260.0
+offset_right = 380.0
+offset_bottom = 260.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = "Panel"
+theme_type_variation = &"Panel"
 
-[node name="MainContainer" type="HBoxContainer" parent="DialogPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="MarginContainer" type="MarginContainer" parent="DialogPanel" unique_id=180448197]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="MainContainer" type="HBoxContainer" parent="DialogPanel/MarginContainer" unique_id=1645375895]
+layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="LeftPanel" type="VBoxContainer" parent="DialogPanel/MainContainer"]
+[node name="LeftPanel" type="VBoxContainer" parent="DialogPanel/MarginContainer/MainContainer" unique_id=1292086027]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.4
+theme_override_constants/separation = 12
+
+[node name="CharacterPanel" type="PanelContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel" unique_id=708125808]
+layout_mode = 2
+theme_type_variation = &"Panel"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel" unique_id=784196461]
+layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="CharacterPanel" type="PanelContainer" parent="DialogPanel/MainContainer/LeftPanel"]
-layout_mode = 2
-theme_type_variation = "Panel"
-
-[node name="HBoxContainer" type="HBoxContainer" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel"]
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="Portrait" type="TextureRect" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer"]
+[node name="Portrait" type="TextureRect" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer" unique_id=1329017625]
 layout_mode = 2
 texture = ExtResource("4")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer" unique_id=675312876]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CharacterLabel" type="Label" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer"]
+[node name="CharacterLabel" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer" unique_id=482136483]
 layout_mode = 2
+theme_type_variation = &"H1"
 text = "CHARACTER"
-theme_type_variation = "H1"
 
-[node name="StatsGrid" type="GridContainer" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer"]
+[node name="StatsGrid" type="GridContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer" unique_id=597493602]
 layout_mode = 2
 columns = 2
 
-[node name="AttackLabel" type="Label" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="AttackLabel" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid" unique_id=168235949]
 layout_mode = 2
 text = "ATTACK"
 
-[node name="AttackValue" type="Label" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="AttackValue" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid" unique_id=341502479]
 layout_mode = 2
 text = "10"
 
-[node name="DefenseLabel" type="Label" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="DefenseLabel" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid" unique_id=1104279472]
 layout_mode = 2
 text = "DEFENSE"
 
-[node name="DefenseValue" type="Label" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="DefenseValue" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid" unique_id=1188688362]
 layout_mode = 2
 text = "5"
 
-[node name="DexterityLabel" type="Label" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="DexterityLabel" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid" unique_id=2038002595]
 layout_mode = 2
 text = "DEXTERITY"
 
-[node name="DexterityValue" type="Label" parent="DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+[node name="DexterityValue" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid" unique_id=604462962]
 layout_mode = 2
 text = "5"
 
-[node name="EquipmentPanel" type="PanelContainer" parent="DialogPanel/MainContainer/LeftPanel"]
+[node name="EquipmentPanel" type="PanelContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel" unique_id=402392831]
 layout_mode = 2
 size_flags_vertical = 3
-theme_type_variation = "Panel"
+theme_type_variation = &"Panel"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel/MainContainer/LeftPanel/EquipmentPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel" unique_id=980948240]
 layout_mode = 2
+theme_override_constants/separation = 6
 
-[node name="WeaponSlot" type="PanelContainer" parent="DialogPanel/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer"]
+[node name="EquipmentHeader" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer" unique_id=1100687600]
 layout_mode = 2
-theme_type_variation = "ItemSlot"
+theme_type_variation = &"H3"
+text = "EQUIPMENT"
 
-[node name="Label" type="Label" parent="DialogPanel/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/WeaponSlot"]
+[node name="WeaponRow" type="HBoxContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer" unique_id=1748110602]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="WeaponLabel" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/WeaponRow" unique_id=1898756673]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "WEAPON:"
+
+[node name="WeaponSlot" type="PanelContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/WeaponRow" unique_id=1963604033]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ItemSlot"
+
+[node name="Label" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/WeaponRow/WeaponSlot" unique_id=1377217599]
 layout_mode = 2
 text = "[Empty]"
 
-[node name="ArmorSlot" type="PanelContainer" parent="DialogPanel/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer"]
+[node name="ArmorRow" type="HBoxContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer" unique_id=1978797461]
 layout_mode = 2
-theme_type_variation = "ItemSlot"
+theme_override_constants/separation = 8
 
-[node name="Label" type="Label" parent="DialogPanel/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/ArmorSlot"]
+[node name="ArmorLabel" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/ArmorRow" unique_id=731727876]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "ARMOR:"
+
+[node name="ArmorSlot" type="PanelContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/ArmorRow" unique_id=1770935842]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ItemSlot"
+
+[node name="Label" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/ArmorRow/ArmorSlot" unique_id=776131280]
 layout_mode = 2
 text = "[Empty]"
 
-[node name="AccessorySlot" type="PanelContainer" parent="DialogPanel/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer"]
+[node name="AccessoryRow" type="HBoxContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer" unique_id=1927816723]
 layout_mode = 2
-theme_type_variation = "ItemSlot"
+theme_override_constants/separation = 8
 
-[node name="Label" type="Label" parent="DialogPanel/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/AccessorySlot"]
+[node name="AccessoryLabel" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/AccessoryRow" unique_id=265355778]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "ACCESSORY:"
+
+[node name="AccessorySlot" type="PanelContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/AccessoryRow" unique_id=1204386409]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ItemSlot"
+
+[node name="Label" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/AccessoryRow/AccessorySlot" unique_id=972867199]
 layout_mode = 2
 text = "[Empty]"
 
-[node name="RightPanel" type="VBoxContainer" parent="DialogPanel/MainContainer"]
+[node name="RightPanel" type="VBoxContainer" parent="DialogPanel/MarginContainer/MainContainer" unique_id=458566822]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.6
 theme_override_constants/separation = 10
 
-[node name="InventoryLabel" type="Label" parent="DialogPanel/MainContainer/RightPanel"]
+[node name="InventoryLabel" type="Label" parent="DialogPanel/MarginContainer/MainContainer/RightPanel" unique_id=1737366888]
 layout_mode = 2
+theme_type_variation = &"H1"
 text = "INVENTORY"
-theme_type_variation = "H1"
 
-[node name="InventoryGrid" type="GridContainer" parent="DialogPanel/MainContainer/RightPanel"]
+[node name="InventoryGrid" type="GridContainer" parent="DialogPanel/MarginContainer/MainContainer/RightPanel" unique_id=850105511]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
 columns = 5
 
-[node name="ActionButtons" type="HBoxContainer" parent="DialogPanel/MainContainer/RightPanel"]
+[node name="ActionButtons" type="HBoxContainer" parent="DialogPanel/MarginContainer/MainContainer/RightPanel" unique_id=567533809]
 layout_mode = 2
+theme_override_constants/separation = 10
 alignment = 1
 
-[node name="UseButton" parent="DialogPanel/MainContainer/RightPanel/ActionButtons" instance=ExtResource("3")]
+[node name="UseButton" parent="DialogPanel/MarginContainer/MainContainer/RightPanel/ActionButtons" unique_id=1997135452 instance=ExtResource("3")]
 layout_mode = 2
+theme_type_variation = &"Small"
 text = "USE"
-theme_type_variation = "Small"
 
-[node name="EquipButton" parent="DialogPanel/MainContainer/RightPanel/ActionButtons" instance=ExtResource("3")]
+[node name="EquipButton" parent="DialogPanel/MarginContainer/MainContainer/RightPanel/ActionButtons" unique_id=1464745630 instance=ExtResource("3")]
 layout_mode = 2
+theme_type_variation = &"Small"
 text = "EQUIP"
-theme_type_variation = "Small"
 
-[node name="DropButton" parent="DialogPanel/MainContainer/RightPanel/ActionButtons" instance=ExtResource("3")]
+[node name="DropButton" parent="DialogPanel/MarginContainer/MainContainer/RightPanel/ActionButtons" unique_id=146988278 instance=ExtResource("3")]
 layout_mode = 2
+theme_type_variation = &"Small"
 text = "DROP"
-theme_type_variation = "Small"
 
-[node name="CloseButton" parent="DialogPanel/MainContainer/RightPanel" instance=ExtResource("3")]
+[node name="CloseButton" parent="DialogPanel/MarginContainer/MainContainer/RightPanel" unique_id=1330626405 instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "CLOSE"
 
-[connection signal="pressed" from="DialogPanel/MainContainer/RightPanel/ActionButtons/UseButton" to="." method="_on_use_pressed"]
-[connection signal="pressed" from="DialogPanel/MainContainer/RightPanel/ActionButtons/EquipButton" to="." method="_on_equip_pressed"]
-[connection signal="pressed" from="DialogPanel/MainContainer/RightPanel/ActionButtons/DropButton" to="." method="_on_drop_pressed"]
-[connection signal="pressed" from="DialogPanel/MainContainer/RightPanel/CloseButton" to="." method="_on_close_pressed"]
+[connection signal="pressed" from="DialogPanel/MarginContainer/MainContainer/RightPanel/ActionButtons/UseButton" to="." method="_on_use_pressed"]
+[connection signal="pressed" from="DialogPanel/MarginContainer/MainContainer/RightPanel/ActionButtons/EquipButton" to="." method="_on_equip_pressed"]
+[connection signal="pressed" from="DialogPanel/MarginContainer/MainContainer/RightPanel/ActionButtons/DropButton" to="." method="_on_drop_pressed"]
+[connection signal="pressed" from="DialogPanel/MarginContainer/MainContainer/RightPanel/CloseButton" to="." method="_on_close_pressed"]

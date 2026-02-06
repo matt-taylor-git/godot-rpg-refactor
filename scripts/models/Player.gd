@@ -19,7 +19,7 @@ extends Resource
 @export var equipment: Dictionary = {}  # weapon, armor, etc.
 @export var skills: Array = []  # Array of Skill resources
 
-@export var gold: int = 0
+@export var gold: int = 300
 
 # Status effects: effect_type -> {duration: int, data: Dictionary}
 @export var status_effects: Dictionary = {}
