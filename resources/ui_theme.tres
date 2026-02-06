@@ -1,8 +1,7 @@
-[gd_resource type="Theme" load_steps=8 format=3 uid="uid://b7w5k8j6x2q1a"]
+[gd_resource type="Theme" format=3 uid="uid://b7w5k8j6x2q1a"]
 
-[ext_resource type="FontFile" path="res://assets/Cinzel-VariableFont_wght.ttf" id="1_qosx5"]
-[ext_resource type="Texture2D" path="res://assets/frame_main.png" id="2_frame_main"]
-[ext_resource type="Texture2D" path="res://assets/frame_slot.png" id="3_frame_slot"]
+[ext_resource type="FontFile" uid="uid://crdqtr8gc46tf" path="res://assets/Cinzel-VariableFont_wght.ttf" id="1_qosx5"]
+[ext_resource type="Texture2D" uid="uid://ca5iuujyynbgd" path="res://assets/frame_main.png" id="2_frame_main"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
 texture = ExtResource("2_frame_main")
@@ -11,104 +10,26 @@ texture_margin_top = 8.0
 texture_margin_right = 8.0
 texture_margin_bottom = 8.0
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_slot"]
-texture = ExtResource("3_frame_slot")
-texture_margin_left = 4.0
-texture_margin_top = 4.0
-texture_margin_right = 4.0
-texture_margin_bottom = 4.0
-
-[sub_resource type="StyleBoxLine" id="StyleBoxLine_focus"]
-color = Color(0.85, 0.70, 0.35, 1)
-thickness = 2
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ui_button_normal"]
-bg_color = Color(0.12, 0.10, 0.08, 0.85)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.50, 0.38, 0.18, 0.4)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-shadow_color = Color(0, 0, 0, 0.3)
-shadow_size = 2
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ui_button_hover"]
-bg_color = Color(0.16, 0.13, 0.10, 0.9)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.85, 0.70, 0.35, 0.7)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-shadow_color = Color(0, 0, 0, 0.4)
-shadow_size = 3
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ui_button_pressed"]
-bg_color = Color(0.08, 0.07, 0.05, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.85, 0.70, 0.35, 0.9)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-shadow_color = Color(0, 0, 0, 0.2)
-shadow_size = 1
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ui_button_disabled"]
-bg_color = Color(0.10, 0.09, 0.07, 0.5)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.45, 0.42, 0.38, 0.3)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-shadow_color = Color(0, 0, 0, 0.1)
-shadow_size = 1
-
 [resource]
 default_font = ExtResource("1_qosx5")
 default_font_size = 22
-
+Global/colors/accent = Color(0.85, 0.7, 0.35, 1)
 Global/colors/background = Color(0.08, 0.07, 0.06, 1)
-Global/colors/text_primary = Color(0.95, 0.92, 0.85, 1)
-Global/colors/primary_action = Color(0.35, 0.25, 0.10, 1)
-Global/colors/secondary = Color(0.58, 0.55, 0.50, 1)
-Global/colors/accent = Color(0.85, 0.70, 0.35, 1)
-Global/colors/success = Color(0.45, 0.75, 0.45, 1)
-Global/colors/danger = Color(0.85, 0.35, 0.30, 1)
-Global/colors/text_shadow = Color(0, 0, 0, 0.7)
+Global/colors/border_bronze = Color(0.6, 0.45, 0.2, 1)
+Global/colors/danger = Color(0.85, 0.35, 0.3, 1)
 Global/colors/disabled_text = Color(0.45, 0.42, 0.38, 0.5)
-Global/colors/border_bronze = Color(0.60, 0.45, 0.20, 1)
-Global/colors/title_gold = Color(0.85, 0.70, 0.35, 1)
-
-; Typography Font Sizes (following design system hierarchy)
-heading_large/font_size = 24
-heading_medium/font_size = 20
-body_large/font_size = 16
-body_regular/font_size = 14
-caption/font_size = 12
-
-; UIProgressBar Theme Colors (for health/mana bars)
-UIProgressBar/colors/health_high = Color(0.35, 0.65, 0.35, 1.0)
-UIProgressBar/colors/health_medium = Color(0.9, 0.6, 0.1, 1.0)
-UIProgressBar/colors/health_low = Color(0.75, 0.20, 0.15, 1.0)
-UIProgressBar/colors/health_high_cb = Color(0.35, 0.65, 0.35, 1.0)
-UIProgressBar/colors/health_medium_cb = Color(0.9, 0.6, 0.1, 1.0)
-UIProgressBar/colors/health_low_cb = Color(0.2, 0.4, 0.8, 1.0)
+Global/colors/primary_action = Color(0.35, 0.25, 0.1, 1)
+Global/colors/secondary = Color(0.58, 0.55, 0.5, 1)
+Global/colors/success = Color(0.45, 0.75, 0.45, 1)
+Global/colors/text_primary = Color(0.95, 0.92, 0.85, 1)
+Global/colors/text_shadow = Color(0, 0, 0, 0.7)
+Global/colors/title_gold = Color(0.85, 0.7, 0.35, 1)
+Panel/styles/panel = SubResource("StyleBoxTexture_panel")
 UIProgressBar/colors/font_color = Color(0.95, 0.92, 0.85, 1)
+UIProgressBar/colors/health_high = Color(0.35, 0.65, 0.35, 1)
+UIProgressBar/colors/health_high_cb = Color(0.35, 0.65, 0.35, 1)
+UIProgressBar/colors/health_low = Color(0.75, 0.2, 0.15, 1)
+UIProgressBar/colors/health_low_cb = Color(0.2, 0.4, 0.8, 1)
+UIProgressBar/colors/health_medium = Color(0.9, 0.6, 0.1, 1)
+UIProgressBar/colors/health_medium_cb = Color(0.9, 0.6, 0.1, 1)
 UIProgressBar/font_sizes/font_size = 14

@@ -58,11 +58,11 @@ func _process(delta):
 			is_moving = false
 			_on_reached_destination()
 
-func _input(event):
+func _unhandled_input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		# Don't move if clicking on UI buttons
+		# Don't move if clicking on any UI control
 		var hovered = get_viewport().gui_get_hovered_control()
-		if hovered and hovered is Button:
+		if hovered:
 			return
 		# Click to move
 		target_position = event.position
