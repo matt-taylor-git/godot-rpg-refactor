@@ -9,28 +9,26 @@ default_font_size = 14
 [node name="CharacterPortraitContainer" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-custom_minimum_size = Vector2(120, 120)
-size = Vector2(120, 120)
+custom_minimum_size = Vector2(160, 160)
+size = Vector2(160, 160)
 theme = SubResource("Theme_portrait")
 script = ExtResource("1_character_portrait")
 
 [node name="PortraitPanel" type="Panel" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+layout_mode = 0
+offset_right = 160.0
+offset_bottom = 160.0
+clip_contents = true
 mouse_filter = 0
 
 [node name="PortraitImage" type="TextureRect" parent="PortraitPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+layout_mode = 0
 offset_left = 2.0
 offset_top = 2.0
-offset_right = -2.0
-offset_bottom = -2.0
-stretch_mode = 3
+offset_right = 158.0
+offset_bottom = 158.0
+expand_mode = 1
+stretch_mode = 5
 
 [node name="HealthBar" type="ProgressBar" parent="."]
 layout_mode = 1

@@ -80,15 +80,17 @@ func _exit_tree():
 		active_tween = null
 
 func _create_child_nodes():
-	# Create gradient texture for fill visualization
+	# Create gradient texture for fill visualization (hidden by default)
 	if not has_node("GradientTexture"):
 		gradient_texture = TextureRect.new()
 		gradient_texture.name = "GradientTexture"
 		gradient_texture.mouse_filter = MOUSE_FILTER_IGNORE
 		gradient_texture.stretch_mode = TextureRect.STRETCH_SCALE
+		gradient_texture.visible = false
 		add_child(gradient_texture)
 	else:
 		gradient_texture = $GradientTexture
+		gradient_texture.visible = false
 
 	# Create value label
 	if not has_node("ValueLabel"):
@@ -161,25 +163,56 @@ func _setup_gradient():
 		current_gradient.add_point(1.0, green_color)   # Green (50-100%)
 
 func _update_visual_state():
-	# Update gradient texture
-	if enable_gradient_fill and gradient_texture and current_gradient:
-		var gradient_image = Image.create(256, 1, false, Image.FORMAT_RGBA8)
-		for x in range(256):
-			var t = float(x) / 255.0
-			gradient_image.set_pixel(x, 0, current_gradient.sample(t))
+	# Hide gradient texture - use solid fill instead
+	if gradient_texture:
+		gradient_texture.visible = false
 
-		var gradient_tex = ImageTexture.create_from_image(gradient_image)
-		gradient_texture.texture = gradient_tex
-
-		# Position and size gradient texture to match progress bar fill
-		gradient_texture.position = Vector2(0, 0)
-		gradient_texture.size = size
+	# Apply solid fill style based on current value
+	_apply_fill_style()
 
 	# Update value label
 	_update_value_label()
 
 	# Update status effects
 	_update_status_effects()
+
+func _apply_fill_style():
+	# Apply solid fill color based on current health percentage
+	var percentage = (value / max_value) * 100.0 if max_value > 0 else 0.0
+	var fill_color = _get_fill_color_for_percentage(percentage)
+
+	# Create fill stylebox
+	var fill_style = StyleBoxFlat.new()
+	fill_style.bg_color = fill_color
+	fill_style.corner_radius_top_left = 2
+	fill_style.corner_radius_top_right = 2
+	fill_style.corner_radius_bottom_left = 2
+	fill_style.corner_radius_bottom_right = 2
+	add_theme_stylebox_override("fill", fill_style)
+
+	# Create background stylebox with bronze border
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.08, 0.07, 0.06, 0.9)
+	bg_style.border_width_left = 1
+	bg_style.border_width_top = 1
+	bg_style.border_width_right = 1
+	bg_style.border_width_bottom = 1
+	bg_style.border_color = UIThemeManager.get_border_bronze_color()
+	bg_style.corner_radius_top_left = 2
+	bg_style.corner_radius_top_right = 2
+	bg_style.corner_radius_bottom_left = 2
+	bg_style.corner_radius_bottom_right = 2
+	add_theme_stylebox_override("background", bg_style)
+
+
+func _get_fill_color_for_percentage(percentage: float) -> Color:
+	# Return solid color based on health percentage using theme colors
+	if percentage >= HEALTH_GREEN_THRESHOLD:
+		return UIThemeManager.get_success_color()
+	if percentage >= HEALTH_YELLOW_THRESHOLD:
+		return UIThemeManager.get_accent_color()
+	return UIThemeManager.get_danger_color()
+
 
 func _apply_theme():
 	# Apply theme to child components
@@ -192,6 +225,9 @@ func _apply_theme():
 
 		# Apply UIProgressBar-specific theme properties
 		_apply_progress_bar_theme(active_theme)
+
+	# Apply solid fill style
+	_apply_fill_style()
 
 func _apply_progress_bar_theme(theme: Theme):
 	# Apply theme constants for progress bar styling using UIThemeManager

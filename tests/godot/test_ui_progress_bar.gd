@@ -89,12 +89,12 @@ func test_minimum_size():
 	assert_gte(min_size.y, 44, "Minimum height should meet accessibility requirements (44px)")
 
 func test_gradient_texture_creation():
-	# Test that gradient texture is created
+	# Test that gradient texture node exists but is hidden (solid fill used instead)
 	var gradient_texture = progress_bar.get_node_or_null("GradientTexture")
 	assert_not_null(gradient_texture, "Gradient texture should exist")
 
-	# Texture should be created when visual state updates
-	assert_not_null(gradient_texture.texture, "Gradient texture should have a texture assigned")
+	# Gradient texture should be hidden - solid StyleBoxFlat fill is used instead
+	assert_false(gradient_texture.visible, "Gradient texture should be hidden")
 
 func test_theme_application():
 	# Test theme integration
@@ -140,13 +140,18 @@ func test_responsive_scaling():
 	assert_gte(min_size.x, 44, "Responsive scaling should still meet minimum accessibility size")
 
 func test_gradient_rendering():
-	# Test that gradient is created and applied
+	# Test that solid fill style is applied instead of gradient
 	progress_bar.enable_gradient_fill = true
 	progress_bar._setup_gradient()
+	progress_bar._update_visual_state()
 
 	var gradient_texture = progress_bar.get_node_or_null("GradientTexture")
-	assert_not_null(gradient_texture, "Gradient texture should exist")
-	assert_not_null(gradient_texture.texture, "Gradient texture should have a texture assigned")
+	assert_not_null(gradient_texture, "Gradient texture node should exist")
+	assert_false(gradient_texture.visible, "Gradient texture should be hidden")
+
+	# Verify solid fill stylebox is applied
+	var fill_style = progress_bar.get_theme_stylebox("fill")
+	assert_not_null(fill_style, "Fill stylebox should be applied")
 
 func test_color_transitions():
 	# Test color changes based on health percentage
@@ -267,13 +272,14 @@ func test_reduced_motion_respect():
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 
 func test_colorblind_friendly_mode():
-	# Test colorblind-friendly color scheme
+	# Test colorblind-friendly mode with solid fill
 	progress_bar.colorblind_friendly = true
 	progress_bar._setup_gradient()
+	progress_bar._update_visual_state()
 
-	# Test that gradient is created with different colors
+	# Gradient texture should be hidden even in colorblind mode
 	var gradient_texture = progress_bar.get_node_or_null("GradientTexture")
-	assert_not_null(gradient_texture.texture, "Colorblind gradient should be created")
+	assert_false(gradient_texture.visible, "Gradient should be hidden in colorblind mode")
 
 	# Test status text in colorblind mode
 	progress_bar.max_value = 100

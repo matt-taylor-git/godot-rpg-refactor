@@ -11,7 +11,7 @@ signal status_effect_added(effect_type: String)
 signal status_effect_removed(effect_type: String)
 
 # Constants
-const PORTRAIT_SIZE = Vector2(120, 120)  # AC-2.3.1: 120x120px sizing
+const PORTRAIT_SIZE = Vector2(160, 160)  # AC-2.3.1: 160x160px sizing
 const HEALTH_BAR_HEIGHT = 8  # Thin overlay bar
 const STATUS_ICON_SIZE = 24
 const MAX_STATUS_ICONS = 4  # Maximum icons to display
@@ -83,6 +83,9 @@ func _setup_portrait_panel():
 		# Apply theme styling
 		_apply_portrait_theme()
 
+		# Clip child content to prevent image overflow
+		portrait_panel.clip_contents = true
+
 		# Enable mouse interaction
 		portrait_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 
@@ -94,24 +97,24 @@ func _apply_portrait_theme():
 		theme = UI_THEME
 
 	if portrait_panel:
-		# Create modern stylebox with drop shadow
+		# Create stylebox with dark fantasy styling
 		var portrait_style = StyleBoxFlat.new()
 
-		# Background
-		portrait_style.bg_color = Color(0.15, 0.2, 0.25, 0.9)  # Semi-transparent dark
+		# Background - dark charcoal from theme
+		portrait_style.bg_color = Color(0.08, 0.07, 0.06, 0.9)
 
-		# Border
+		# Border - bronze from theme
 		portrait_style.border_width_left = 2
 		portrait_style.border_width_top = 2
 		portrait_style.border_width_right = 2
 		portrait_style.border_width_bottom = 2
-		portrait_style.border_color = Color(0.4, 0.95, 0.84, 0.6)  # Accent color
+		portrait_style.border_color = UIThemeManager.get_border_bronze_color()
 
-		# Corner radius for modern look
-		portrait_style.corner_radius_top_left = 8
-		portrait_style.corner_radius_top_right = 8
-		portrait_style.corner_radius_bottom_left = 8
-		portrait_style.corner_radius_bottom_right = 8
+		# Medieval sharpness - 2px corner radius
+		portrait_style.corner_radius_top_left = 2
+		portrait_style.corner_radius_top_right = 2
+		portrait_style.corner_radius_bottom_left = 2
+		portrait_style.corner_radius_bottom_right = 2
 
 		# Drop shadow
 		portrait_style.shadow_color = Color(0, 0, 0, 0.3)
@@ -195,7 +198,8 @@ func _update_portrait_display():
 	# Update portrait image
 	if portrait_image and portrait_texture:
 		portrait_image.texture = portrait_texture
-		portrait_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		portrait_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		portrait_image.size = PORTRAIT_SIZE - Vector2(4, 4)  # Account for border
 		portrait_image.position = Vector2(2, 2)
 
@@ -211,19 +215,12 @@ func _update_health_bar():
 			health_bar.add_theme_stylebox_override("fill", fill_style)
 
 func _get_health_color(percentage: float) -> Color:
-	# Get health color based on percentage using theme colors (AC-2.3.1)
-	var theme = self.theme
-	if not theme:
-		theme = UI_THEME
-
+	# Get health color based on percentage using UIThemeManager (AC-2.3.1)
 	if percentage >= 50.0:
-		# Use theme success color for healthy
-		return theme.get_color("success", "Colors") if theme.has_color("success", "Colors") else Color(0.2, 0.8, 0.2, 1.0)
+		return UIThemeManager.get_success_color()
 	if percentage >= 25.0:
-		# Use theme accent color for warning
-		return theme.get_color("accent", "Colors") if theme.has_color("accent", "Colors") else Color(0.9, 0.6, 0.1, 1.0)
-	# Use theme danger color for critical
-	return theme.get_color("danger", "Colors") if theme.has_color("danger", "Colors") else Color(0.8, 0.2, 0.2, 1.0)
+		return UIThemeManager.get_accent_color()
+	return UIThemeManager.get_danger_color()
 
 func _update_active_state():
 	# Update active state visual feedback (AC-2.3.1, AC-2.3.2)

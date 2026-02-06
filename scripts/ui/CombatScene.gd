@@ -412,7 +412,9 @@ func _get_monster_portrait_texture(monster) -> Texture2D:
 	}
 	var key = monster.name.to_lower()
 	if monster_textures.has(key):
-		return load(monster_textures[key])
+		var texture = load(monster_textures[key])
+		if texture:
+			return texture
 	return GOBLIN_TEXTURE  # Default fallback
 
 func _update_player_status_effects(_player):

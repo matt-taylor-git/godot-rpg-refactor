@@ -11,7 +11,7 @@ var test_texture: Texture2D
 
 func before_each():
 	# Create test texture
-	test_texture = ImageTexture.create_from_image(Image.create(120, 120, false, Image.FORMAT_RGBA8))
+	test_texture = ImageTexture.create_from_image(Image.create(160, 160, false, Image.FORMAT_RGBA8))
 
 	# Create CharacterPortraitContainer instance from scene
 	character_portrait = CharacterPortraitScene.instantiate()
@@ -29,9 +29,9 @@ func after_each():
 func test_character_portrait_initialization():
 	# Test basic initialization (AC-2.3.1)
 	assert_not_null(character_portrait, "CharacterPortraitContainer should be created")
-	assert_eq(character_portrait.size, Vector2(120, 120), "Portrait should be 120x120px")
-	assert_eq(character_portrait.custom_minimum_size, Vector2(120, 120),
-		"Portrait minimum size should be 120x120px")
+	assert_eq(character_portrait.size, Vector2(160, 160), "Portrait should be 160x160px")
+	assert_eq(character_portrait.custom_minimum_size, Vector2(160, 160),
+		"Portrait minimum size should be 160x160px")
 	assert_eq(character_portrait.health_percentage, 100.0, "Initial health should be 100%")
 	assert_false(character_portrait.is_active, "Initial active state should be false")
 
@@ -62,37 +62,25 @@ func test_health_percentage_clamping():
 	assert_eq(character_portrait.health_percentage, 0.0, "Health should clamp to 0% min")
 
 func test_health_bar_color_changes():
-	# Test health bar color changes based on percentage using theme colors (AC-2.3.1)
+	# Test health bar color changes based on percentage using UIThemeManager (AC-2.3.1)
 	character_portrait.health_percentage = 75.0
 	var health_bar = character_portrait.get_node("HealthBar")
 	var fill_style = health_bar.get_theme_stylebox("fill")
 	if fill_style is StyleBoxFlat:
-		# Should use theme success color for healthy (green)
-		var has_theme_color = character_portrait.theme \
-			and character_portrait.theme.has_color("success", "Colors")
-		var expected_color = character_portrait.theme.get_color("success", "Colors") \
-			if has_theme_color else Color(0.2, 0.8, 0.2, 1.0)
-		assert_eq(fill_style.bg_color, expected_color, "75% health should use theme success color")
+		var expected_color = UIThemeManager.get_success_color()
+		assert_eq(fill_style.bg_color, expected_color, "75% health should use success color")
 
 	character_portrait.health_percentage = 40.0
 	fill_style = health_bar.get_theme_stylebox("fill")
 	if fill_style is StyleBoxFlat:
-		# Should use theme accent color for warning (yellow)
-		var has_theme_color = character_portrait.theme \
-			and character_portrait.theme.has_color("accent", "Colors")
-		var expected_color = character_portrait.theme.get_color("accent", "Colors") \
-			if has_theme_color else Color(0.9, 0.6, 0.1, 1.0)
-		assert_eq(fill_style.bg_color, expected_color, "40% health should use theme accent color")
+		var expected_color = UIThemeManager.get_accent_color()
+		assert_eq(fill_style.bg_color, expected_color, "40% health should use accent color")
 
 	character_portrait.health_percentage = 20.0
 	fill_style = health_bar.get_theme_stylebox("fill")
 	if fill_style is StyleBoxFlat:
-		# Should use theme danger color for critical (red)
-		var has_theme_color = character_portrait.theme \
-			and character_portrait.theme.has_color("danger", "Colors")
-		var expected_color = character_portrait.theme.get_color("danger", "Colors") \
-			if has_theme_color else Color(0.8, 0.2, 0.2, 1.0)
-		assert_eq(fill_style.bg_color, expected_color, "20% health should use theme danger color")
+		var expected_color = UIThemeManager.get_danger_color()
+		assert_eq(fill_style.bg_color, expected_color, "20% health should use danger color")
 
 func test_active_state_highlighting():
 	# Test active state highlighting (AC-2.3.1, AC-2.3.2)
@@ -262,4 +250,4 @@ func test_responsive_scaling():
 	# This would test if the portrait scales properly on different screen sizes
 	# For now, just verify the minimum size is maintained
 	var min_size = character_portrait._get_minimum_size()
-	assert_eq(min_size, Vector2(120, 120), "Minimum size should be maintained")
+	assert_eq(min_size, Vector2(160, 160), "Minimum size should be maintained")

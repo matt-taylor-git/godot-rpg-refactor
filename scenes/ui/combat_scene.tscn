@@ -57,14 +57,13 @@ theme_type_variation = "Panel"
 [node name="HBoxContainer" type="HBoxContainer" parent="MainContainer/ArenaPanel"]
 layout_mode = 2
 alignment = 1
+theme_override_constants/separation = 80
 
 [node name="PlayerPortrait" parent="MainContainer/ArenaPanel/HBoxContainer" instance=ExtResource("6")]
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="MonsterPortrait" parent="MainContainer/ArenaPanel/HBoxContainer" instance=ExtResource("6")]
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="InfoPanel" type="HBoxContainer" parent="MainContainer"]
 layout_mode = 2
