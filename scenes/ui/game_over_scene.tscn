@@ -1,7 +1,20 @@
-[gd_scene load_steps=2 format=3 uid="uid://game_over_scene"]
+[gd_scene load_steps=4 format=3 uid="uid://game_over_scene"]
 
-[ext_resource type="Script" path="res://scripts/ui/GameOverScene.gd" id="1"]
-[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="2"]
+[ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/GameOverScene.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
+[ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="4"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
+shader = ExtResource("4")
+shader_parameter/time_scale = 0.5
+shader_parameter/wave_intensity = 0.3
+shader_parameter/color_primary = Color(0.06, 0.05, 0.04, 1)
+shader_parameter/color_accent = Color(0.12, 0.06, 0.06, 1)
+shader_parameter/reduce_motion = false
+shader_parameter/grain_intensity = 0.03
+shader_parameter/ember_intensity = 0.10
+shader_parameter/ember_color = Color(0.8, 0.2, 0.1, 1)
 
 [node name="GameOverScene" type="Control"]
 layout_mode = 3
@@ -10,166 +23,195 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1")
+theme = ExtResource("1")
+script = ExtResource("2")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="Background" type="Panel" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -300.0
-offset_right = 400.0
-offset_bottom = 300.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+material = SubResource("ShaderMaterial_bg")
+
+[node name="Content" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Content"]
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 20
 
-[node name="GameOverHeader" type="VBoxContainer" parent="VBoxContainer"]
+[node name="GameOverHeader" type="VBoxContainer" parent="Content/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="GameOverTitle" type="Label" parent="VBoxContainer/GameOverHeader"]
+[node name="GameOverTitle" type="Label" parent="Content/VBoxContainer/GameOverHeader"]
 layout_mode = 2
-text = "💀 GAME OVER 💀"
+text = "GAME OVER"
 horizontal_alignment = 1
-custom_minimum_size = Vector2(0, 80)
-theme_override_font_sizes/font_size = 48
+theme_type_variation = "H1"
 
-[node name="GameOverMessage" type="Label" parent="VBoxContainer/GameOverHeader"]
+[node name="GameOverMessage" type="Label" parent="Content/VBoxContainer/GameOverHeader"]
 layout_mode = 2
 text = "You have been defeated! Your adventure ends here."
 horizontal_alignment = 1
-custom_minimum_size = Vector2(0, 60)
-theme_override_font_sizes/font_size = 24
-text_overrun_behavior = 3
+theme_type_variation = "H3"
 
-[node name="StatsGrid" type="GridContainer" parent="VBoxContainer"]
+[node name="StatsPanel" type="PanelContainer" parent="Content/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-columns = 2
-theme_override_constants/h_separation = 20
-theme_override_constants/v_separation = 20
+theme_type_variation = "Panel"
 
-[node name="FinalLevelCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+[node name="StatsGrid" type="GridContainer" parent="Content/VBoxContainer/StatsPanel"]
 layout_mode = 2
-custom_minimum_size = Vector2(150, 100)
-theme_override_constants/separation = 5
+size_flags_horizontal = 4
+size_flags_vertical = 4
+columns = 2
+theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 15
 
-[node name="FinalLevelLabel" type="Label" parent="VBoxContainer/StatsGrid/FinalLevelCard"]
+[node name="FinalLevelCard" type="PanelContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 80)
+theme_type_variation = "Panel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid/FinalLevelCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="FinalLevelLabel" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/FinalLevelCard/VBoxContainer"]
 layout_mode = 2
 text = "Final Level"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
 
-[node name="FinalLevelValue" type="Label" parent="VBoxContainer/StatsGrid/FinalLevelCard"]
+[node name="FinalLevelValue" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/FinalLevelCard/VBoxContainer"]
 layout_mode = 2
 text = "1"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 32
+theme_type_variation = "H2"
 
-[node name="PlaytimeCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+[node name="PlaytimeCard" type="PanelContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(150, 100)
-theme_override_constants/separation = 5
+custom_minimum_size = Vector2(150, 80)
+theme_type_variation = "Panel"
 
-[node name="PlaytimeLabel" type="Label" parent="VBoxContainer/StatsGrid/PlaytimeCard"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid/PlaytimeCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="PlaytimeLabel" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/PlaytimeCard/VBoxContainer"]
 layout_mode = 2
 text = "Playtime"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
 
-[node name="PlaytimeValue" type="Label" parent="VBoxContainer/StatsGrid/PlaytimeCard"]
+[node name="PlaytimeValue" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/PlaytimeCard/VBoxContainer"]
 layout_mode = 2
 text = "0m"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 32
+theme_type_variation = "H2"
 
-[node name="EnemiesCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+[node name="EnemiesCard" type="PanelContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(150, 100)
-theme_override_constants/separation = 5
+custom_minimum_size = Vector2(150, 80)
+theme_type_variation = "Panel"
 
-[node name="EnemiesLabel" type="Label" parent="VBoxContainer/StatsGrid/EnemiesCard"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid/EnemiesCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="EnemiesLabel" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/EnemiesCard/VBoxContainer"]
 layout_mode = 2
 text = "Enemies Defeated"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
 
-[node name="EnemiesValue" type="Label" parent="VBoxContainer/StatsGrid/EnemiesCard"]
+[node name="EnemiesValue" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/EnemiesCard/VBoxContainer"]
 layout_mode = 2
 text = "0"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 32
+theme_type_variation = "H2"
 
-[node name="DeathsCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+[node name="DeathsCard" type="PanelContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(150, 100)
-theme_override_constants/separation = 5
+custom_minimum_size = Vector2(150, 80)
+theme_type_variation = "Panel"
 
-[node name="DeathsLabel" type="Label" parent="VBoxContainer/StatsGrid/DeathsCard"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid/DeathsCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="DeathsLabel" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/DeathsCard/VBoxContainer"]
 layout_mode = 2
 text = "Times Died"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
 
-[node name="DeathsValue" type="Label" parent="VBoxContainer/StatsGrid/DeathsCard"]
+[node name="DeathsValue" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/DeathsCard/VBoxContainer"]
 layout_mode = 2
 text = "0"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 32
+theme_type_variation = "H2"
 
-[node name="GoldCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+[node name="GoldCard" type="PanelContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(150, 100)
-theme_override_constants/separation = 5
+custom_minimum_size = Vector2(150, 80)
+theme_type_variation = "Panel"
 
-[node name="GoldLabel" type="Label" parent="VBoxContainer/StatsGrid/GoldCard"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid/GoldCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="GoldLabel" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/GoldCard/VBoxContainer"]
 layout_mode = 2
 text = "Gold Earned"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
 
-[node name="GoldValue" type="Label" parent="VBoxContainer/StatsGrid/GoldCard"]
+[node name="GoldValue" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/GoldCard/VBoxContainer"]
 layout_mode = 2
 text = "0"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 32
+theme_type_variation = "H2"
 
-[node name="QuestsCard" type="VBoxContainer" parent="VBoxContainer/StatsGrid"]
+[node name="QuestsCard" type="PanelContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(150, 100)
-theme_override_constants/separation = 5
+custom_minimum_size = Vector2(150, 80)
+theme_type_variation = "Panel"
 
-[node name="QuestsLabel" type="Label" parent="VBoxContainer/StatsGrid/QuestsCard"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Content/VBoxContainer/StatsPanel/StatsGrid/QuestsCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="QuestsLabel" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/QuestsCard/VBoxContainer"]
 layout_mode = 2
 text = "Quests Completed"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
 
-[node name="QuestsValue" type="Label" parent="VBoxContainer/StatsGrid/QuestsCard"]
+[node name="QuestsValue" type="Label" parent="Content/VBoxContainer/StatsPanel/StatsGrid/QuestsCard/VBoxContainer"]
 layout_mode = 2
 text = "0"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 32
+theme_type_variation = "H2"
 
-[node name="ButtonContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="ButtonContainer" type="HBoxContainer" parent="Content/VBoxContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 60)
+alignment = 1
 theme_override_constants/separation = 20
 
-[node name="RestartButton" parent="VBoxContainer/ButtonContainer" instance=ExtResource("2")]
+[node name="RestartButton" parent="Content/VBoxContainer/ButtonContainer" instance=ExtResource("3")]
 layout_mode = 2
-size_flags_horizontal = 3
-text = "Try Again (Space/Enter)"
-custom_minimum_size = Vector2(0, 50)
+text = "Try Again"
 
-[node name="MenuButton" parent="VBoxContainer/ButtonContainer" instance=ExtResource("2")]
+[node name="MenuButton" parent="Content/VBoxContainer/ButtonContainer" instance=ExtResource("3")]
 layout_mode = 2
-size_flags_horizontal = 3
-text = "Return to Main Menu (Esc)"
-custom_minimum_size = Vector2(0, 50)
+text = "Main Menu"

@@ -1,17 +1,23 @@
-extends PanelContainer
+extends Control
 
 # QuestLogDialog - Redesigned for new layout
 
 var current_tab = 0  # 0 = Active, 1 = Completed
 var quests = []
 
-@onready var tab_bar = $VBoxContainer/MainContent/QuestListContainer/TabBar
-@onready var quest_list = $VBoxContainer/MainContent/QuestListContainer/QuestList
-@onready var quest_title = $VBoxContainer/MainContent/QuestDetailsContainer/QuestTitle
-@onready var quest_description = $VBoxContainer/MainContent/QuestDetailsContainer/QuestDescription
-@onready var quest_objectives = $VBoxContainer/MainContent/QuestDetailsContainer/QuestObjectives
-@onready var quest_rewards = $VBoxContainer/MainContent/QuestDetailsContainer/QuestRewards
-@onready var close_button = $VBoxContainer/CloseButton
+@onready var tab_bar = get_node(
+	"DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestListContainer/TabBar")
+@onready var quest_list = get_node(
+	"DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestListContainer/QuestList")
+@onready var quest_title = get_node(
+	"DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestDetailsContainer/VBoxContainer/QuestTitle")
+@onready var quest_description = get_node(
+	"DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestDetailsContainer/VBoxContainer/QuestDescription")
+@onready var quest_objectives = get_node(
+	"DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestDetailsContainer/VBoxContainer/QuestObjectives")
+@onready var quest_rewards = get_node(
+	"DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestDetailsContainer/VBoxContainer/QuestRewards")
+@onready var close_button = $DialogPanel/MarginContainer/VBoxContainer/CloseButton
 
 func _ready():
     print("QuestLogDialog ready")

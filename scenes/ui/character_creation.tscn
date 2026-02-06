@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://b1saih6uqrtd1"]
+[gd_scene load_steps=10 format=3 uid="uid://b1saih6uqrtd1"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/CharacterCreation.gd" id="2"]
@@ -8,6 +8,18 @@
 [ext_resource type="Texture2D" uid="uid://cfdgntjpxmoj3" path="res://assets/ui/icons/warrior.png" id="6"]
 [ext_resource type="Texture2D" uid="uid://b4lgo58qkbd7a" path="res://assets/ui/icons/mage.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://b3ea4vemk2met" path="res://assets/ui/icons/rogue.png" id="8"]
+[ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="9"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
+shader = ExtResource("9")
+shader_parameter/time_scale = 0.5
+shader_parameter/wave_intensity = 0.3
+shader_parameter/color_primary = Color(0.06, 0.05, 0.04, 1)
+shader_parameter/color_accent = Color(0.12, 0.09, 0.06, 1)
+shader_parameter/reduce_motion = false
+shader_parameter/grain_intensity = 0.03
+shader_parameter/ember_intensity = 0.05
+shader_parameter/ember_color = Color(0.9, 0.4, 0.1, 1)
 
 [node name="CharacterCreation" type="Control"]
 layout_mode = 3
@@ -27,6 +39,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+material = SubResource("ShaderMaterial_bg")
 
 [node name="CenterContainer" type="MarginContainer" parent="."]
 layout_mode = 1

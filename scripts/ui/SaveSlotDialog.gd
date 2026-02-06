@@ -5,10 +5,10 @@ extends Control
 signal slot_selected(slot_number: int)
 signal cancelled
 
-@onready var slot1_button = $DialogPanel/VBoxContainer/SlotContainer/Slot1Button
-@onready var slot2_button = $DialogPanel/VBoxContainer/SlotContainer/Slot2Button
-@onready var slot3_button = $DialogPanel/VBoxContainer/SlotContainer/Slot3Button
-@onready var cancel_button = $DialogPanel/VBoxContainer/CancelButton
+@onready var slot1_button = $DialogPanel/MarginContainer/VBoxContainer/SlotContainer/Slot1Button
+@onready var slot2_button = $DialogPanel/MarginContainer/VBoxContainer/SlotContainer/Slot2Button
+@onready var slot3_button = $DialogPanel/MarginContainer/VBoxContainer/SlotContainer/Slot3Button
+@onready var cancel_button = $DialogPanel/MarginContainer/VBoxContainer/CancelButton
 
 func _ready():
 	update_slot_info()

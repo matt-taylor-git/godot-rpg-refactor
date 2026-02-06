@@ -6,10 +6,10 @@ var current_npc: String = ""
 var choice_buttons: Array = []
 var is_waiting_for_choice: bool = false
 
-@onready var npc_name_label = $DialoguePanel/VBoxContainer/NPCNameLabel
-@onready var dialogue_text = $DialoguePanel/VBoxContainer/DialogueText
-@onready var choices_container = $DialoguePanel/VBoxContainer/ChoicesContainer
-@onready var continue_hint = $DialoguePanel/VBoxContainer/ContinueHint
+@onready var npc_name_label = $DialoguePanel/MarginContainer/VBoxContainer/NPCNameLabel
+@onready var dialogue_text = $DialoguePanel/MarginContainer/VBoxContainer/DialogueText
+@onready var choices_container = $DialoguePanel/MarginContainer/VBoxContainer/ChoicesContainer
+@onready var continue_hint = $DialoguePanel/MarginContainer/VBoxContainer/ContinueHint
 
 func _ready():
 	print("DialogueScene initialized")

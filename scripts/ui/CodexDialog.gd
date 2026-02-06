@@ -7,12 +7,12 @@ var current_category: String = ""
 var category_entry_buttons: Dictionary = {}
 var selected_entry: Dictionary = {}
 
-@onready var category_tabs = $Background/VBoxContainer/CategoryTabs
-@onready var entry_buttons = $Background/VBoxContainer/Content/EntryList/EntryButtons
-@onready var entry_title = $Background/VBoxContainer/Content/EntryContent/EntryTitle
-@onready var entry_text = $Background/VBoxContainer/Content/EntryContent/EntryText
-@onready var stats_label = $Background/VBoxContainer/Stats
-@onready var close_button = $Background/VBoxContainer/TitleBar/CloseButton
+@onready var category_tabs = $DialogPanel/MarginContainer/VBoxContainer/CategoryTabs
+@onready var entry_buttons = $DialogPanel/MarginContainer/VBoxContainer/Content/EntryList/EntryButtons
+@onready var entry_title = $DialogPanel/MarginContainer/VBoxContainer/Content/EntryContent/VBoxContainer/EntryTitle
+@onready var entry_text = $DialogPanel/MarginContainer/VBoxContainer/Content/EntryContent/VBoxContainer/EntryText
+@onready var stats_label = $DialogPanel/MarginContainer/VBoxContainer/Stats
+@onready var close_button = $DialogPanel/MarginContainer/VBoxContainer/TitleBar/CloseButton
 
 func _ready():
 	print("CodexDialog initialized")

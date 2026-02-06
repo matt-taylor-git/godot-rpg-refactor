@@ -4,12 +4,12 @@ extends Control
 
 var stats = {}
 
-@onready var game_over_title = $VBoxContainer/GameOverHeader/GameOverTitle
-@onready var game_over_message = $VBoxContainer/GameOverHeader/GameOverMessage
-@onready var stats_grid = $VBoxContainer/StatsGrid
-@onready var button_container = $VBoxContainer/ButtonContainer
-@onready var restart_button = $VBoxContainer/ButtonContainer/RestartButton
-@onready var menu_button = $VBoxContainer/ButtonContainer/MenuButton
+@onready var game_over_title = $Content/VBoxContainer/GameOverHeader/GameOverTitle
+@onready var game_over_message = $Content/VBoxContainer/GameOverHeader/GameOverMessage
+@onready var stats_grid = $Content/VBoxContainer/StatsPanel/StatsGrid
+@onready var button_container = $Content/VBoxContainer/ButtonContainer
+@onready var restart_button = $Content/VBoxContainer/ButtonContainer/RestartButton
+@onready var menu_button = $Content/VBoxContainer/ButtonContainer/MenuButton
 
 func _ready():
 	print("GameOverScene ready")
@@ -48,10 +48,13 @@ func _populate_statistics():
 		_update_stat_card(stat_labels[5], "Quests Completed", str(stats["quests_completed"]))
 
 func _update_stat_card(card: Control, label_text: String, value_text: String):
-	var labels = card.get_children()
-	if labels.size() >= 2:
-		labels[0].text = label_text  # Label
-		labels[1].text = value_text   # Value
+	# Cards are now PanelContainers with VBoxContainer children
+	var vbox = card.get_child(0) if card.get_child_count() > 0 else null
+	if vbox:
+		var labels = vbox.get_children()
+		if labels.size() >= 2:
+			labels[0].text = label_text  # Label
+			labels[1].text = value_text   # Value
 
 func _format_playtime(minutes: int) -> String:
 	if minutes < 60:

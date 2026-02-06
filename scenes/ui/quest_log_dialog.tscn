@@ -4,73 +4,109 @@
 [ext_resource type="Script" path="res://scripts/ui/QuestLogDialog.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 
-[node name="QuestLogDialog" type="PanelContainer"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
+[node name="QuestLogDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1")
 script = ExtResource("2")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 2
-theme_override_constants/separation = 10
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5)
 
-[node name="Title" type="Label" parent="VBoxContainer"]
+[node name="DialogPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -220.0
+offset_right = 350.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = "Panel"
+
+[node name="MarginContainer" type="MarginContainer" parent="DialogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Quest Log"
 horizontal_alignment = 1
-theme_type_variation = "H1"
+theme_type_variation = "H2"
 
-[node name="MainContent" type="HBoxContainer" parent="VBoxContainer"]
+[node name="MainContent" type="HBoxContainer" parent="DialogPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 20
 
-[node name="QuestListContainer" type="VBoxContainer" parent="VBoxContainer/MainContent"]
+[node name="QuestListContainer" type="VBoxContainer" parent="DialogPanel/MarginContainer/VBoxContainer/MainContent"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.4
+theme_override_constants/separation = 8
 
-[node name="TabBar" type="TabBar" parent="VBoxContainer/MainContent/QuestListContainer"]
+[node name="TabBar" type="TabBar" parent="DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestListContainer"]
 layout_mode = 2
 tab_count = 2
 tab_0/title = "Active"
 tab_1/title = "Completed"
 
-[node name="QuestList" type="ItemList" parent="VBoxContainer/MainContent/QuestListContainer"]
+[node name="QuestList" type="ItemList" parent="DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestListContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="QuestDetailsContainer" type="VBoxContainer" parent="VBoxContainer/MainContent"]
+[node name="QuestDetailsContainer" type="PanelContainer" parent="DialogPanel/MarginContainer/VBoxContainer/MainContent"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.6
+theme_type_variation = "Panel"
 
-[node name="QuestTitle" type="Label" parent="VBoxContainer/MainContent/QuestDetailsContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestDetailsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="QuestTitle" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestDetailsContainer/VBoxContainer"]
 layout_mode = 2
 text = "Select a Quest"
-theme_type_variation = "H2"
+theme_type_variation = "H3"
 
-[node name="QuestDescription" type="Label" parent="VBoxContainer/MainContent/QuestDetailsContainer"]
+[node name="QuestDescription" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestDetailsContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 autowrap_mode = 3
 
-[node name="QuestObjectives" type="Label" parent="VBoxContainer/MainContent/QuestDetailsContainer"]
+[node name="QuestObjectives" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestDetailsContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="QuestRewards" type="Label" parent="VBoxContainer/MainContent/QuestDetailsContainer"]
+[node name="QuestRewards" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestDetailsContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="CloseButton" parent="VBoxContainer" instance=ExtResource("3")]
+[node name="CloseButton" parent="DialogPanel/MarginContainer/VBoxContainer" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Close"
 
-[connection signal="tab_changed" from="VBoxContainer/MainContent/QuestListContainer/TabBar" to="." method="_on_tab_changed"]
-[connection signal="item_selected" from="VBoxContainer/MainContent/QuestListContainer/QuestList" to="." method="_on_quest_selected"]
-[connection signal="pressed" from="VBoxContainer/CloseButton" to="." method="_on_close_pressed"]
+[connection signal="tab_changed" from="DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestListContainer/TabBar" to="." method="_on_tab_changed"]
+[connection signal="item_selected" from="DialogPanel/MarginContainer/VBoxContainer/MainContent/QuestListContainer/QuestList" to="." method="_on_quest_selected"]
+[connection signal="pressed" from="DialogPanel/MarginContainer/VBoxContainer/CloseButton" to="." method="_on_close_pressed"]

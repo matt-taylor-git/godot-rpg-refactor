@@ -4,10 +4,10 @@ extends Control
 
 var quest = null
 
-@onready var quest_title_label = $Panel/VBoxContainer/QuestTitle
-@onready var exp_reward_label = $Panel/VBoxContainer/Rewards/ExpReward
-@onready var gold_reward_label = $Panel/VBoxContainer/Rewards/GoldReward
-@onready var ok_button = $Panel/VBoxContainer/OkButton
+@onready var quest_title_label = $Panel/MarginContainer/VBoxContainer/QuestTitle
+@onready var exp_reward_label = $Panel/MarginContainer/VBoxContainer/Rewards/ExpReward
+@onready var gold_reward_label = $Panel/MarginContainer/VBoxContainer/Rewards/GoldReward
+@onready var ok_button = $Panel/MarginContainer/VBoxContainer/OkButton
 
 func _ready():
 	print("QuestCompletionDialog initialized")

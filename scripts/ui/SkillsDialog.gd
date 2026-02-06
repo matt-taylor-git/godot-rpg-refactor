@@ -5,8 +5,8 @@ extends Control
 signal skill_selected(skill_index: int)
 signal cancelled
 
-@onready var skills_container = $DialogPanel/VBoxContainer/SkillsContainer
-@onready var cancel_button = $DialogPanel/VBoxContainer/CancelButton
+@onready var skills_container = $DialogPanel/MarginContainer/VBoxContainer/SkillsContainer
+@onready var cancel_button = $DialogPanel/MarginContainer/VBoxContainer/CancelButton
 
 func _ready():
 	_populate_skills()

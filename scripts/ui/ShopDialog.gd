@@ -1,15 +1,17 @@
-extends PanelContainer
+extends Control
 
 # ShopDialog - Updated for new layout and ItemList
 
 var shop_items = []
 
-@onready var player_gold_label = $VBoxContainer/PlayerGold
-@onready var shop_list = $VBoxContainer/MainContent/ShopInventory/VBoxContainer/ShopList
-@onready var player_item_list = $VBoxContainer/MainContent/PlayerInventory/VBoxContainer/PlayerItemList
-@onready var buy_button = $VBoxContainer/ActionButtons/BuyButton
-@onready var sell_button = $VBoxContainer/ActionButtons/SellButton
-@onready var close_button = $VBoxContainer/ActionButtons/CloseButton
+@onready var player_gold_label = $DialogPanel/MarginContainer/VBoxContainer/PlayerGold
+@onready var shop_list = get_node(
+	"DialogPanel/MarginContainer/VBoxContainer/MainContent/ShopInventory/VBoxContainer/ShopList")
+@onready var player_item_list = get_node(
+	"DialogPanel/MarginContainer/VBoxContainer/MainContent/PlayerInventory/VBoxContainer/PlayerItemList")
+@onready var buy_button = $DialogPanel/MarginContainer/VBoxContainer/ActionButtons/BuyButton
+@onready var sell_button = $DialogPanel/MarginContainer/VBoxContainer/ActionButtons/SellButton
+@onready var close_button = $DialogPanel/MarginContainer/VBoxContainer/ActionButtons/CloseButton
 
 func _ready():
     print("ShopDialog ready")

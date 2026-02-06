@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://codex_dialog"]
+[gd_scene load_steps=3 format=3 uid="uid://codex_dialog"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/CodexDialog.gd" id="2"]
@@ -14,88 +14,101 @@ grow_vertical = 2
 theme = ExtResource("1")
 script = ExtResource("2")
 
-[node name="Background" type="Panel" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -250.0
-offset_right = 400.0
-offset_bottom = 250.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Background"]
+[node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+color = Color(0, 0, 0, 0.5)
+
+[node name="DialogPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -260.0
+offset_right = 380.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = "Panel"
+
+[node name="MarginContainer" type="MarginContainer" parent="DialogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel/MarginContainer"]
+layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="TitleBar" type="HBoxContainer" parent="Background/VBoxContainer"]
+[node name="TitleBar" type="HBoxContainer" parent="DialogPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 0
 
-[node name="Title" type="Label" parent="Background/VBoxContainer/TitleBar"]
+[node name="Title" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer/TitleBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Codex"
+theme_type_variation = "H2"
 
-[node name="CloseButton" parent="Background/VBoxContainer/TitleBar" instance=ExtResource("3")]
+[node name="CloseButton" parent="DialogPanel/MarginContainer/VBoxContainer/TitleBar" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 8
 text = "X"
+theme_type_variation = "Small"
 
-[node name="CategoryTabs" type="TabBar" parent="Background/VBoxContainer"]
+[node name="CategoryTabs" type="TabBar" parent="DialogPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 0
 
-[node name="Content" type="HBoxContainer" parent="Background/VBoxContainer"]
+[node name="Content" type="HBoxContainer" parent="DialogPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(750, 450)
 theme_override_constants/separation = 15
 
-[node name="EntryList" type="ScrollContainer" parent="Background/VBoxContainer/Content"]
+[node name="EntryList" type="ScrollContainer" parent="DialogPanel/MarginContainer/VBoxContainer/Content"]
 layout_mode = 2
-size_flags_horizontal = 1
-custom_minimum_size = Vector2(250, 0)
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.4
 
-[node name="EntryButtons" type="VBoxContainer" parent="Background/VBoxContainer/Content/EntryList"]
+[node name="EntryButtons" type="VBoxContainer" parent="DialogPanel/MarginContainer/VBoxContainer/Content/EntryList"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="EntryContent" type="VBoxContainer" parent="Background/VBoxContainer/Content"]
+[node name="EntryContent" type="PanelContainer" parent="DialogPanel/MarginContainer/VBoxContainer/Content"]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.6
+theme_type_variation = "Panel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel/MarginContainer/VBoxContainer/Content/EntryContent"]
+layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="EntryTitle" type="Label" parent="Background/VBoxContainer/Content/EntryContent"]
+[node name="EntryTitle" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer/Content/EntryContent/VBoxContainer"]
 layout_mode = 2
 text = "Select an entry"
-add_theme_font_size_override("font_size", 16)
-custom_minimum_size = Vector2(0, 30)
+theme_type_variation = "H3"
 
-[node name="EntryText" type="Label" parent="Background/VBoxContainer/Content/EntryContent"]
+[node name="EntryText" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer/Content/EntryContent/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
 text = "No entry selected"
 autowrap_mode = 2
-custom_minimum_size = Vector2(400, 0)
 
-[node name="HSeparator" type="HSeparator" parent="Background/VBoxContainer"]
-layout_mode = 2
-
-[node name="Stats" type="Label" parent="Background/VBoxContainer"]
+[node name="Stats" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Entries discovered: 0/0"
-custom_minimum_size = Vector2(0, 20)
 
-[connection signal="pressed" from="Background/VBoxContainer/TitleBar/CloseButton" to="." method="_on_close_pressed"]
-[connection signal="tab_changed" from="Background/VBoxContainer/CategoryTabs" to="." method="_on_category_changed"]
+[connection signal="pressed" from="DialogPanel/MarginContainer/VBoxContainer/TitleBar/CloseButton" to="." method="_on_close_pressed"]
+[connection signal="tab_changed" from="DialogPanel/MarginContainer/VBoxContainer/CategoryTabs" to="." method="_on_category_changed"]

@@ -1,9 +1,21 @@
-[gd_scene load_steps=4 format=3 uid="uid://c8x8x8x8x8x8x8x8x8x8x8"]
+[gd_scene load_steps=5 format=3 uid="uid://c8x8x8x8x8x8x8x8x8x8x8"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/ExplorationScene.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 [ext_resource type="Texture2D" path="res://assets/Hero.png" id="4"]
+[ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="5"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
+shader = ExtResource("5")
+shader_parameter/time_scale = 0.5
+shader_parameter/wave_intensity = 0.3
+shader_parameter/color_primary = Color(0.06, 0.05, 0.04, 1)
+shader_parameter/color_accent = Color(0.15, 0.10, 0.06, 1)
+shader_parameter/reduce_motion = false
+shader_parameter/grain_intensity = 0.03
+shader_parameter/ember_intensity = 0.06
+shader_parameter/ember_color = Color(0.9, 0.4, 0.1, 1)
 
 [node name="ExplorationScene" type="Control"]
 layout_mode = 3
@@ -22,6 +34,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+material = SubResource("ShaderMaterial_bg")
 
 [node name="WorldArea" type="Panel" parent="Background"]
 layout_mode = 1

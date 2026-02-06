@@ -5,21 +5,22 @@ extends Control
 var selected_item_index = -1
 var selected_item = null
 
-@onready var attack_value = $MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/AttackValue
-@onready var defense_value = $MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DefenseValue
+@onready var attack_value = get_node(
+	"DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/AttackValue")
+@onready var defense_value = get_node(
+	"DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DefenseValue")
 @onready var dexterity_value = get_node(
-	"MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DexterityValue"
-)
+	"DialogPanel/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DexterityValue")
 
-@onready var weapon_slot = $MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/WeaponSlot
-@onready var armor_slot = $MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/ArmorSlot
-@onready var accessory_slot = $MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/AccessorySlot
+@onready var weapon_slot = $DialogPanel/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/WeaponSlot
+@onready var armor_slot = $DialogPanel/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/ArmorSlot
+@onready var accessory_slot = $DialogPanel/MainContainer/LeftPanel/EquipmentPanel/VBoxContainer/AccessorySlot
 
-@onready var inventory_grid = $MainContainer/RightPanel/InventoryGrid
-@onready var use_button = $MainContainer/RightPanel/ActionButtons/UseButton
-@onready var equip_button = $MainContainer/RightPanel/ActionButtons/EquipButton
-@onready var drop_button = $MainContainer/RightPanel/ActionButtons/DropButton
-@onready var close_button = $MainContainer/RightPanel/CloseButton
+@onready var inventory_grid = $DialogPanel/MainContainer/RightPanel/InventoryGrid
+@onready var use_button = $DialogPanel/MainContainer/RightPanel/ActionButtons/UseButton
+@onready var equip_button = $DialogPanel/MainContainer/RightPanel/ActionButtons/EquipButton
+@onready var drop_button = $DialogPanel/MainContainer/RightPanel/ActionButtons/DropButton
+@onready var close_button = $DialogPanel/MainContainer/RightPanel/CloseButton
 
 func _ready():
 	print("InventoryDialog ready")
