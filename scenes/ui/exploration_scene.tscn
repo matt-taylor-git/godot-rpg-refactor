@@ -61,9 +61,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -100.0
-offset_top = 20.0
+offset_top = 50.0
 offset_right = 100.0
-offset_bottom = 50.0
+offset_bottom = 80.0
 grow_horizontal = 2
 text = "Forest Clearing"
 horizontal_alignment = 1
@@ -87,6 +87,12 @@ grow_horizontal = 2
 layout_mode = 2
 text = "Hero (Lv.1) - HP: 100/100 - Gold: 0"
 
+[node name="EncounterChanceLabel" type="Label" parent="UI/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "Encounter chance: Low"
+
 [node name="StepsLabel" type="Label" parent="UI/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 10
@@ -98,50 +104,56 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -60.0
+offset_top = -100.0
 grow_horizontal = 2
 
-[node name="ActionButtons" type="HBoxContainer" parent="UI/BottomBar"]
+[node name="ActionButtons" type="GridContainer" parent="UI/BottomBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 20
+size_flags_vertical = 3
+columns = 4
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 4
 
 [node name="ExploreButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Explore"
 
 [node name="RestButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Rest"
 
 [node name="InventoryButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Inventory"
 
 [node name="ShopButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Shop"
 
 [node name="QuestLogButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Quests"
 
 [node name="TalkButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Talk"
 
 [node name="CodexButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Codex"
 
 [node name="MenuButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Menu"
-
-[node name="EncounterChanceLabel" type="Label" parent="UI/BottomBar"]
-layout_mode = 2
-size_flags_horizontal = 10
-text = "Encounter chance: Low"
 
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/ExploreButton" to="." method="_on_explore_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/RestButton" to="." method="_on_rest_pressed"]

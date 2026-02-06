@@ -19,7 +19,7 @@ var target_position = Vector2.ZERO
 @onready var area_label = $Background/WorldArea/AreaLabel
 @onready var player_stats_label = $UI/TopBar/PlayerStats
 @onready var steps_label = $UI/TopBar/StepsLabel
-@onready var encounter_chance_label = $UI/BottomBar/EncounterChanceLabel
+@onready var encounter_chance_label = $UI/TopBar/EncounterChanceLabel
 @onready var explore_button = $UI/BottomBar/ActionButtons/ExploreButton
 @onready var rest_button = $UI/BottomBar/ActionButtons/RestButton
 @onready var inventory_button = $UI/BottomBar/ActionButtons/InventoryButton
@@ -121,15 +121,27 @@ func _on_reached_destination():
 	_take_step()
 
 func _setup_focus_navigation():
-	# Horizontal chain with wrapping for all 8 action buttons
-	var buttons = [
-		explore_button, rest_button, inventory_button, shop_button,
-		quest_log_button, talk_button, codex_button, menu_button]
-	for i in range(buttons.size()):
-		var prev_idx = (i - 1 + buttons.size()) % buttons.size()
-		var next_idx = (i + 1) % buttons.size()
-		buttons[i].set("focus_neighbor_left", buttons[prev_idx].get_path())
-		buttons[i].set("focus_neighbor_right", buttons[next_idx].get_path())
+	# 4x2 grid layout:
+	# Row 1: Explore | Rest      | Inventory | Shop
+	# Row 2: Quests  | Talk      | Codex     | Menu
+	var row1 = [explore_button, rest_button, inventory_button, shop_button]
+	var row2 = [quest_log_button, talk_button, codex_button, menu_button]
+
+	# Horizontal navigation with wrapping within each row
+	for row in [row1, row2]:
+		for i in range(row.size()):
+			var left_idx = (i - 1 + row.size()) % row.size()
+			var right_idx = (i + 1) % row.size()
+			row[i].set("focus_neighbor_left", row[left_idx].get_path())
+			row[i].set("focus_neighbor_right", row[right_idx].get_path())
+
+	# Vertical navigation between rows with wrapping
+	for i in range(4):
+		row1[i].set("focus_neighbor_bottom", row2[i].get_path())
+		row1[i].set("focus_neighbor_top", row2[i].get_path())
+		row2[i].set("focus_neighbor_top", row1[i].get_path())
+		row2[i].set("focus_neighbor_bottom", row1[i].get_path())
+
 	explore_button.grab_focus()
 
 func _on_explore_pressed():
