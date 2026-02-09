@@ -145,9 +145,11 @@ func new_game(player_name: String, character_class: String = "Hero"):
 
 	game_data.current_scene = "town"
 	game_data.exploration_state = {
-	"steps_taken": 0,
-	"encounter_chance": 2.0,
-	"steps_since_last_encounter": 0
+		"steps_taken": 0,
+		"encounter_chance": 2.0,
+		"steps_since_last_encounter": 0,
+		"current_area_id": "town",
+		"danger_level": 0.0
 	}
 	emit_signal("game_started")
 
@@ -170,7 +172,9 @@ func load_game(save_slot: int):
 		game_data.exploration_state = loaded_data.get("exploration_state", {
 			"steps_taken": 0,
 			"encounter_chance": 2.0,
-			"steps_since_last_encounter": 0
+			"steps_since_last_encounter": 0,
+			"current_area_id": "town",
+			"danger_level": 0.0
 		})
 
 		# Restore combat state
@@ -287,6 +291,28 @@ func start_combat():
 
 	# Change to combat scene if not already there
 	if get_tree() and get_tree().current_scene and get_tree().current_scene.name != "CombatScene":
+		get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
+
+	return combat_log
+
+func start_combat_with_type(monster_type: String):
+	if not game_data.player:
+		return "No player data"
+
+	current_monster = MonsterFactory.create_monster(monster_type, game_data.player.level)
+
+	in_combat = true
+	combat_log = "Combat started! A " + current_monster.name \
+		+ " (Level " + str(current_monster.level) + ") appears!"
+
+	game_data.combat_state.current_monster = current_monster.to_dict()
+	game_data.combat_state.in_combat = true
+	game_data.combat_state.combat_log = combat_log
+
+	emit_signal("combat_started", current_monster.name)
+
+	if get_tree() and get_tree().current_scene \
+		and get_tree().current_scene.name != "CombatScene":
 		get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
 
 	return combat_log
