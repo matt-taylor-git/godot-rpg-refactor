@@ -1,0 +1,72 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/GameMenuDialog.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
+
+[node name="GameMenuDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1")
+script = ExtResource("2")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="DialogPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -120.0
+offset_right = 150.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = "Panel"
+
+[node name="MarginContainer" type="MarginContainer" parent="DialogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="DialogPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Game Menu"
+horizontal_alignment = 1
+theme_type_variation = "H2"
+
+[node name="ResumeButton" parent="DialogPanel/MarginContainer/VBoxContainer" instance=ExtResource("3")]
+layout_mode = 2
+text = "Resume"
+
+[node name="SaveButton" parent="DialogPanel/MarginContainer/VBoxContainer" instance=ExtResource("3")]
+layout_mode = 2
+text = "Save Game"
+
+[node name="QuitButton" parent="DialogPanel/MarginContainer/VBoxContainer" instance=ExtResource("3")]
+layout_mode = 2
+text = "Quit to Menu"
+
+[connection signal="pressed" from="DialogPanel/MarginContainer/VBoxContainer/ResumeButton" to="." method="_on_resume_pressed"]
+[connection signal="pressed" from="DialogPanel/MarginContainer/VBoxContainer/SaveButton" to="." method="_on_save_pressed"]
+[connection signal="pressed" from="DialogPanel/MarginContainer/VBoxContainer/QuitButton" to="." method="_on_quit_pressed"]

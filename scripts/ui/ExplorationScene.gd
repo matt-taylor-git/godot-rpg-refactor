@@ -6,6 +6,7 @@ const InventoryDialog = preload("res://scenes/ui/inventory_dialog.tscn")
 const ShopDialog = preload("res://scenes/ui/shop_dialog.tscn")
 const QuestLogDialog = preload("res://scenes/ui/quest_log_dialog.tscn")
 const CodexDialog = preload("res://scenes/ui/codex_dialog.tscn")
+const GameMenuDialog = preload("res://scenes/ui/game_menu_dialog.tscn")
 
 # Exploration state
 var current_area_id: String = "town"
@@ -433,7 +434,9 @@ func _on_codex_pressed():
 	dialog.tree_exited.connect(func(): codex_button.grab_focus())
 
 func _on_menu_pressed():
-	GameManager.change_scene("main_menu")
+	var dialog = GameMenuDialog.instantiate()
+	add_child(dialog)
+	dialog.tree_exited.connect(func(): menu_button.grab_focus())
 
 # -- Button visibility helper --
 
