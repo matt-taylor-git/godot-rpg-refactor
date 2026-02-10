@@ -16,6 +16,7 @@ uniform bool reduce_motion = false;
 uniform float grain_intensity : hint_range(0.0, 0.1) = 0.03;
 uniform float ember_intensity : hint_range(0.0, 0.3) = 0.08;
 uniform vec3 ember_color : source_color = vec3(0.9, 0.4, 0.1);
+uniform float overlay_alpha : hint_range(0.0, 1.0) = 1.0;
 
 void fragment() {
 	// Base color with gradient (dark at top, slightly warmer at bottom)
@@ -58,5 +59,5 @@ void fragment() {
 	}
 
 	// Output color with alpha
-	COLOR = vec4(final_color, 1.0);
+	COLOR = vec4(final_color, overlay_alpha);
 }

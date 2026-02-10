@@ -47,8 +47,8 @@ func _setup_test_theme():
 func test_button_initialization():
 	# Test that button initializes correctly
 	assert_not_null(button, "Button should be created")
-	# UIButton clears self.text in _ready and stores it in button_text
-	assert_eq(button.text, "", "Button text should be empty (cleared by UIButton)")
+	# UIButton uses Button's native text rendering; button_text syncs to text
+	assert_eq(button.text, "Test", "Button text should be set")
 	assert_eq(button.button_text, "Test", "button_text should hold the original text")
 	assert_false(button.disabled, "Button should not be disabled by default")
 	assert_eq(button.current_state, UIButton.ButtonState.NORMAL, "Button should start in NORMAL state")

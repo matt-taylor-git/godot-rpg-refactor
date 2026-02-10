@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://b1saih6uqrtd1"]
+[gd_scene load_steps=11 format=3 uid="uid://b1saih6uqrtd1"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/CharacterCreation.gd" id="2"]
@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://b4lgo58qkbd7a" path="res://assets/ui/icons/mage.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://b3ea4vemk2met" path="res://assets/ui/icons/rogue.png" id="8"]
 [ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="9"]
+[ext_resource type="Texture2D" path="res://assets/divider.png" id="10"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
 shader = ExtResource("9")
@@ -66,6 +67,13 @@ layout_mode = 2
 text = "Create Your Character"
 horizontal_alignment = 1
 theme_type_variation = "H1"
+
+[node name="Divider" type="TextureRect" parent="CenterContainer/CreationPanel/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
+mouse_filter = 2
+texture = ExtResource("10")
+stretch_mode = 5
 
 [node name="Content" type="HBoxContainer" parent="CenterContainer/CreationPanel/VBoxContainer"]
 layout_mode = 2

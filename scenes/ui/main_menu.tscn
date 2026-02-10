@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://c1q1q1q1q1q1q1q1q1q1q1"]
+[gd_scene load_steps=7 format=3 uid="uid://c1q1q1q1q1q1q1q1q1q1q1"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 [ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="4"]
+[ext_resource type="Texture2D" path="res://assets/splash_screen.png" id="5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
 shader = ExtResource("4")
@@ -15,6 +16,7 @@ shader_parameter/reduce_motion = false
 shader_parameter/grain_intensity = 0.03
 shader_parameter/ember_intensity = 0.08
 shader_parameter/ember_color = Color(0.9, 0.4, 0.1, 1)
+shader_parameter/overlay_alpha = 0.55
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -26,6 +28,18 @@ grow_vertical = 2
 theme = ExtResource("1")
 script = ExtResource("2")
 metadata/_edit_lock_ = true
+
+[node name="SplashBackground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="Background" type="Panel" parent="."]
 layout_mode = 1

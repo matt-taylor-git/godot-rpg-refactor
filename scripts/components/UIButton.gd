@@ -2,7 +2,7 @@ class_name UIButton
 extends Button
 
 # UIButton - Modern button component with hover effects, animations, and accessibility
-# Extends Control for full customization while maintaining button-like behavior
+# Uses Button's built-in stylebox rendering so icons display correctly above the background.
 
 # Signals
 signal state_changed(new_state: ButtonState, old_state: ButtonState)  # State transition
@@ -19,8 +19,6 @@ enum ButtonState {
 # Preload UIAnimationSystem for hover animations
 const UIAnimationSystemClass = preload("res://scripts/components/UIAnimationSystem.gd")
 
-# Use Button's built-in properties: text, disabled, theme_override
-
 var animation_system = UIAnimationSystemClass.new()
 
 # Internal state
@@ -34,61 +32,35 @@ var active_tween: Tween = null
 var original_scale: Vector2 = Vector2.ONE
 var original_modulate: Color = Color.WHITE
 
-# UI components
-var label: Label = null
-var background: Panel = null
-var focus_indicator: Panel = null
-
-# Store button text separately (Button's text property will be kept empty to prevent double rendering)
+# Store button text so external code can read it via button_text
 var button_text: String = "":
 	set(value):
 		button_text = value
-		if label:
-			label.text = button_text
-			label.visible = not button_text.is_empty()
+		self.text = value
 	get:
 		return button_text
 
 func _ready():
-	# Store the Button's text before we clear it (to prevent double rendering)
+	# Store the Button's text from the scene
 	button_text = self.text
 
-	# Make button flat so it doesn't draw its own background (we use custom nodes)
-	flat = true
-
-	# Create child nodes if they don't exist
-	_create_child_nodes()
-
-	# Initialize label with our text
-	_update_label()
-
 	# IMPORTANT: Set a reasonable minimum size to ensure button is clickable
-	# We calculate this based on the label's text
 	var text_size = Vector2.ZERO
-	if label and not button_text.is_empty():
-		# Get font from theme or use default
-		var font = label.get_theme_font("font")
-		var font_size = label.get_theme_font_size("font_size")
+	if not button_text.is_empty():
+		var font = get_theme_font("font")
+		var font_size = get_theme_font_size("font_size")
 		if font and font_size > 0:
-			text_size = font.get_string_size(button_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+			text_size = font.get_string_size(
+				button_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size
+			)
 		else:
-			# Fallback: estimate based on character count
 			text_size = Vector2(button_text.length() * 10, 20)
 
-	# Set custom minimum size with padding
 	var min_size = Vector2(
-		max(100, text_size.x + 40),  # At least 100px wide, plus padding
-		max(44, text_size.y + 20)     # WCAG minimum 44px height
+		max(100, text_size.x + 40),
+		max(44, text_size.y + 20)
 	)
 	custom_minimum_size = min_size
-
-	print("UIButton '", button_text, "' calculated min_size: ", min_size)
-
-	# Now clear Button's text so it doesn't render (we use custom Label)
-	self.text = ""
-
-	# Queue a deferred update to ensure sizing is applied
-	call_deferred("_finalize_sizing")
 
 	# Connect to Button's built-in signals
 	connect("mouse_entered", Callable(self, "_on_mouse_entered"))
@@ -97,139 +69,31 @@ func _ready():
 	connect("focus_exited", Callable(self, "_on_focus_exited"))
 	connect("button_down", Callable(self, "_on_button_down"))
 	connect("button_up", Callable(self, "_on_button_up"))
-	connect("pressed", Callable(self, "_on_pressed_debug"))
 
-	# Set up input handling
 	set_focus_mode(FOCUS_ALL)
 
-	# Store original transform values for animations
 	original_scale = scale
 	original_modulate = modulate
 
-	# Apply theme and update state
-	_apply_theme()
+	# Apply initial stylebox overrides for all states
+	_apply_all_styleboxes()
 
-	# Connect to resized signal to keep children sized correctly
-	connect("resized", Callable(self, "_resize_children"))
-
-func _finalize_sizing():
-	# Called deferred to ensure sizing is applied
-	update_minimum_size()
-	print("UIButton '", button_text, "' after sizing - size: ", size, " custom_minimum_size: ", custom_minimum_size)
-	# Resize children to match
-	_resize_children()
-
-func _resize_children():
-	# Ensure child nodes match button's size
-	var button_size = size
-	print("UIButton '", button_text, "' _resize_children called, size: ", button_size)
-
-	if background:
-		background.position = Vector2.ZERO
-		background.size = button_size
-
-	if label:
-		label.position = Vector2.ZERO
-		label.size = button_size
-
-	if focus_indicator:
-		focus_indicator.position = Vector2.ZERO
-		focus_indicator.size = button_size
+	# Set font color
+	var font_color = UIThemeManager.get_text_primary_color()
+	add_theme_color_override("font_color", font_color)
+	add_theme_color_override("font_hover_color", font_color)
+	add_theme_color_override("font_pressed_color", font_color)
+	add_theme_color_override("font_focus_color", font_color)
+	add_theme_color_override(
+		"font_disabled_color", UIThemeManager.get_color("disabled_text")
+	)
 
 func _exit_tree():
-	# Clean up active tween when node is removed
 	if active_tween and active_tween.is_valid():
 		active_tween.kill()
 		active_tween = null
 
-func _create_child_nodes():
-	# Create background panel
-	if not has_node("Background"):
-		background = Panel.new()
-		background.name = "Background"
-		background.mouse_filter = MOUSE_FILTER_IGNORE  # Don't block mouse input
-		add_child(background)
-	else:
-		background = $Background as Panel
-		background.mouse_filter = MOUSE_FILTER_IGNORE
-
-	# Create label
-	if not has_node("Label"):
-		label = Label.new()
-		label.name = "Label"
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.mouse_filter = MOUSE_FILTER_IGNORE  # Don't block mouse input
-		add_child(label)
-	else:
-		label = $Label as Label
-		label.mouse_filter = MOUSE_FILTER_IGNORE
-
-	# Create focus indicator (accessibility)
-	if not has_node("FocusIndicator"):
-		focus_indicator = Panel.new()
-		focus_indicator.name = "FocusIndicator"
-		focus_indicator.visible = false
-		focus_indicator.mouse_filter = MOUSE_FILTER_IGNORE  # Don't block mouse input
-		add_child(focus_indicator)
-	else:
-		focus_indicator = $FocusIndicator as Panel
-		focus_indicator.mouse_filter = MOUSE_FILTER_IGNORE
-
-func _update_label():
-	if label:
-		label.text = button_text  # Use our custom text property
-		label.visible = not button_text.is_empty()
-
-func _apply_theme():
-	# This function is now simplified, as color application is centralized.
-	# We still need to ensure child nodes get the theme resource if it's set directly on the button.
-	if theme:
-		if label and label.theme != theme:
-			label.theme = theme
-		if background and background.theme != theme:
-			background.theme = theme
-	_update_visual_state()
-
-func _update_visual_state():
-	# Central point for updating visuals based on state.
-	# This now directly uses UIThemeManager.
-	_apply_theme_colors()
-
-func _apply_theme_colors():
-	# Apply colors directly from the UIThemeManager singleton.
-	# Dark fantasy theme: bronze borders, warm amber/brown backgrounds
-	var bg_color = Color(0.12, 0.10, 0.08, 0.85)
-	var font_color = UIThemeManager.get_text_primary_color()
-	var border_color = UIThemeManager.get_border_bronze_color()
-	border_color.a = 0.4
-
-	match current_state:
-		ButtonState.NORMAL:
-			bg_color = Color(0.12, 0.10, 0.08, 0.85)
-			border_color = UIThemeManager.get_border_bronze_color()
-			border_color.a = 0.4
-		ButtonState.HOVER:
-			bg_color = Color(0.16, 0.13, 0.10, 0.9)
-			border_color = UIThemeManager.get_accent_color()
-			border_color.a = 0.7
-		ButtonState.PRESSED:
-			bg_color = Color(0.08, 0.07, 0.05, 1.0)
-			border_color = UIThemeManager.get_accent_color()
-			border_color.a = 0.9
-		ButtonState.DISABLED:
-			bg_color = Color(0.10, 0.09, 0.07, 0.5)
-			font_color = UIThemeManager.get_color("disabled_text")
-			border_color = UIThemeManager.get_secondary_color()
-			border_color.a = 0.3
-
-	# Animate visual changes
-	# Note: background color is set via StyleBoxFlat below, not Panel.color property
-	if label:
-		animation_system.animate_property(label, "modulate", label.modulate, font_color, 0.1)
-
-	# Create StyleBoxFlat with dark fantasy styling
-	# Sharp 2px corners for medieval look, bronze borders
+func _create_stylebox(bg_color: Color, border_color: Color) -> StyleBoxFlat:
 	var stylebox = StyleBoxFlat.new()
 	stylebox.bg_color = bg_color
 	stylebox.border_width_left = 2
@@ -241,83 +105,73 @@ func _apply_theme_colors():
 	stylebox.corner_radius_top_right = 2
 	stylebox.corner_radius_bottom_right = 2
 	stylebox.corner_radius_bottom_left = 2
+	stylebox.content_margin_left = 4.0
+	stylebox.content_margin_right = 4.0
+	stylebox.content_margin_top = 4.0
+	stylebox.content_margin_bottom = 4.0
+	return stylebox
 
-	if background:
-		background.add_theme_stylebox_override("panel", stylebox)
+func _apply_all_styleboxes():
+	# Apply styleboxes to Button's built-in theme overrides.
+	# Button draws: stylebox -> icon -> text, so icon is always visible.
+	var normal_border = UIThemeManager.get_border_bronze_color()
+	normal_border.a = 0.4
+	var hover_border = UIThemeManager.get_accent_color()
+	hover_border.a = 0.7
+	var pressed_border = UIThemeManager.get_accent_color()
+	pressed_border.a = 0.9
+	var disabled_border = UIThemeManager.get_secondary_color()
+	disabled_border.a = 0.3
+
+	add_theme_stylebox_override(
+		"normal", _create_stylebox(Color(0.12, 0.10, 0.08, 0.85), normal_border)
+	)
+	add_theme_stylebox_override(
+		"hover", _create_stylebox(Color(0.16, 0.13, 0.10, 0.9), hover_border)
+	)
+	add_theme_stylebox_override(
+		"pressed", _create_stylebox(Color(0.08, 0.07, 0.05, 1.0), pressed_border)
+	)
+	add_theme_stylebox_override(
+		"disabled", _create_stylebox(Color(0.10, 0.09, 0.07, 0.5), disabled_border)
+	)
+	# Focus uses accent border with transparent bg
+	var focus_box = _create_stylebox(Color.TRANSPARENT, UIThemeManager.get_accent_color())
+	add_theme_stylebox_override("focus", focus_box)
 
 func _on_mouse_entered():
-	if not self.disabled:  # Use Button's disabled property
+	if not self.disabled:
 		is_hovered = true
-		_update_visual_state()
 
 func _on_mouse_exited():
-	if not self.disabled:  # Use Button's disabled property
+	if not self.disabled:
 		is_hovered = false
-		_update_visual_state()
-		play_unhover_animation()  # Play unhover animation on exit
+		play_unhover_animation()
 
 func _on_focus_entered():
 	has_focus = true
-	_update_focus_indicator()
-	_update_visual_state()
 
 func _on_focus_exited():
 	has_focus = false
-	_update_focus_indicator()
-	_update_visual_state()
 
 func _on_button_down():
 	if not self.disabled:
 		is_pressed = true
-		_update_visual_state()
 
 func _on_button_up():
 	if not self.disabled:
 		is_pressed = false
-		_update_visual_state()
 
-func _on_pressed_debug():
-	print("UIButton '", button_text, "' pressed signal emitted!")
+# Public methods
 
-func _update_focus_indicator():
-	# Show/hide focus indicator based on focus state and accessibility needs
-	if focus_indicator:
-		focus_indicator.visible = has_focus and not self.disabled  # Use Button's disabled property
-
-		# Apply focus styling with 3:1 contrast ratio (WCAG AA)
-		if has_focus:
-			var focus_stylebox = _create_focus_stylebox()
-			focus_indicator.add_theme_stylebox_override("panel", focus_stylebox)
-
-func _create_focus_stylebox() -> StyleBoxFlat:
-	# Create focus indicator with gold accent color for visibility
-	var stylebox = StyleBoxFlat.new()
-	stylebox.bg_color = Color.TRANSPARENT
-	stylebox.border_width_left = 2
-	stylebox.border_width_top = 2
-	stylebox.border_width_right = 2
-	stylebox.border_width_bottom = 2
-	stylebox.border_color = UIThemeManager.get_accent_color()
-	stylebox.corner_radius_top_left = 4
-	stylebox.corner_radius_top_right = 4
-	stylebox.corner_radius_bottom_right = 4
-	stylebox.corner_radius_bottom_left = 4
-	return stylebox
-
-# Public methods - Note: Don't override Button's set_text/set_disabled methods
-
-func apply_theme(theme: Theme) -> void:
-	self.theme = theme  # Button uses 'theme' property
-	_apply_theme()
-	_update_visual_state()
+func apply_theme(new_theme: Theme) -> void:
+	self.theme = new_theme
+	_apply_all_styleboxes()
 	queue_redraw()
-	# Note: Button doesn't have theme_changed signal, removed emit
 
-func apply_global_theme(theme: Theme) -> void:
-	# Apply global theme without overriding local theme
-	if not self.theme:  # Button uses 'theme' property
-		_apply_theme_colors()
-		_update_visual_state()
+func apply_global_theme(_new_theme: Theme) -> void:
+	if not self.theme:
+		_apply_all_styleboxes()
 		queue_redraw()
 
 func get_theme_variation(variation_name: String) -> Theme:
@@ -435,9 +289,14 @@ func _animate_color(_from_color: Color, to_color: Color, duration: float):
 func _get_minimum_size() -> Vector2:
 	var min_size = Vector2(44, 44)  # WCAG minimum touch target
 
-	if label and not button_text.is_empty():  # Use our custom text property
-		var label_size = label.get_minimum_size()
-		min_size.x = max(min_size.x, label_size.x + 20)  # Add padding
-		min_size.y = max(min_size.y, label_size.y + 10)
+	if not button_text.is_empty():
+		var font = get_theme_font("font")
+		var font_size = get_theme_font_size("font_size")
+		if font and font_size > 0:
+			var text_size = font.get_string_size(
+				button_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size
+			)
+			min_size.x = max(min_size.x, text_size.x + 20)
+			min_size.y = max(min_size.y, text_size.y + 10)
 
 	return min_size

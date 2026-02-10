@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://ck6d6rke5lknx"]
+[gd_scene load_steps=7 format=3 uid="uid://ck6d6rke5lknx"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" uid="uid://cg4ikbac8bt18" path="res://scripts/ui/CombatScene.gd" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/components/UIProgressBar.gd" id="5"]
 [ext_resource type="PackedScene" uid="uid://bvxq8r7y5n2kl" path="res://scenes/components/character_portrait_container.tscn" id="6"]
 [ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="7"]
+[ext_resource type="Texture2D" path="res://assets/icon_sword.png" id="8"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
 shader = ExtResource("7")
@@ -138,6 +139,7 @@ columns = 2
 [node name="AttackButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
 layout_mode = 2
 text = "ATTACK"
+icon = ExtResource("8")
 theme_type_variation = "Small"
 
 [node name="SkillsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
