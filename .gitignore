@@ -39,6 +39,9 @@ __pycache__/
 # Generated asset staging area
 assets/generated/
 
+# Asset backups
+assets/backups_original_ui/
+
 # Testing
 Testing/
 
