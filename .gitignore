@@ -33,11 +33,18 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Environment secrets
+.env
+
+# Generated asset staging area
+assets/generated/
+
 # Testing
 Testing/
 
-# Claude Code
-.claude/
+# Claude Code (allow skills to be committed)
+.claude/*
+!.claude/skills/
 
 # Vim
 *.swp

@@ -35,6 +35,7 @@ godot-rpg-refactor/
 │   └── godot/          # All GUT test scripts (test_*.gd)
 ├── docs/                # Comprehensive project documentation
 ├── addons/              # Third-party plugins (GUT testing framework)
+├── .claude/skills/      # Claude Code skills (generate-asset)
 ├── .gdlintrc            # GDScript linter configuration
 └── project.godot        # Godot project configuration
 ```
@@ -556,6 +557,68 @@ python serve_web.py --port 8060 --dir webexport
 ### Game Viewport
 
 The web export renders at **800x600** pixels.
+
+---
+
+## Asset Generation
+
+The project includes a `/generate-asset` skill for creating game art using the **Gemini Nano Banana Pro** API (`gemini-3-pro-image-preview`). All generated assets follow a consistent stylized cartoon art style defined in a style bible.
+
+### Skill Location
+
+```
+.claude/skills/generate-asset/
+├── SKILL.md              # Workflow and usage guide
+├── style-reference.md    # Style bible (locked prompt fragments + art direction)
+├── asset-types.json      # Asset type configs (sizes, prompts, framing rules)
+└── scripts/
+    └── generate_asset.py # Python script that calls the Gemini API
+```
+
+### Prerequisites
+
+- **API Key**: Create `.env` at the project root with your Gemini API key (see `.env.example`)
+- **Python packages**: `requests`, `Pillow`, `python-dotenv` (all pre-installed)
+
+### Supported Asset Types
+
+| Type | Size | Transparent | Use Case |
+|------|------|-------------|----------|
+| `monster` | 512x512 | Yes | Monster sprites (facing left) |
+| `character` | 512x512 | Yes | Character portraits (3/4 view, facing right) |
+| `item` | 256x256 | Yes | Item/equipment icons |
+| `ui` | 256x256 | Yes | UI elements (frames, borders, dividers) |
+| `background` | 800x600 | No | Scene backgrounds |
+| `splash` | 800x600 | No | Splash/title screen art |
+
+### Usage Examples
+
+```bash
+/generate-asset monster "fire drake breathing flames"
+/generate-asset item "health potion glowing green"
+/generate-asset character "elven mage with crystal staff" --variations 3
+/generate-asset ui "ornate panel border frame with bronze metalwork"
+/generate-asset splash "lone adventurer at dungeon entrance, dramatic torchlight"
+/generate-asset --update-style   # Modify the style bible
+```
+
+### Generation Workflow
+
+1. Assets are generated into `assets/generated/<subdir>/` (git-ignored staging area)
+2. A `manifest.json` tracks every generation with metadata and timestamps
+3. After review, assets are **promoted** to their final location in `assets/`
+4. The `--reference <path>` flag passes a previously generated asset as a style exemplar for visual consistency
+5. Use `--dry-run` to preview the prompt without calling the API
+
+### Style Bible
+
+The style bible (`style-reference.md`) defines:
+- **Art direction**: Stylized cartoon, graphic novel illustration (Slay the Spire-like)
+- **Color guidance**: Dark fantasy palette with warm amber/bronze tones
+- **Consistency rules**: Facing direction, lighting, outlines, shading
+- **Locked prompt fragments**: Auto-injected preamble, style keywords, and negative prompt
+
+The style bible can be updated via `/generate-asset --update-style`. Locked prompt fragments require explicit confirmation to modify.
 
 ---
 

@@ -1,0 +1,68 @@
+{
+    "monster": {
+        "display_name": "Monster Sprite",
+        "default_size": [512, 512],
+        "aspect_ratio": "1:1",
+        "transparent_default": true,
+        "framing": "Full body, centered in frame, facing left (toward player). Dynamic pose showing the creature's nature. No background elements.",
+        "technical_params": "Game sprite on transparent background. Single character only. Clear silhouette readable at small sizes.",
+        "prompt_template": "A {description}. Fantasy RPG monster creature.",
+        "output_subdir": "monsters",
+        "examples": ["goblin", "orc", "skeleton", "wolf", "spider", "slime", "golem", "bandit", "fire drake", "frost wyrm"]
+    },
+    "character": {
+        "display_name": "Character Portrait",
+        "default_size": [512, 512],
+        "aspect_ratio": "1:1",
+        "transparent_default": true,
+        "framing": "Upper body portrait, 3/4 view facing right. Heroic pose. Character fills 70-80% of the frame.",
+        "technical_params": "Game character portrait on transparent background. Single character only. Expressive face clearly visible.",
+        "prompt_template": "A {description}. Fantasy RPG hero character portrait.",
+        "output_subdir": "characters",
+        "examples": ["warrior with greataxe", "elven mage", "halfling rogue", "dwarven cleric"]
+    },
+    "item": {
+        "display_name": "Item Icon",
+        "default_size": [256, 256],
+        "aspect_ratio": "1:1",
+        "transparent_default": true,
+        "framing": "Centered item icon, slightly angled for depth. Object fills 80% of frame. No hand holding it.",
+        "technical_params": "Game item icon on transparent background. Single object only. Clean readable silhouette. Suitable for inventory grid display.",
+        "prompt_template": "A {description}. Fantasy RPG item icon.",
+        "output_subdir": "items",
+        "examples": ["health potion", "iron sword", "leather armor", "magic ring", "ancient scroll"]
+    },
+    "ui": {
+        "display_name": "UI Element",
+        "default_size": [256, 256],
+        "aspect_ratio": "1:1",
+        "transparent_default": true,
+        "framing": "Flat UI element design. Clean edges suitable for 9-slice or tiling.",
+        "technical_params": "Game UI element. Clean edges. Consistent with dark fantasy RPG theme using bronze/gold/amber tones. Must tile or 9-slice cleanly if applicable.",
+        "prompt_template": "A {description}. Dark fantasy RPG UI element with bronze and gold tones.",
+        "output_subdir": "ui",
+        "examples": ["ornate frame border", "button background", "health bar frame", "inventory slot", "dialog box"]
+    },
+    "background": {
+        "display_name": "Background Scene",
+        "default_size": [800, 600],
+        "aspect_ratio": "4:3",
+        "transparent_default": false,
+        "framing": "Wide establishing shot. Atmospheric scene with depth. No characters or UI elements.",
+        "technical_params": "Game background scene at 4:3 aspect ratio. Atmospheric, painterly. Suitable as a game screen background. No text or UI elements.",
+        "prompt_template": "A {description}. Fantasy RPG environment background scene.",
+        "output_subdir": "backgrounds",
+        "examples": ["dark forest clearing", "medieval tavern interior", "ancient dungeon corridor", "mountain pass at sunset", "town marketplace"]
+    },
+    "splash": {
+        "display_name": "Splash/Title Art",
+        "default_size": [800, 600],
+        "aspect_ratio": "4:3",
+        "transparent_default": false,
+        "framing": "Dramatic composition suitable for a title screen or loading screen. Cinematic framing.",
+        "technical_params": "Game splash art at 4:3 aspect ratio. Dramatic, high-impact composition. Rich detail.",
+        "prompt_template": "A {description}. Epic fantasy RPG splash art, dramatic and cinematic.",
+        "output_subdir": "splash",
+        "examples": ["hero party facing a dragon", "dark castle silhouette against stormy sky", "lone warrior at dungeon entrance"]
+    }
+}
