@@ -25,11 +25,20 @@ func can_use(user) -> bool:
 		return false
 	if mana_cost > 0 and user.mana < mana_cost:
 		return false
-	if required_level > user.level:
-		return false
+	# Level gate only applies when learning skills; if it's on the bar, it is usable.
+	# (Old saves still have required_level=2 on starting skills.)
 	if required_class and user.character_class != required_class:
 		return false
 	return true
+
+func get_unusable_reason(user) -> String:
+	if current_cooldown > 0:
+		return "On cooldown (%d turns)" % current_cooldown
+	if mana_cost > 0 and user.mana < mana_cost:
+		return "Need %d MP (have %d)" % [mana_cost, user.mana]
+	if required_class and user.character_class != required_class:
+		return "Requires class: %s" % required_class
+	return ""
 
 func use(user, target) -> Dictionary:
 	var result = {
@@ -44,6 +53,12 @@ func use(user, target) -> Dictionary:
 
 	result.success = true
 
+	if mana_cost > 0:
+		if user.has_method("spend_mana"):
+			user.spend_mana(mana_cost)
+		else:
+			user.mana = maxi(0, user.mana - mana_cost)
+
 	match effect_type:
 		"damage":
 			var damage = int(user.get_attack_power() * damage_multiplier)
@@ -52,7 +67,13 @@ func use(user, target) -> Dictionary:
 		"heal":
 			user.heal(healing_amount)
 			result.healing = healing_amount
-		# Add more effect types as needed
+		"buff":
+			# Stealth / generic self-buff: temporary defense boost
+			if user.has_method("add_status_effect"):
+				user.add_status_effect("stealth", 2, {"defense_bonus": 5})
+			result.effects.append("stealth")
+		_:
+			pass
 
 	current_cooldown = cooldown
 	return result

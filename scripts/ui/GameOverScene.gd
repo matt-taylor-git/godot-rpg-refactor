@@ -13,6 +13,7 @@ var stats = {}
 
 func _ready():
 	print("GameOverScene ready")
+	_apply_theme_background()
 
 	# Gather statistics from GameManager
 	stats = {
@@ -29,6 +30,36 @@ func _ready():
 	_setup_buttons()
 	_setup_focus_navigation()
 	_animate_entrance()
+
+
+func _apply_theme_background() -> void:
+	var bg_node = get_node_or_null("Background")
+	if bg_node is Panel or bg_node is PanelContainer:
+		# Remove main_menu shader material — white texture mix washes themed StyleBox to gray
+		bg_node.material = null
+		var style := StyleBoxFlat.new()
+		var bg = UIThemeManager.get_background_color()
+		# Cool dark charcoal with red undertone for defeat (not mid-gray)
+		style.bg_color = Color(
+			clampf(bg.r * 1.1, 0.0, 0.16),
+			clampf(bg.g * 0.85, 0.0, 0.11),
+			clampf(bg.b * 0.95, 0.0, 0.13),
+			1.0
+		)
+		style.border_color = UIThemeManager.get_danger_color()
+		style.border_width_top = 3
+		style.border_width_bottom = 3
+		bg_node.add_theme_stylebox_override("panel", style)
+	if stats_grid:
+		for card in stats_grid.get_children():
+			if card is PanelContainer or card is Panel:
+				var card_style := StyleBoxFlat.new()
+				card_style.bg_color = Color(0.12, 0.10, 0.08, 0.9)
+				card_style.border_color = UIThemeManager.get_border_bronze_color()
+				card_style.set_border_width_all(2)
+				card_style.set_corner_radius_all(2)
+				card_style.set_content_margin_all(8)
+				card.add_theme_stylebox_override("panel", card_style)
 
 
 func _animate_entrance() -> void:

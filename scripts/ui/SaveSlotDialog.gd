@@ -5,18 +5,15 @@ extends Control
 signal slot_selected(slot_number: int)
 signal cancelled
 
+@onready var dialog_panel = $DialogPanel
 @onready var slot1_button = $DialogPanel/MarginContainer/VBoxContainer/SlotContainer/Slot1Button
 @onready var slot2_button = $DialogPanel/MarginContainer/VBoxContainer/SlotContainer/Slot2Button
 @onready var slot3_button = $DialogPanel/MarginContainer/VBoxContainer/SlotContainer/Slot3Button
 @onready var cancel_button = $DialogPanel/MarginContainer/VBoxContainer/CancelButton
 
 func _ready():
+	UIDialogShell.apply_to(self, dialog_panel, UIDialogShell.AnimStyle.FADE)
 	update_slot_info()
-	# Animate in
-	modulate.a = 0.0
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 1.0, 0.3)
-	tween.finished.connect(func(): tween.kill())
 	_setup_focus_navigation()
 
 func _setup_focus_navigation():
@@ -72,27 +69,9 @@ func get_slot_button(slot_number: int) -> Button:
 		_: return null
 
 func _on_slot_selected(slot_number: int):
-	# Check if slot is empty
-	var save_path = "user://save_slot_%d.json" % slot_number
-	if not FileAccess.file_exists(save_path):
-		# Empty slot - could show message or just proceed
-		pass
-
-	# Animate out and emit signal
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.2)
-	tween.finished.connect(func(): tween.kill())
-	await tween.finished
-
 	emit_signal("slot_selected", slot_number)
-	queue_free()
+	UIDialogShell.play_close_and_free(self, dialog_panel)
 
 func _on_cancel_pressed():
-	# Animate out and emit cancelled signal
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.2)
-	tween.finished.connect(func(): tween.kill())
-	await tween.finished
-
 	emit_signal("cancelled")
-	queue_free()
+	UIDialogShell.play_close_and_free(self, dialog_panel)

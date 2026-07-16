@@ -33,22 +33,53 @@ func _init():
 	}
 
 func get_attack_power() -> int:
-	var base_attack = attack
-	if equipment.weapon:
-		base_attack += equipment.weapon.attack_bonus
-	return base_attack
+	var total: int = attack
+	for slot in equipment.keys():
+		var item = equipment[slot]
+		if item:
+			total += item.attack_bonus
+	return total
 
 func get_defense_power() -> int:
-	var base_defense = defense
-	if equipment.armor:
-		base_defense += equipment.armor.defense_bonus
-	return base_defense
+	var total: int = defense
+	for slot in equipment.keys():
+		var item = equipment[slot]
+		if item:
+			total += item.defense_bonus
+	if has_status_effect("stealth"):
+		var effect = status_effects.get("stealth", {})
+		var data = effect.get("data", {}) if effect is Dictionary else {}
+		total += int(data.get("defense_bonus", 5))
+	return total
 
 func take_damage(amount: int) -> void:
 	health = max(0, health - amount)
 
 func heal(amount: int) -> void:
 	health = min(max_health, health + amount)
+
+func restore_mana(amount: int) -> void:
+	mana = mini(max_mana, mana + amount)
+
+func spend_mana(amount: int) -> bool:
+	if amount < 0 or mana < amount:
+		return false
+	mana -= amount
+	return true
+
+## Class starting max mana used by new_game and old-save migration.
+static func get_base_max_mana_for_class(character_class: String) -> int:
+	match character_class:
+		"Mage":
+			return 50
+		"Hero":
+			return 30
+		"Rogue":
+			return 20
+		"Warrior":
+			return 15
+		_:
+			return 20
 
 func add_experience(amount: int) -> void:
 	experience += amount
@@ -61,6 +92,8 @@ func _check_level_up() -> void:
 		# Increase stats on level up
 		max_health += 10
 		health = max_health  # Full heal on level up
+		max_mana += 5
+		mana = max_mana  # Full mana on level up
 		attack += 2
 		defense += 1
 		dexterity += 1
@@ -95,14 +128,13 @@ func equip_item(item: Resource, slot: String) -> bool:
 		if not add_item(equipment[slot]):
 			return false  # No room in inventory
 
-	# Equip the new item
+	# Equip the new item (ATK/DEF come from get_attack_power / get_defense_power)
 	equipment[slot] = item
 
-	# Apply stat bonuses
-	attack += item.attack_bonus
-	defense += item.defense_bonus
-	max_health += item.health_bonus
-	health += item.health_bonus  # Also heal for the bonus
+	# Health bonus adjusts pool directly (not recomputed from equipment each query)
+	if item.health_bonus != 0:
+		max_health += item.health_bonus
+		health += item.health_bonus
 
 	return true
 
@@ -111,11 +143,9 @@ func unequip_item(slot: String) -> Resource:
 		var item = equipment[slot]
 		equipment[slot] = null
 
-		# Remove stat bonuses
-		attack -= item.attack_bonus
-		defense -= item.defense_bonus
-		max_health -= item.health_bonus
-		health = min(health, max_health)  # Don't go over max health
+		if item.health_bonus != 0:
+			max_health -= item.health_bonus
+			health = mini(health, max_health)
 
 		return item
 	return null
@@ -198,6 +228,10 @@ func from_dict(data: Dictionary) -> void:
 	dexterity = data.get("dexterity", 5)
 	mana = data.get("mana", 0)
 	max_mana = data.get("max_mana", 0)
+	# Old saves never set mana — assign class defaults so skills/potions work
+	if max_mana <= 0:
+		max_mana = get_base_max_mana_for_class(character_class)
+		mana = max_mana
 	gold = data.get("gold", 0)
 
 	# Load inventory

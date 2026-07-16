@@ -12,6 +12,7 @@ static func create_item(item_type: String) -> Item:
 			item.name = "Iron Sword"
 			item.description = "A sturdy iron sword"
 			item.type = Item.ItemType.WEAPON
+			item.rarity = Item.Rarity.COMMON
 			item.value = 50
 			item.attack_bonus = 5
 
@@ -19,6 +20,7 @@ static func create_item(item_type: String) -> Item:
 			item.name = "Wooden Shield"
 			item.description = "Basic protection"
 			item.type = Item.ItemType.ARMOR
+			item.rarity = Item.Rarity.COMMON
 			item.value = 30
 			item.defense_bonus = 3
 
@@ -26,6 +28,7 @@ static func create_item(item_type: String) -> Item:
 			item.name = "Health Potion"
 			item.description = "Restores 50 HP"
 			item.type = Item.ItemType.CONSUMABLE
+			item.rarity = Item.Rarity.UNCOMMON
 			item.value = 20
 			item.heal_amount = 50
 			item.stackable = true
@@ -35,13 +38,18 @@ static func create_item(item_type: String) -> Item:
 			item.name = "Mana Potion"
 			item.description = "Restores 30 MP"
 			item.type = Item.ItemType.CONSUMABLE
+			item.rarity = Item.Rarity.UNCOMMON
 			item.value = 25
+			item.heal_amount = 30  # MP restore amount (via effect)
 			item.effect = "restore_mana"
+			item.stackable = true
+			item.max_stack = 5
 
 		"gold_coin":
 			item.name = "Gold Coin"
 			item.description = "Currency"
 			item.type = Item.ItemType.MISC
+			item.rarity = Item.Rarity.COMMON
 			item.value = 1
 
 		_:

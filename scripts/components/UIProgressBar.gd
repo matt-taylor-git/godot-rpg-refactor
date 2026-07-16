@@ -31,6 +31,8 @@ const ANIMATION_TRANS = Tween.TRANS_QUAD
 @export var connect_to_gamemanager: bool = true  # Auto-connect to GameManager signals
 @export var colorblind_friendly: bool = false  # Use patterns/text instead of color-only indicators
 @export var respect_reduced_motion: bool = true  # Disable animations if reduced motion is enabled
+## "health" uses green/yellow/red thresholds; "mana" uses a steady blue fill.
+@export var bar_kind: String = "health"
 
 # Internal state
 var active_tween: Tween = null
@@ -219,7 +221,10 @@ func _apply_fill_style():
 
 
 func _get_fill_color_for_percentage(percentage: float) -> Color:
-	# Return solid color based on health percentage using theme colors
+	if bar_kind == "mana":
+		# Steady arcane blue so MP is distinct from HP thresholds
+		return Color(0.35, 0.55, 0.85, 1.0)
+	# Health: solid color based on percentage using theme colors
 	if percentage >= HEALTH_GREEN_THRESHOLD:
 		return UIThemeManager.get_success_color()
 	if percentage >= HEALTH_YELLOW_THRESHOLD:

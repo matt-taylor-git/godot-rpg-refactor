@@ -307,6 +307,17 @@ godot --headless --path . --script addons/gut/gut_cmdln.gd -gdir=res://tests/god
 godot --headless --path . --script addons/gut/gut_cmdln.gd -gtest=res://tests/godot/test_item_lookup.gd -glog=1 -gexit
 ```
 
+### Screenshot tour (scene gallery)
+
+Repeatable UI capture after visual changes — wipes and regenerates `screenshots/latest/`:
+
+```powershell
+.\tools\Run-ScreenshotTour.ps1
+.\tools\Run-ScreenshotTour.ps1 -Archive
+```
+
+Steps live in `scripts/tools/ScreenshotTour.gd` (`TOUR`). Output is gitignored.
+
 After adding new scripts/assets, run once with `--import` if GUT ignores a new file.
 
 **Gotchas**

@@ -30,6 +30,19 @@
 - Check the Godot console for errors
 - Test scenes individually by opening them in the editor
 
+## Screenshot tour
+
+Regenerate a full UI gallery after theme/layout changes (repeatable; overwrites previous run):
+
+```powershell
+.\tools\Run-ScreenshotTour.ps1
+.\tools\Run-ScreenshotTour.ps1 -Archive   # also copy to screenshots/runs/<timestamp>/
+```
+
+- Output: `screenshots/latest/<id>.png` plus `manifest.json` (gitignored)
+- Requires Godot on PATH (`godot.windows.opt.tools.64.exe`), windowed (not headless)
+- Tour steps are defined in `scripts/tools/ScreenshotTour.gd` (`TOUR` array)
+
 ## Common Development Tasks
 
 - **Adding new scenes**: Create .tscn files in scenes/ directory

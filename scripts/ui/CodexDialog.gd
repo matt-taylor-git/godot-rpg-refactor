@@ -7,6 +7,7 @@ var current_category: String = ""
 var category_entry_buttons: Dictionary = {}
 var selected_entry: Dictionary = {}
 
+@onready var dialog_panel = $DialogPanel
 @onready var category_tabs = $DialogPanel/MarginContainer/VBoxContainer/CategoryTabs
 @onready var entry_buttons = $DialogPanel/MarginContainer/VBoxContainer/Content/EntryList/EntryButtons
 @onready var entry_title = $DialogPanel/MarginContainer/VBoxContainer/Content/EntryContent/VBoxContainer/EntryTitle
@@ -16,6 +17,7 @@ var selected_entry: Dictionary = {}
 
 func _ready():
 	print("CodexDialog initialized")
+	UIDialogShell.apply_to(self, dialog_panel, UIDialogShell.AnimStyle.SCALE)
 
 	# Connect to CodexManager signals
 	CodexManager.connect("lore_entry_unlocked", Callable(self, "_on_lore_entry_unlocked"))
@@ -77,6 +79,8 @@ func _refresh_entry_list():
 	if entries.is_empty():
 		var label = Label.new()
 		label.text = "No entries in this category"
+		label.add_theme_color_override(
+			"font_color", UIThemeManager.get_color("secondary"))
 		entry_buttons.add_child(label)
 		_clear_entry_display()
 		return
@@ -106,6 +110,9 @@ func _refresh_entry_list():
 		buttons[buttons.size() - 1].set("focus_neighbor_bottom", close_button.get_path())
 		category_tabs.set("focus_neighbor_bottom", buttons[0].get_path())
 		close_button.set("focus_neighbor_top", buttons[buttons.size() - 1].get_path())
+		# Auto-select first entry so detail pane is never blank
+		_on_entry_selected(entries[0])
+
 
 func _on_entry_selected(entry: Dictionary):
 	selected_entry = entry
@@ -116,8 +123,10 @@ func _display_entry(entry: Dictionary):
 	entry_text.text = entry.get("content", "No content available.")
 
 func _clear_entry_display():
-	entry_title.text = "Select an entry"
-	entry_text.text = "No entry selected"
+	entry_title.text = ""
+	entry_text.text = "Select a category with unlocked lore."
+	entry_text.add_theme_color_override(
+		"font_color", UIThemeManager.get_color("secondary"))
 	selected_entry.clear()
 
 func _update_stats():
@@ -138,7 +147,7 @@ func _on_codex_updated():
 	_update_display()
 
 func _on_close_pressed():
-	queue_free()
+	UIDialogShell.play_close_and_free(self, dialog_panel)
 
 func _exit_tree():
 	# Disconnect signals

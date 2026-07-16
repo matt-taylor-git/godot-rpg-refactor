@@ -98,12 +98,25 @@ func test_button_signals():
 	assert_true(button.is_hovered, "Hover state should change after mouse enter")
 
 func test_button_mouse_events():
-	# Test mouse enter/exit handlers update state
+	# Test mouse enter/exit handlers update state and invoke hover animations
 	button._on_mouse_entered()
 	assert_true(button.is_hovered, "Button should be hovered")
+	# Hover animation may set scale toward 1.05; allow either mid-tween or target
+	assert_true(
+		button.scale.x >= 1.0,
+		"Hover should not shrink the button unexpectedly"
+	)
 
 	button._on_mouse_exited()
 	assert_false(button.is_hovered, "Button should not be hovered")
+
+
+func test_button_press_animation_hook():
+	button._on_mouse_entered()
+	button._on_button_down()
+	assert_true(button.is_pressed)
+	button._on_button_up()
+	assert_false(button.is_pressed)
 
 func test_button_keyboard_navigation():
 	# Test keyboard focus handlers update state

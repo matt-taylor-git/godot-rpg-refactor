@@ -28,14 +28,22 @@ var active_tweens: Array = []  # Track all active tweens for cleanup and perform
 var tween_counter: int = 0     # Track number of concurrent tweens
 
 # Feedback colors (from UITheme integration)
-var success_color: Color = Color(0.2, 0.8, 0.2, 1.0)  # Green
-var error_color: Color = Color(0.8, 0.2, 0.2, 1.0)    # Red
-var warning_color: Color = Color(0.9, 0.6, 0.1, 1.0)  # Orange/Yellow
-var accent_color: Color = Color(0.4, 0.95, 0.84, 1.0) # Accent (from theme)
+var success_color: Color = Color(0.45, 0.75, 0.45, 1.0)
+var error_color: Color = Color(0.85, 0.35, 0.30, 1.0)
+var warning_color: Color = Color(0.9, 0.6, 0.1, 1.0)
+var accent_color: Color = Color(0.85, 0.70, 0.35, 1.0)  # title_gold fallback
 
 func _ready():
-	# Initialize animation system
+	_sync_theme_colors()
 	print("UIAnimationSystem initialized - managing visual feedback animations")
+
+
+func _sync_theme_colors() -> void:
+	if UIThemeManager == null:
+		return
+	success_color = UIThemeManager.get_success_color()
+	error_color = UIThemeManager.get_danger_color()
+	accent_color = UIThemeManager.get_accent_color()
 
 func _exit_tree():
 	# Clean up all active tweens when system is destroyed

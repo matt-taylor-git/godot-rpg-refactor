@@ -5,6 +5,7 @@ extends Control
 const SAVE_SLOT_DIALOG = preload("res://scenes/ui/save_slot_dialog.tscn")
 const OPTIONS_DIALOG = preload("res://scenes/ui/options_dialog.tscn")
 
+@onready var dialog_panel = $DialogPanel
 @onready var resume_button = $DialogPanel/MarginContainer/VBoxContainer/ResumeButton
 @onready var save_button = $DialogPanel/MarginContainer/VBoxContainer/SaveButton
 @onready var options_button = $DialogPanel/MarginContainer/VBoxContainer/OptionsButton
@@ -12,14 +13,7 @@ const OPTIONS_DIALOG = preload("res://scenes/ui/options_dialog.tscn")
 
 
 func _ready():
-	modulate.a = 0.0
-	var reduce_motion = ProjectSettings.get_setting("accessibility/reduced_motion", false)
-	if reduce_motion:
-		modulate.a = 1.0
-	else:
-		var tween = create_tween()
-		tween.tween_property(self, "modulate:a", 1.0, 0.3)
-		tween.finished.connect(func(): tween.kill())
+	UIDialogShell.apply_to(self, dialog_panel, UIDialogShell.AnimStyle.FADE)
 	_setup_focus_navigation()
 
 
@@ -47,15 +41,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _on_resume_pressed():
-	var reduce_motion = ProjectSettings.get_setting("accessibility/reduced_motion", false)
-	if reduce_motion:
-		queue_free()
-		return
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.2)
-	tween.finished.connect(func(): tween.kill())
-	await tween.finished
-	queue_free()
+	UIDialogShell.play_close_and_free(self, dialog_panel)
 
 
 func _on_save_pressed():

@@ -125,6 +125,10 @@ func new_game(player_name: String, character_class: String = "Hero"):
 	game_data.player.max_health = 100
 	game_data.player.health = game_data.player.max_health
 
+	# Set mana by class (full at start)
+	game_data.player.max_mana = Player.get_base_max_mana_for_class(character_class)
+	game_data.player.mana = game_data.player.max_mana
+
 	# Give starting skills
 	var starting_skills = SkillFactory.get_class_skills(character_class)
 	for skill in starting_skills:
@@ -289,6 +293,7 @@ func start_combat():
 	)
 
 	in_combat = true
+	_reset_skill_cooldowns()
 	combat_log = "Combat started! A " + current_monster.name + " (Level " + str(current_monster.level) + ") appears!"
 
 	game_data.combat_state.current_monster = current_monster.to_dict()
@@ -310,6 +315,7 @@ func start_combat_with_type(monster_type: String):
 	current_monster = MonsterFactory.create_monster(monster_type, game_data.player.level)
 
 	in_combat = true
+	_reset_skill_cooldowns()
 	combat_log = "Combat started! A " + current_monster.name \
 		+ " (Level " + str(current_monster.level) + ") appears!"
 
@@ -333,6 +339,7 @@ func start_boss_combat(level: int = 1) -> String:
 	current_monster = MonsterFactory.create_final_boss(level)
 
 	in_combat = true
+	_reset_skill_cooldowns()
 	combat_log = "Combat started! " + current_monster.get_phase_description() \
 		+ "\n" + current_monster.name + " (Level " \
 		+ str(current_monster.level) + ") appears!"
@@ -423,6 +430,13 @@ func player_use_skill(skill_index: int) -> String:
 				_give_combat_rewards()
 		"heal":
 			skill_msg = skill.name + " restores " + str(result.healing) + " HP!"
+		"buff":
+			skill_msg = skill.name + " — you gain a defensive stance!"
+			if game_data.player.has_status_effect("stealth"):
+				emit_signal("player_status_effect_added", "stealth",
+					game_data.player.get_status_effect_duration("stealth"))
+		_:
+			skill_msg = skill.name + " activated!"
 
 	combat_log = skill_msg
 	game_data.combat_state.combat_log = combat_log
@@ -502,6 +516,10 @@ func monster_attack() -> String:
 	if game_data.player.health <= 0:
 		attack_msg += " You are defeated!"
 		stats["deaths"] += 1
+
+	# End of full turn: tick skill cooldowns and status effect durations
+	tick_skill_cooldowns()
+	tick_combat_status_effects()
 
 	combat_log = attack_msg
 	game_data.combat_state.combat_log = combat_log
@@ -644,7 +662,15 @@ func can_use_skill(skill_index: int) -> bool:
 func tick_skill_cooldowns():
 	if game_data.player:
 		for skill in game_data.player.skills:
-			skill.tick_cooldown()
+			if skill:
+				skill.tick_cooldown()
+
+func _reset_skill_cooldowns() -> void:
+	if not game_data.player:
+		return
+	for skill in game_data.player.skills:
+		if skill:
+			skill.current_cooldown = 0
 
 # Statistics getters
 func get_enemies_defeated() -> int:

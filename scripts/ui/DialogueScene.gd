@@ -29,6 +29,20 @@ var reduced_motion: bool = false
 func _ready():
 	print("DialogueScene initialized")
 	reduced_motion = ProjectSettings.get_setting("accessibility/reduced_motion", false)
+	# Dimmer + solid panel (keep custom slide for dialogue panel)
+	var dimmer := get_node_or_null("Background") as ColorRect
+	if dimmer == null:
+		dimmer = ColorRect.new()
+		dimmer.name = "Background"
+		dimmer.set_anchors_preset(Control.PRESET_FULL_RECT)
+		add_child(dimmer)
+		move_child(dimmer, 0)
+	UIDialogShell.style_dimmer(dimmer)
+	UIDialogShell.style_panel(dialogue_panel)
+	if continue_hint:
+		continue_hint.add_theme_color_override(
+			"font_color", UIThemeManager.get_color("title_gold"))
+		continue_hint.add_theme_font_size_override("font_size", 20)
 
 	if npc_name_label:
 		npc_name_label.add_theme_color_override(
@@ -148,7 +162,8 @@ func _on_dialogue_updated(text: String, options: Array):
 		typewriter_timer = 0.0
 		dialogue_text.text = ""
 		typewriter_active = true
-		continue_hint.text = "Click or Space to skip..."
+		continue_hint.text = "…"
+		continue_hint.tooltip_text = "Click or Space to skip"
 		continue_hint.visible = true
 
 
@@ -166,12 +181,16 @@ func _finish_typewriter() -> void:
 
 	if pending_options.is_empty():
 		is_waiting_for_continue = true
-		continue_hint.text = "Click or Space to continue..."
+		continue_hint.text = "▼"
+		continue_hint.tooltip_text = "Click or Space to continue"
+		continue_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		continue_hint.visible = true
 		_start_hint_pulse()
 	else:
 		is_waiting_for_choice = true
-		continue_hint.text = "Select a response..."
+		continue_hint.text = "▼"
+		continue_hint.tooltip_text = "Select a response"
+		continue_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		continue_hint.visible = true
 		_update_choices(pending_options)
 		_start_hint_pulse()

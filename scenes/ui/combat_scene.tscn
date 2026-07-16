@@ -94,6 +94,14 @@ size_flags_horizontal = 4
 value = 100.0
 show_percentage = false
 
+[node name="PlayerManaBar" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn" instance=ExtResource("5")]
+custom_minimum_size = Vector2(180, 24)
+layout_mode = 2
+size_flags_horizontal = 4
+value = 100.0
+show_percentage = false
+bar_kind = "mana"
+
 [node name="MonsterColumn" type="VBoxContainer" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -162,25 +170,31 @@ theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 
 [node name="AttackButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
+custom_minimum_size = Vector2(100, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/icon_max_width = 32
 text = "Attack"
 icon = ExtResource("8")
+expand_icon = false
 
 [node name="SkillsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
+custom_minimum_size = Vector2(100, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Skills"
 
 [node name="ItemsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
+custom_minimum_size = Vector2(100, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Items"
 
 [node name="RunButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
+custom_minimum_size = Vector2(100, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

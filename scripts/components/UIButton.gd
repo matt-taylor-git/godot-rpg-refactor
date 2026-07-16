@@ -44,6 +44,11 @@ func _ready():
 	# Store the Button's text from the scene
 	button_text = self.text
 
+	# Cap large AI-generated icons (often 256px) so buttons don't balloon and clip UI
+	if icon != null and get_theme_constant("icon_max_width") <= 0:
+		add_theme_constant_override("icon_max_width", 48)
+	expand_icon = false
+
 	# IMPORTANT: Set a reasonable minimum size to ensure button is clickable
 	var text_size = Vector2.ZERO
 	if not button_text.is_empty():
@@ -139,9 +144,16 @@ func _apply_all_styleboxes():
 	var focus_box = _create_stylebox(Color.TRANSPARENT, UIThemeManager.get_accent_color())
 	add_theme_stylebox_override("focus", focus_box)
 
+func _ensure_center_pivot() -> void:
+	if size.x > 0.0 and size.y > 0.0:
+		pivot_offset = size / 2.0
+
+
 func _on_mouse_entered():
 	if not self.disabled:
 		is_hovered = true
+		_ensure_center_pivot()
+		play_hover_animation()
 
 func _on_mouse_exited():
 	if not self.disabled:
@@ -150,17 +162,29 @@ func _on_mouse_exited():
 
 func _on_focus_entered():
 	has_focus = true
+	if not self.disabled and not is_hovered:
+		_ensure_center_pivot()
+		play_hover_animation()
 
 func _on_focus_exited():
 	has_focus = false
+	if not is_hovered:
+		play_unhover_animation()
 
 func _on_button_down():
 	if not self.disabled:
 		is_pressed = true
+		_ensure_center_pivot()
+		play_press_animation()
 
 func _on_button_up():
 	if not self.disabled:
 		is_pressed = false
+		if is_hovered or has_focus:
+			_ensure_center_pivot()
+			play_hover_animation()
+		else:
+			play_unhover_animation()
 
 # Public methods
 

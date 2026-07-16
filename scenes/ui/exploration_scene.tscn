@@ -76,10 +76,12 @@ horizontal_alignment = 2
 text = "Hero (Lv.1) - HP: 100/100 - Gold: 0"
 
 [node name="TopDivider" type="TextureRect" parent="UI"]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-custom_minimum_size = Vector2(0, 20)
+size_flags_horizontal = 3
 mouse_filter = 2
 texture = ExtResource("6")
+expand_mode = 1
 stretch_mode = 5
 
 [node name="MiddleSection" type="PanelContainer" parent="UI"]
@@ -94,45 +96,52 @@ scroll_following = true
 text = ""
 
 [node name="BottomDivider" type="TextureRect" parent="UI"]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-custom_minimum_size = Vector2(0, 20)
+size_flags_horizontal = 3
 mouse_filter = 2
 texture = ExtResource("6")
+expand_mode = 1
 stretch_mode = 5
 
 [node name="BottomBar" type="VBoxContainer" parent="UI"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 56)
+size_flags_vertical = 0
 theme_override_constants/separation = 4
 
-[node name="ActionButtons" type="HBoxContainer" parent="UI/BottomBar"]
+[node name="ActionButtons" type="GridContainer" parent="UI/BottomBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 8
-alignment = 1
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
 
 [node name="ExploreButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
+custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Explore"
 
 [node name="RestButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
+custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rest"
 
 [node name="TravelButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
+custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Travel"
 
 [node name="InventoryButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
+custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Inventory"
 
 [node name="MoreButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
+custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "More"

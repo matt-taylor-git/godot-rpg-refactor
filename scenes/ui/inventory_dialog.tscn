@@ -108,6 +108,14 @@ text = "DEXTERITY"
 layout_mode = 2
 text = "5"
 
+[node name="ManaLabel" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+layout_mode = 2
+text = "MP"
+
+[node name="ManaValue" type="Label" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel/CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid"]
+layout_mode = 2
+text = "0/0"
+
 [node name="EquipmentPanel" type="PanelContainer" parent="DialogPanel/MarginContainer/MainContainer/LeftPanel" unique_id=402392831]
 layout_mode = 2
 size_flags_vertical = 3

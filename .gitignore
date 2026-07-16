@@ -58,6 +58,8 @@ Testing/
 
 # Screenshots
 screenshot_*.png
+# Screenshot tour output (regenerate with tools/Run-ScreenshotTour.ps1)
+screenshots/
 
 # OS generated files
 Thumbs.db

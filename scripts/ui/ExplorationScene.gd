@@ -116,9 +116,15 @@ func _update_ui():
 		return
 
 	var player = GameManager.get_player()
-	player_stats_label.text = "%s (Lv.%d) - HP: %d/%d - Gold: %d" % [
-		player.name, player.level, player.health, player.max_health, player.gold
-	]
+	if player.max_mana > 0:
+		player_stats_label.text = "%s (Lv.%d) - HP: %d/%d - MP: %d/%d - Gold: %d" % [
+			player.name, player.level, player.health, player.max_health,
+			player.mana, player.max_mana, player.gold
+		]
+	else:
+		player_stats_label.text = "%s (Lv.%d) - HP: %d/%d - Gold: %d" % [
+			player.name, player.level, player.health, player.max_health, player.gold
+		]
 
 	var area_info = exploration_manager.get_current_area_info()
 	area_name_label.text = area_info.get("name", "Unknown")
@@ -335,7 +341,17 @@ func _make_runtime_button(label: String) -> Button:
 	var btn = UI_BUTTON_SCENE.instantiate()
 	btn.text = label
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.clip_text = true
+	# UIButton._ready overwrites min size from text width — re-apply after ready
+	btn.ready.connect(_on_runtime_button_ready.bind(btn), CONNECT_ONE_SHOT)
 	return btn
+
+
+func _on_runtime_button_ready(btn: Button) -> void:
+	if btn == null or not is_instance_valid(btn):
+		return
+	btn.custom_minimum_size = Vector2(120, 40)
+	btn.clip_text = true
 
 
 func _show_choice_buttons(choices: Array):
@@ -393,15 +409,21 @@ func _on_travel_pressed():
 	showing_travel = true
 	_set_action_buttons_visible(false)
 
+	# 2-column grid so long destination names don't overflow the 800px footer
+	if action_buttons is GridContainer:
+		action_buttons.columns = 2
+
 	for area in areas:
-		var label: String
-		if area.accessible:
-			label = "%s (Lv.%d+)" % [area.name, area.level_requirement]
-		else:
-			label = "%s (Requires Lv.%d)" % [area.name, area.level_requirement]
+		# Short labels fit the compact grid; tooltip has full requirement text
+		var label = "%s (Lv.%d+)" % [area.name, area.level_requirement]
 		var btn = _make_runtime_button(label)
-		if not area.accessible:
+		if area.accessible:
+			btn.tooltip_text = "Travel to %s (requires level %d)" % [
+				area.name, area.level_requirement
+			]
+		else:
 			btn.disabled = true
+			btn.tooltip_text = "Requires level %d" % area.level_requirement
 		var area_id = area.id
 		btn.pressed.connect(func(): _on_travel_destination_selected(area_id))
 		action_buttons.add_child(btn)
@@ -470,26 +492,35 @@ func _on_rest_pressed():
 
 	if is_town:
 		var heal_amount = player.max_health - player.health
+		var mana_amount = player.max_mana - player.mana
 		player.health = player.max_health
+		player.mana = player.max_mana
 		danger_level = 0.0
-		if heal_amount > 0:
+		if heal_amount > 0 or mana_amount > 0:
+			var parts: Array[String] = []
+			if heal_amount > 0:
+				parts.append("+%d HP" % heal_amount)
+			if mana_amount > 0:
+				parts.append("+%d MP" % mana_amount)
 			_append_narrative(
 				"[color=#73bf73]You rest at the inn and fully recover." \
-				+ " (+%d HP)[/color]" % heal_amount)
+				+ " (%s)[/color]" % ", ".join(parts))
 		else:
 			_append_narrative(
-				"[color=#948d84]You rest at the inn. You are already at full health.[/color]")
+				"[color=#948d84]You rest at the inn. You are already fully recovered.[/color]")
 	else:
 		var ambush_chance = exploration_manager.get_rest_ambush_chance(current_area_id)
 		var ambushed = randf() < ambush_chance
 
 		if ambushed:
 			var heal_amount = int(player.max_health * 0.15)
+			var mana_restored = int(player.max_mana * 0.15)
 			player.health = min(player.health + heal_amount, player.max_health)
+			player.restore_mana(mana_restored)
 			danger_level = max(danger_level - 2.0, 0.0)
 			_append_narrative(
 				"[color=#d9593a]You try to rest, but something finds you!" \
-				+ " (+%d HP before the attack)[/color]" % heal_amount)
+				+ " (+%d HP, +%d MP before the attack)[/color]" % [heal_amount, mana_restored])
 			_save_exploration_state()
 			_update_ui()
 
@@ -502,11 +533,13 @@ func _on_rest_pressed():
 			return
 
 		var heal_amount = int(player.max_health * 0.30)
+		var mana_restored = int(player.max_mana * 0.30)
 		player.health = min(player.health + heal_amount, player.max_health)
+		player.restore_mana(mana_restored)
 		danger_level = max(danger_level - 3.0, 0.0)
 		_append_narrative(
 			"[color=#73bf73]You find a sheltered spot and rest cautiously." \
-			+ " (+%d HP)[/color]" % heal_amount)
+			+ " (+%d HP, +%d MP)[/color]" % [heal_amount, mana_restored])
 
 	_save_exploration_state()
 	_update_ui()

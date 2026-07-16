@@ -13,6 +13,7 @@ var stats = {}
 
 func _ready():
 	print("VictoryScene ready")
+	_apply_theme_background()
 
 	# Gather statistics from GameManager
 	stats = {
@@ -29,6 +30,37 @@ func _ready():
 	_setup_buttons()
 	_setup_focus_navigation()
 	_animate_entrance()
+
+
+func _apply_theme_background() -> void:
+	var bg_node = get_node_or_null("Background")
+	if bg_node == null:
+		var panel := Panel.new()
+		panel.name = "Background"
+		panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(panel)
+		move_child(panel, 0)
+		bg_node = panel
+	if bg_node is Panel or bg_node is PanelContainer:
+		var style := StyleBoxFlat.new()
+		var bg = UIThemeManager.get_background_color()
+		style.bg_color = Color(bg.r * 1.1, bg.g * 1.05, bg.b * 0.9, 1.0)
+		style.border_color = UIThemeManager.get_color("title_gold")
+		style.border_width_top = 2
+		style.border_width_bottom = 2
+		bg_node.add_theme_stylebox_override("panel", style)
+	# Style stat cards
+	if stats_grid:
+		for card in stats_grid.get_children():
+			if card is PanelContainer or card is Panel:
+				var card_style := StyleBoxFlat.new()
+				card_style.bg_color = Color(0.12, 0.10, 0.08, 0.9)
+				card_style.border_color = UIThemeManager.get_border_bronze_color()
+				card_style.set_border_width_all(2)
+				card_style.set_corner_radius_all(2)
+				card_style.set_content_margin_all(8)
+				card.add_theme_stylebox_override("panel", card_style)
 
 
 func _animate_entrance() -> void:

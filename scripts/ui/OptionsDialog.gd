@@ -2,6 +2,7 @@ extends Control
 
 # OptionsDialog - Accessibility settings (audio volume deferred)
 
+@onready var dialog_panel = $DialogPanel
 @onready var title_label: Label = $DialogPanel/MarginContainer/VBoxContainer/Title
 @onready var reduced_motion_check: CheckBox = (
 	$DialogPanel/MarginContainer/VBoxContainer/ReducedMotionCheck
@@ -11,7 +12,7 @@ extends Control
 
 
 func _ready() -> void:
-	modulate.a = 0.0
+	UIDialogShell.apply_to(self, dialog_panel, UIDialogShell.AnimStyle.FADE)
 	if title_label:
 		title_label.add_theme_color_override(
 			"font_color", UIThemeManager.get_color("title_gold")
@@ -20,20 +21,12 @@ func _ready() -> void:
 		title_label.add_theme_constant_override("shadow_offset_x", 2)
 		title_label.add_theme_constant_override("shadow_offset_y", 2)
 
-	GameSettings.load_settings()
+	# Use in-memory settings (do not reload from disk — would clobber runtime tour/session)
 	if reduced_motion_check:
 		reduced_motion_check.button_pressed = GameSettings.get_reduced_motion()
 		reduced_motion_check.add_theme_color_override(
 			"font_color", UIThemeManager.get_color("text_primary")
 		)
-
-	var reduce_motion := GameSettings.get_reduced_motion()
-	if reduce_motion:
-		modulate.a = 1.0
-	else:
-		var tween := create_tween()
-		tween.tween_property(self, "modulate:a", 1.0, 0.25)
-		tween.finished.connect(func(): tween.kill())
 
 	_setup_focus_navigation()
 
@@ -71,12 +64,4 @@ func _on_close_pressed() -> void:
 
 
 func _close() -> void:
-	var reduce_motion := GameSettings.get_reduced_motion()
-	if reduce_motion:
-		queue_free()
-		return
-	var tween := create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.15)
-	await tween.finished
-	tween.kill()
-	queue_free()
+	UIDialogShell.play_close_and_free(self, dialog_panel)

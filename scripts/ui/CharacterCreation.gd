@@ -2,6 +2,11 @@ extends Control
 
 # CharacterCreation - Character creation scene with class selection and customization
 
+## Cap class emblem size so four buttons fit in 800x600 with name + footer.
+const CLASS_ICON_MAX_WIDTH := 48
+const CLASS_BUTTON_MIN_HEIGHT := 48
+const PORTRAIT_MIN_SIZE := Vector2(140, 140)
+
 # Class descriptions for tooltips
 var class_descriptions = {
 	"Hero": "The Hero - A balanced warrior with healing abilities. Strong in both offense and defense.",
@@ -164,8 +169,40 @@ var large_text_min_contrast = 3.0  # WCAG AA minimum for large text
 @onready var confirm_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/ConfirmButton
 @onready var cancel_button = $CenterContainer/CreationPanel/VBoxContainer/Footer/CancelButton
 
+@onready var hero_button = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/HeroButton
+)
+@onready var warrior_button = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/WarriorButton
+)
+@onready var mage_button = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/MageButton
+)
+@onready var rogue_button = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/LeftPanel/ClassSection/ClassButtons/RogueButton
+)
+@onready var creation_panel = $CenterContainer/CreationPanel
+@onready var constitution_label = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/ConstitutionLabel
+)
+@onready var intelligence_label = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection/VBoxContainer/IntelligenceLabel
+)
+@onready var preview_section = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/PreviewSection
+)
+@onready var stats_section = (
+	$CenterContainer/CreationPanel/VBoxContainer/Content/RightPanel/StatsSection
+)
+@onready var title_label = $CenterContainer/CreationPanel/VBoxContainer/Title
+@onready var divider = $CenterContainer/CreationPanel/VBoxContainer/Divider
+@onready var main_vbox = $CenterContainer/CreationPanel/VBoxContainer
+@onready var content_row = $CenterContainer/CreationPanel/VBoxContainer/Content
+@onready var footer = $CenterContainer/CreationPanel/VBoxContainer/Footer
+
 func set_title(title: String):
-	# Simple title setting - this scene doesn't have a dynamic title label
+	if title_label:
+		title_label.text = title
 	print("Character Creation title set to: " + title)
 
 func set_back_button_visible(visible: bool):
@@ -190,6 +227,9 @@ func validate_form_field(_field: Control, is_valid: bool, _error_message: String
 func _ready():
 	print("CharacterCreation ready")
 
+	# Shrink class icons / portrait so full UI fits 800x600 (new emblems are 256px)
+	_layout_for_compact_viewport()
+
 	# Hide redundant elements to fit within 800x600 viewport
 	# Progress bars already display stat values; StatsText is redundant
 	if stats_text:
@@ -208,6 +248,15 @@ func _ready():
 		step_indicator.visible = false
 	if step_description:
 		step_description.visible = false
+	# Extra stats take vertical room; keep Strength/Defense/Dexterity only
+	if constitution_bar:
+		constitution_bar.visible = false
+	if constitution_label:
+		constitution_label.visible = false
+	if intelligence_bar:
+		intelligence_bar.visible = false
+	if intelligence_label:
+		intelligence_label.visible = false
 	# Set default selection to Hero
 	_on_class_selected("Hero")
 	_update_start_button()
@@ -237,6 +286,62 @@ func _ready():
 		confirm_button.visible = false
 	if cancel_button:
 		cancel_button.visible = false
+
+
+func _layout_for_compact_viewport() -> void:
+	# New divider.png is 256x256; without IGNORE_SIZE it reserves ~256px height
+	# and pushes Dexterity + footer off the 600px viewport.
+	if divider:
+		# High-res strip (~1280x155); keep aspect centered (no stretch/distort)
+		divider.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		divider.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		divider.custom_minimum_size = Vector2(0, 72)
+		divider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		divider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	if title_label:
+		title_label.add_theme_color_override(
+			"font_color", UIThemeManager.get_color("title_gold")
+		)
+		title_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	if main_vbox:
+		main_vbox.add_theme_constant_override("separation", 6)
+
+	if content_row:
+		content_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	# Footer must stay visible — never expand or get pushed out of view
+	if footer:
+		footer.size_flags_vertical = Control.SIZE_SHRINK_END
+
+	# 256x256 class emblems made each UIButton ~full-height and clipped Mage/Rogue.
+	var class_buttons: Array = [hero_button, warrior_button, mage_button, rogue_button]
+	for btn in class_buttons:
+		if btn == null:
+			continue
+		btn.add_theme_constant_override("icon_max_width", CLASS_ICON_MAX_WIDTH)
+		btn.expand_icon = false
+		btn.custom_minimum_size = Vector2(
+			maxf(btn.custom_minimum_size.x, 100.0),
+			CLASS_BUTTON_MIN_HEIGHT
+		)
+		btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	if character_sprite:
+		character_sprite.custom_minimum_size = PORTRAIT_MIN_SIZE
+		character_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		character_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		character_sprite.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	# Preview takes remaining space; stats stay compact at natural height
+	if preview_section:
+		preview_section.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	if stats_section:
+		stats_section.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+
+	if creation_panel:
+		creation_panel.clip_contents = false
 
 func _on_name_input_changed(new_text: String):
 	character_name = new_text.strip_edges()

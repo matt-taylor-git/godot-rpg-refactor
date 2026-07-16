@@ -19,14 +19,35 @@
     "promote_dir": "assets",
     "filename_prefix": "monster"
   },
+  "character": {
+    "display_name": "Character Portrait",
+    "size": [512, 512],
+    "aspect_ratio": "1:1",
+    "chroma_key": "FF00FF",
+    "framing": "Upper body portrait, 3/4 view facing right. Heroic pose. Character fills 70-80% of the frame. Expressive face visible.",
+    "output_subdir": "characters",
+    "promote_dir": "assets",
+    "filename_prefix": "character"
+  },
   "ui": {
     "display_name": "UI Element",
     "size": [256, 256],
     "aspect_ratio": "1:1",
     "chroma_key": "FF00FF",
-    "framing": "Flat UI element design. Clean edges suitable for 9-slice or tiling.",
+    "framing": "Flat UI element design. Clean edges suitable for 9-slice or tiling. Dark fantasy bronze and gold tones.",
     "output_subdir": "ui",
     "promote_dir": "assets/ui",
     "filename_prefix": "ui"
+  },
+  "splash": {
+    "display_name": "Splash/Background",
+    "size": [800, 600],
+    "aspect_ratio": "4:3",
+    "chroma_key": null,
+    "no_chroma": true,
+    "framing": "Dramatic establishing or title composition. Atmospheric dark fantasy. No UI text or watermarks.",
+    "output_subdir": "splash",
+    "promote_dir": "assets",
+    "filename_prefix": "splash"
   }
 }

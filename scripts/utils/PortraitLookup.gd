@@ -24,9 +24,9 @@ const MONSTER_TEXTURES := {
 	"wolf": "res://assets/wolf.png",
 	"golem": "res://assets/golem.png",
 	"bandit": "res://assets/bandit.png",
-	"bat": "res://assets/spider.png",  # no bat art yet
-	"troll": "res://assets/golem.png",  # closest stand-in
-	"dragon": "res://assets/boss.png",
+	"bat": "res://assets/bat.png",
+	"troll": "res://assets/troll.png",
+	"dragon": "res://assets/dragon.png",
 	"boss": "res://assets/boss.png",
 	"final boss": "res://assets/final_boss.png",
 	"dark overlord": "res://assets/final_boss.png",

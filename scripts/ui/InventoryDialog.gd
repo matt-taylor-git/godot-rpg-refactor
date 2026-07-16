@@ -1,6 +1,6 @@
 extends Control
 
-# InventoryDialog - Inventory management with styled slots
+# InventoryDialog - Inventory management with rarity borders and equipped glow
 
 const SLOT_BG_FILLED = Color(0.12, 0.10, 0.08, 0.85)
 const SLOT_BG_EMPTY = Color(0.10, 0.09, 0.07, 0.4)
@@ -13,6 +13,7 @@ var selected_item_index = -1
 var selected_item = null
 var _selected_button: Button = null
 
+@onready var dialog_panel = $DialogPanel
 @onready var attack_value = get_node(
 	"DialogPanel/MarginContainer/MainContainer/LeftPanel/"
 	+ "CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/AttackValue")
@@ -22,6 +23,9 @@ var _selected_button: Button = null
 @onready var dexterity_value = get_node(
 	"DialogPanel/MarginContainer/MainContainer/LeftPanel/"
 	+ "CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/DexterityValue")
+@onready var mana_value = get_node(
+	"DialogPanel/MarginContainer/MainContainer/LeftPanel/"
+	+ "CharacterPanel/HBoxContainer/VBoxContainer/StatsGrid/ManaValue")
 
 @onready var weapon_slot = get_node(
 	"DialogPanel/MarginContainer/MainContainer/LeftPanel/"
@@ -56,6 +60,7 @@ var _selected_button: Button = null
 
 func _ready():
 	print("InventoryDialog ready")
+	UIDialogShell.apply_to(self, dialog_panel, UIDialogShell.AnimStyle.SLIDE)
 	_update_character_stats()
 	_update_equipment_display()
 	_style_equipment_slots()
@@ -68,9 +73,12 @@ func _update_character_stats():
 	var player = GameManager.get_player()
 	if not player:
 		return
-	attack_value.text = str(player.attack)
-	defense_value.text = str(player.defense)
+	# Effective combat stats (equipment bonuses applied once via getters)
+	attack_value.text = str(player.get_attack_power())
+	defense_value.text = str(player.get_defense_power())
 	dexterity_value.text = str(player.dexterity)
+	if mana_value:
+		mana_value.text = "%d/%d" % [player.mana, player.max_mana]
 
 
 func _update_equipment_display():
@@ -106,13 +114,29 @@ func _update_slot_display(slot_node, item):
 
 
 func _style_equipment_slots():
+	var gold = UIThemeManager.get_color("accent")
 	var bronze = UIThemeManager.get_color("border_bronze")
 	var dim_label_color = UIThemeManager.get_color("secondary")
-	for slot in [weapon_slot, armor_slot, accessory_slot]:
+	var player = GameManager.get_player()
+	var pairs = [
+		[weapon_slot, player.equipment.get("weapon") if player else null],
+		[armor_slot, player.equipment.get("armor") if player else null],
+		[accessory_slot, player.equipment.get("accessory") if player else null],
+	]
+	for pair in pairs:
+		var slot: Control = pair[0]
+		var item = pair[1]
 		var style = StyleBoxFlat.new()
 		style.bg_color = Color(0.10, 0.09, 0.07, 0.6)
-		style.border_color = Color(bronze.r, bronze.g, bronze.b, 0.4)
-		style.set_border_width_all(SLOT_BORDER_WIDTH)
+		if item:
+			# Equipped glow
+			style.border_color = gold
+			style.set_border_width_all(SLOT_BORDER_WIDTH + 1)
+			style.shadow_color = Color(gold.r, gold.g, gold.b, 0.45)
+			style.shadow_size = 4
+		else:
+			style.border_color = Color(bronze.r, bronze.g, bronze.b, 0.4)
+			style.set_border_width_all(SLOT_BORDER_WIDTH)
 		style.set_corner_radius_all(SLOT_BORDER_RADIUS)
 		style.set_content_margin_all(4)
 		slot.add_theme_stylebox_override("panel", style)
@@ -130,14 +154,27 @@ func _create_slot_style(bg_color: Color, border_color: Color) -> StyleBoxFlat:
 	return style
 
 
-func _apply_slot_styling(button: Button, has_item: bool):
+func _is_item_equipped(item) -> bool:
+	var player = GameManager.get_player()
+	if not player or not item:
+		return false
+	for slot in player.equipment.keys():
+		if player.equipment[slot] == item:
+			return true
+	return false
+
+
+func _apply_slot_styling(button: Button, item) -> void:
 	var bronze = UIThemeManager.get_color("border_bronze")
 	var gold = UIThemeManager.get_color("accent")
 	var text_color = UIThemeManager.get_color("text_primary")
 	var secondary = UIThemeManager.get_color("secondary")
-	if has_item:
-		var normal_border = Color(bronze.r, bronze.g, bronze.b, 0.5)
-		var hover_border = Color(gold.r, gold.g, gold.b, 0.7)
+	if item:
+		var rarity_color: Color = item.get_rarity_border_color()
+		var normal_border = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.85)
+		var hover_border = Color(gold.r, gold.g, gold.b, 0.9)
+		if _is_item_equipped(item):
+			normal_border = gold
 		button.add_theme_stylebox_override(
 			"normal", _create_slot_style(SLOT_BG_FILLED, normal_border))
 		button.add_theme_stylebox_override(
@@ -182,6 +219,7 @@ func _populate_inventory_grid():
 	if not player:
 		return
 
+	var has_any_item := false
 	for i in range(player.inventory.size()):
 		var item = player.inventory[i]
 		var slot_button = Button.new()
@@ -191,12 +229,14 @@ func _populate_inventory_grid():
 		slot_button.expand_icon = true
 
 		if item:
+			has_any_item = true
 			var tex = ItemLookup.get_item_texture(item)
 			if tex:
 				slot_button.icon = tex
-				# Icon-primary: quantity only when stacked
 				if item.stackable and item.quantity > 1:
 					slot_button.text = "x%d" % item.quantity
+				elif _is_item_equipped(item):
+					slot_button.text = "E"
 				else:
 					slot_button.text = ""
 			else:
@@ -204,25 +244,33 @@ func _populate_inventory_grid():
 			slot_button.tooltip_text = (
 				item.name + "\n" + item.description + "\n"
 				+ _get_item_stats_text(item))
-			_apply_slot_styling(slot_button, true)
+			_apply_slot_styling(slot_button, item)
 		else:
 			slot_button.text = "\u2014"
 			slot_button.disabled = true
-			_apply_slot_styling(slot_button, false)
+			_apply_slot_styling(slot_button, null)
 
 		slot_button.connect(
 			"pressed", Callable(self, "_on_slot_pressed").bind(i))
 		inventory_grid.add_child(slot_button)
 
+	if not has_any_item:
+		# Non-interactive empty-state hint overlaid via tooltip on first empty
+		pass
+
 
 func _on_slot_pressed(slot_index: int):
-	if _selected_button:
-		_apply_slot_styling(_selected_button, true)
+	if _selected_button and is_instance_valid(_selected_button):
+		var player = GameManager.get_player()
+		var prev_item = null
+		if player and selected_item_index >= 0 and selected_item_index < player.inventory.size():
+			prev_item = player.inventory[selected_item_index]
+		_apply_slot_styling(_selected_button, prev_item)
 
 	selected_item_index = slot_index
-	var player = GameManager.get_player()
-	if player and slot_index < player.inventory.size():
-		selected_item = player.inventory[slot_index]
+	var player2 = GameManager.get_player()
+	if player2 and slot_index < player2.inventory.size():
+		selected_item = player2.inventory[slot_index]
 	else:
 		selected_item = null
 
@@ -235,6 +283,8 @@ func _on_slot_pressed(slot_index: int):
 
 
 func _update_action_buttons():
+	var text_color = UIThemeManager.get_color("text_primary")
+	var secondary = UIThemeManager.get_color("secondary")
 	if selected_item:
 		use_button.disabled = not selected_item.is_consumable()
 		equip_button.disabled = not selected_item.can_equip()
@@ -243,10 +293,30 @@ func _update_action_buttons():
 		use_button.disabled = true
 		equip_button.disabled = true
 		drop_button.disabled = true
+	for btn in [use_button, equip_button, drop_button]:
+		if btn.disabled:
+			btn.modulate = Color(1, 1, 1, 0.45)
+			btn.add_theme_color_override("font_color", secondary)
+		else:
+			btn.modulate = Color.WHITE
+			btn.add_theme_color_override("font_color", text_color)
 
 
 func _get_item_stats_text(item) -> String:
 	var stats_text = "Value: " + str(item.value) + " gold"
+	var rarity_name := "Common"
+	match item.rarity:
+		Item.Rarity.UNCOMMON:
+			rarity_name = "Uncommon"
+		Item.Rarity.RARE:
+			rarity_name = "Rare"
+		Item.Rarity.EPIC:
+			rarity_name = "Epic"
+		Item.Rarity.LEGENDARY:
+			rarity_name = "Legendary"
+		_:
+			rarity_name = "Common"
+	stats_text += "\nRarity: " + rarity_name
 	if item.attack_bonus > 0:
 		stats_text += "\nAttack: +" + str(item.attack_bonus)
 	if item.defense_bonus > 0:
@@ -254,7 +324,10 @@ func _get_item_stats_text(item) -> String:
 	if item.health_bonus > 0:
 		stats_text += "\nHealth: +" + str(item.health_bonus)
 	if item.is_consumable():
-		stats_text += "\nHeal: " + str(item.heal_amount) + " HP"
+		if item.effect == "restore_mana":
+			stats_text += "\nRestore: " + str(item.heal_amount) + " MP"
+		else:
+			stats_text += "\nHeal: " + str(item.heal_amount) + " HP"
 	return stats_text
 
 
@@ -304,10 +377,10 @@ func _flash_equipment_slot(slot: String) -> void:
 	style.set_border_width_all(SLOT_BORDER_WIDTH + 1)
 	style.set_corner_radius_all(SLOT_BORDER_RADIUS)
 	style.set_content_margin_all(4)
+	style.shadow_color = Color(gold.r, gold.g, gold.b, 0.6)
+	style.shadow_size = 6
 	slot_node.add_theme_stylebox_override("panel", style)
-	var reduce_motion = ProjectSettings.get_setting(
-		"accessibility/reduced_motion", false)
-	if reduce_motion:
+	if UIDialogShell.is_reduced_motion():
 		await get_tree().create_timer(0.4).timeout
 		_style_equipment_slots()
 		return
@@ -327,7 +400,7 @@ func _on_drop_pressed():
 
 
 func _on_close_pressed():
-	queue_free()
+	UIDialogShell.play_close_and_free(self, dialog_panel)
 
 
 func _setup_focus_navigation():
@@ -343,7 +416,7 @@ func _setup_focus_navigation():
 		if col > 0:
 			slots[i].set("focus_neighbor_left", slots[i - 1].get_path())
 		else:
-			var row_end = min(i + columns - 1, slots.size() - 1)
+			var row_end = mini(i + columns - 1, slots.size() - 1)
 			slots[i].set("focus_neighbor_left", slots[row_end].get_path())
 		if i + columns < slots.size():
 			slots[i].set(
@@ -372,13 +445,13 @@ func _setup_focus_navigation():
 	if slots.size() > 0:
 		use_button.set(
 			"focus_neighbor_top",
-			slots[min(0, slots.size() - 1)].get_path())
+			slots[mini(0, slots.size() - 1)].get_path())
 		equip_button.set(
 			"focus_neighbor_top",
-			slots[min(1, slots.size() - 1)].get_path())
+			slots[mini(1, slots.size() - 1)].get_path())
 		drop_button.set(
 			"focus_neighbor_top",
-			slots[min(2, slots.size() - 1)].get_path())
+			slots[mini(2, slots.size() - 1)].get_path())
 
 	var focused = false
 	for slot in slots:

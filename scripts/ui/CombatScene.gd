@@ -4,6 +4,9 @@ extends Control
 # Integrates animation systems from Story 2.2
 
 const SKILLS_DIALOG = preload("res://scenes/ui/skills_dialog.tscn")
+## Cap attack sword icon (256px source) so the 2x2 action grid fits 800x600.
+const ACTION_ICON_MAX_WIDTH := 32
+const ACTION_BUTTON_MIN_HEIGHT := 48
 
 # Animation Controllers - AC-2.2.2, AC-2.2.3
 var skills_dialog_instance = null
@@ -20,6 +23,7 @@ var _vignette: ColorRect = null
 
 @onready var player_name_label = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerName
 @onready var player_health_bar = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerHealthBar
+@onready var player_mana_bar = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerManaBar
 
 @onready var monster_name_label = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn/MonsterName
 @onready var monster_health_bar = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn/MonsterHealthBar
@@ -36,8 +40,10 @@ func _ready():
 
 	# Initialize animation systems
 	_setup_animation_systems()
+	_apply_theme_background()
 	_configure_health_bars()
 	_style_name_labels()
+	_layout_action_buttons()
 
 	# Connect to GameManager signals
 	GameManager.connect("combat_started", Callable(self, "_on_combat_started"))
@@ -57,8 +63,52 @@ func _ready():
 		performance_monitor.start_monitoring()
 
 
+func _apply_theme_background() -> void:
+	var bg = get_node_or_null("Background")
+	if bg is Panel or bg is PanelContainer:
+		var style := StyleBoxFlat.new()
+		var base = UIThemeManager.get_background_color()
+		# Warm dungeon floor wash
+		style.bg_color = Color(base.r * 1.2, base.g * 1.05, base.b * 0.85, 1.0)
+		style.border_color = UIThemeManager.get_border_bronze_color()
+		style.border_width_top = 2
+		style.border_width_bottom = 2
+		bg.add_theme_stylebox_override("panel", style)
+	var arena = get_node_or_null("MainContainer/ArenaPanel")
+	if arena is Panel or arena is PanelContainer:
+		var arena_style := StyleBoxFlat.new()
+		arena_style.bg_color = Color(0.10, 0.09, 0.07, 0.92)
+		arena_style.border_color = UIThemeManager.get_border_bronze_color()
+		arena_style.set_border_width_all(2)
+		arena_style.set_corner_radius_all(2)
+		arena.add_theme_stylebox_override("panel", arena_style)
+	var bottom = get_node_or_null("MainContainer/BottomPanel")
+	if bottom is Panel or bottom is PanelContainer:
+		var bottom_style := StyleBoxFlat.new()
+		bottom_style.bg_color = Color(0.11, 0.09, 0.07, 0.95)
+		bottom_style.border_color = UIThemeManager.get_border_bronze_color()
+		bottom_style.set_border_width_all(2)
+		bottom.add_theme_stylebox_override("panel", bottom_style)
+
+
+func _layout_action_buttons() -> void:
+	# icon_sword.png is 256x256; without icon_max_width Attack balloons and clips Skills/Items/Run.
+	var action_buttons: Array = [attack_button, skills_button, items_button, run_button]
+	for btn in action_buttons:
+		if btn == null:
+			continue
+		btn.add_theme_constant_override("icon_max_width", ACTION_ICON_MAX_WIDTH)
+		btn.expand_icon = false
+		btn.custom_minimum_size = Vector2(
+			maxf(btn.custom_minimum_size.x, 100.0),
+			ACTION_BUTTON_MIN_HEIGHT
+		)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+
 func _configure_health_bars() -> void:
-	for bar in [player_health_bar, monster_health_bar]:
+	for bar in [player_health_bar, monster_health_bar, player_mana_bar]:
 		if bar == null:
 			continue
 		bar.show_percentage = false
@@ -67,6 +117,8 @@ func _configure_health_bars() -> void:
 		if "connect_to_gamemanager" in bar:
 			bar.connect_to_gamemanager = false
 		bar.custom_minimum_size = Vector2(180, 24)
+	if player_mana_bar and "bar_kind" in player_mana_bar:
+		player_mana_bar.bar_kind = "mana"
 
 	# Full HP bars sit under names — hide the thin portrait overlays to avoid double bars
 	if player_portrait and "show_health_bar" in player_portrait:
@@ -166,6 +218,14 @@ func _update_player_ui():
 	player_health_bar.max_value = player.max_health
 	# Use animated value change for smooth health transitions
 	player_health_bar.set_value_animated(player.health, true)
+
+	if player_mana_bar:
+		if player.max_mana > 0:
+			player_mana_bar.visible = true
+			player_mana_bar.max_value = player.max_mana
+			player_mana_bar.set_value_animated(player.mana, true)
+		else:
+			player_mana_bar.visible = false
 
 	# Update player portrait
 	if player_portrait:

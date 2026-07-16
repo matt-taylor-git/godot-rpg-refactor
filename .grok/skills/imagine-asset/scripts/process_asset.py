@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -112,10 +113,20 @@ def save_manifest(manifest_path: Path, entries: list) -> None:
 
 def process_source(args: argparse.Namespace, project_root: Path) -> Path:
     type_cfg = load_type_config(project_root, args.type)
-    size = args.size or type_cfg["size"][0]
-    if isinstance(size, list):
-        size = size[0]
+    size_cfg = type_cfg.get("size", [256, 256])
+    if args.size:
+        out_w = out_h = args.size
+    elif isinstance(size_cfg, list) and len(size_cfg) >= 2:
+        out_w, out_h = int(size_cfg[0]), int(size_cfg[1])
+    else:
+        out_w = out_h = int(size_cfg[0] if isinstance(size_cfg, list) else size_cfg)
+
     tolerance = args.tolerance
+    skip_chroma = (
+        getattr(args, "no_chroma", False)
+        or type_cfg.get("no_chroma")
+        or type_cfg.get("chroma_key") is None
+    )
 
     source = Path(args.source)
     if not source.is_absolute():
@@ -124,14 +135,22 @@ def process_source(args: argparse.Namespace, project_root: Path) -> Path:
         raise SystemExit(f"Source image not found: {source}")
 
     img = Image.open(source)
-    # Sample chroma before resize for more stable corner color
-    if args.auto_chroma or args.chroma is None:
-        chroma = sample_corner_chroma(img)
-        print(f"Auto chroma key RGB: {chroma}")
+    chroma = None
+    flags = ["imagine"]
+    if skip_chroma:
+        print("Skipping chroma key (opaque asset)")
+        img = img.convert("RGB").resize((out_w, out_h), Image.Resampling.LANCZOS)
+        img = img.convert("RGBA")
+        flags.append("opaque")
     else:
-        chroma = parse_chroma(args.chroma)
-    img = img.resize((size, size), Image.Resampling.LANCZOS)
-    img = chroma_key(img, chroma, tolerance=tolerance)
+        if args.auto_chroma or args.chroma is None:
+            chroma = sample_corner_chroma(img)
+            print(f"Auto chroma key RGB: {chroma}")
+        else:
+            chroma = parse_chroma(args.chroma)
+        img = img.resize((out_w, out_h), Image.Resampling.LANCZOS)
+        img = chroma_key(img, chroma, tolerance=tolerance)
+        flags.append("transparent")
 
     subdir = type_cfg["output_subdir"]
     prefix = type_cfg.get("filename_prefix", args.type)
@@ -150,9 +169,9 @@ def process_source(args: argparse.Namespace, project_root: Path) -> Path:
         "source_tool": args.source_tool or "unknown",
         "source_image": str(source),
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "dimensions": f"{size}x{size}",
-        "chroma_key": "%02X%02X%02X" % chroma,
-        "flags": ["transparent", "imagine"],
+        "dimensions": f"{out_w}x{out_h}",
+        "chroma_key": ("%02X%02X%02X" % chroma) if chroma else None,
+        "flags": flags,
         "file_size_bytes": out_path.stat().st_size,
         "promoted": False,
         "promoted_to": None,
@@ -183,12 +202,18 @@ def promote(args: argparse.Namespace, project_root: Path) -> Path:
         if not src.is_absolute():
             src = (project_root / src).resolve()
     else:
-        # Latest staging file for this id
+        # Latest staging file for this id — prefer exact prefix_id_NNN.png only
+        # (avoids matching older files like monster_goblin_warrior_... when id=goblin)
         staging_dir = project_root / "assets" / "generated" / type_cfg["output_subdir"]
         prefix = type_cfg.get("filename_prefix", args.type)
-        candidates = sorted(staging_dir.glob(f"{prefix}_{args.id}_*.png"))
+        pattern = re.compile(rf"^{re.escape(prefix)}_{re.escape(args.id)}_\d{{3}}\.png$")
+        candidates = sorted(
+            [p for p in staging_dir.glob(f"{prefix}_{args.id}_*.png") if pattern.match(p.name)]
+        )
         if not candidates:
-            raise SystemExit(f"No staged files for id '{args.id}' in {staging_dir}")
+            raise SystemExit(
+                f"No staged files matching {prefix}_{args.id}_NNN.png in {staging_dir}"
+            )
         src = candidates[-1]
 
     if not src.exists():
@@ -239,7 +264,12 @@ def main() -> None:
         action="store_true",
         help="Force corner-sampled chroma key (default when --chroma omitted)",
     )
-    parser.add_argument("--size", type=int, default=None, help="Output size (square)")
+    parser.add_argument(
+        "--no-chroma",
+        action="store_true",
+        help="Skip chroma key (splash/backgrounds)",
+    )
+    parser.add_argument("--size", type=int, default=None, help="Force square output size")
     parser.add_argument(
         "--tolerance",
         type=int,

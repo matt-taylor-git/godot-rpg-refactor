@@ -17,7 +17,7 @@ static func create_skill(skill_type: String) -> Skill:
 		"heal":
 			skill.name = "Heal"
 			skill.description = "Restore health to self"
-			skill.required_level = 2
+			skill.required_level = 1  # Starting Hero skill
 			skill.cooldown = 3
 			skill.healing_amount = 30
 			skill.effect_type = "heal"
@@ -25,7 +25,7 @@ static func create_skill(skill_type: String) -> Skill:
 		"fireball":
 			skill.name = "Fireball"
 			skill.description = "Launch a fireball at enemy"
-			skill.required_level = 3
+			skill.required_level = 1  # Starting Mage skill
 			skill.required_class = "Mage"
 			skill.cooldown = 4
 			skill.damage_multiplier = 2.0
@@ -33,11 +33,36 @@ static func create_skill(skill_type: String) -> Skill:
 
 		"stealth":
 			skill.name = "Stealth"
-			skill.description = "Become harder to hit"
-			skill.required_level = 2
+			skill.description = "Become harder to hit (+5 defense for 2 turns)"
+			skill.required_level = 1  # Starting Rogue skill
 			skill.required_class = "Rogue"
 			skill.cooldown = 5
 			skill.effect_type = "buff"
+
+		"charge":
+			skill.name = "Charge"
+			skill.description = "Rush the enemy for heavy damage"
+			skill.required_level = 1
+			skill.required_class = "Warrior"
+			skill.cooldown = 3
+			skill.damage_multiplier = 1.8
+
+		"lightning":
+			skill.name = "Lightning"
+			skill.description = "Strike with a bolt of lightning"
+			skill.required_level = 1  # Starting Mage skill
+			skill.required_class = "Mage"
+			skill.cooldown = 3
+			skill.damage_multiplier = 1.7
+			skill.mana_cost = 8
+
+		"backstab":
+			skill.name = "Backstab"
+			skill.description = "A precise strike from the shadows"
+			skill.required_level = 1  # Starting Rogue skill
+			skill.required_class = "Rogue"
+			skill.cooldown = 3
+			skill.damage_multiplier = 2.0
 
 		_:
 			# Default skill

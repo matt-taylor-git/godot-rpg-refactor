@@ -159,6 +159,16 @@ func _animate_background():
 	)
 
 func _animate_menu_in():
+	# Instant full opacity when reduced motion is on (also used by screenshot tour)
+	if reduce_motion:
+		if title_label:
+			title_label.modulate.a = 1.0
+		new_game_button.modulate.a = 1.0
+		load_game_button.modulate.a = 1.0
+		options_button.modulate.a = 1.0
+		exit_button.modulate.a = 1.0
+		return
+
 	# Animate title
 	if title_label:
 		title_label.modulate.a = 0.0
