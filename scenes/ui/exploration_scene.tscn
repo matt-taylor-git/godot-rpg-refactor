@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://c8x8x8x8x8x8x8x8x8x8x8"]
+[gd_scene load_steps=6 format=3 uid="uid://c8x8x8x8x8x8x8x8x8x8x8"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/ExplorationScene.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
 [ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="5"]
 [ext_resource type="Texture2D" path="res://assets/divider.png" id="6"]
 
@@ -47,12 +48,12 @@ theme_override_constants/separation = 4
 
 [node name="TopBar" type="HBoxContainer" parent="UI"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 48)
 
 [node name="AreaInfo" type="VBoxContainer" parent="UI/TopBar"]
 layout_mode = 2
-custom_minimum_size = Vector2(260, 0)
-theme_override_constants/separation = 0
+custom_minimum_size = Vector2(280, 0)
+theme_override_constants/separation = 2
 
 [node name="AreaName" type="Label" parent="UI/TopBar/AreaInfo"]
 layout_mode = 2
@@ -61,6 +62,12 @@ text = "Town"
 [node name="DangerLevel" type="Label" parent="UI/TopBar/AreaInfo"]
 layout_mode = 2
 text = "The air is calm and still."
+
+[node name="DangerBar" type="ProgressBar" parent="UI/TopBar/AreaInfo"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+max_value = 25.0
+show_percentage = false
 
 [node name="PlayerStats" type="Label" parent="UI/TopBar"]
 layout_mode = 2
@@ -95,62 +102,90 @@ stretch_mode = 5
 
 [node name="BottomBar" type="VBoxContainer" parent="UI"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 56)
 theme_override_constants/separation = 4
 
-[node name="ActionButtons" type="GridContainer" parent="UI/BottomBar"]
+[node name="ActionButtons" type="HBoxContainer" parent="UI/BottomBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-columns = 4
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 4
+theme_override_constants/separation = 8
+alignment = 1
 
-[node name="ExploreButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="ExploreButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Explore"
 
-[node name="RestButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="RestButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rest"
 
-[node name="TravelButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="TravelButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Travel"
 
-[node name="InventoryButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="InventoryButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Inventory"
 
-[node name="ShopButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="MoreButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
 layout_mode = 2
 size_flags_horizontal = 3
+text = "More"
+
+[node name="MorePanel" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -220.0
+offset_right = -12.0
+offset_bottom = -68.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_type_variation = "Panel"
+
+[node name="MoreMargin" type="MarginContainer" parent="MorePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="MoreButtons" type="VBoxContainer" parent="MorePanel/MoreMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ShopButton" parent="MorePanel/MoreMargin/MoreButtons" instance=ExtResource("3")]
+layout_mode = 2
 text = "Shop"
 
-[node name="QuestLogButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="QuestLogButton" parent="MorePanel/MoreMargin/MoreButtons" instance=ExtResource("3")]
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Quests"
 
-[node name="CodexButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="CodexButton" parent="MorePanel/MoreMargin/MoreButtons" instance=ExtResource("3")]
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Codex"
 
-[node name="MenuButton" type="Button" parent="UI/BottomBar/ActionButtons"]
+[node name="MenuButton" parent="MorePanel/MoreMargin/MoreButtons" instance=ExtResource("3")]
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Menu"
 
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/ExploreButton" to="." method="_on_explore_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/RestButton" to="." method="_on_rest_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/TravelButton" to="." method="_on_travel_pressed"]
 [connection signal="pressed" from="UI/BottomBar/ActionButtons/InventoryButton" to="." method="_on_inventory_pressed"]
-[connection signal="pressed" from="UI/BottomBar/ActionButtons/ShopButton" to="." method="_on_shop_pressed"]
-[connection signal="pressed" from="UI/BottomBar/ActionButtons/QuestLogButton" to="." method="_on_quest_log_pressed"]
-[connection signal="pressed" from="UI/BottomBar/ActionButtons/CodexButton" to="." method="_on_codex_pressed"]
-[connection signal="pressed" from="UI/BottomBar/ActionButtons/MenuButton" to="." method="_on_menu_pressed"]
+[connection signal="pressed" from="UI/BottomBar/ActionButtons/MoreButton" to="." method="_on_more_pressed"]
+[connection signal="pressed" from="MorePanel/MoreMargin/MoreButtons/ShopButton" to="." method="_on_shop_pressed"]
+[connection signal="pressed" from="MorePanel/MoreMargin/MoreButtons/QuestLogButton" to="." method="_on_quest_log_pressed"]
+[connection signal="pressed" from="MorePanel/MoreMargin/MoreButtons/CodexButton" to="." method="_on_codex_pressed"]
+[connection signal="pressed" from="MorePanel/MoreMargin/MoreButtons/MenuButton" to="." method="_on_menu_pressed"]

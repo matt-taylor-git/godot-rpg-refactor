@@ -1,4 +1,4 @@
----
+﻿---
 name: web-export
 description: Export the Godot RPG to web format and serve it locally for browser testing. Use when you need to build/rebuild the game for web, start the local dev server, or test the game in a browser via agent-browser.
 argument-hint: [--skip-export | --export-only | --serve-only | --full]

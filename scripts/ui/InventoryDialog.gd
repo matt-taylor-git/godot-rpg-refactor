@@ -83,16 +83,26 @@ func _update_equipment_display():
 
 
 func _update_slot_display(slot_node, item):
-	var label = slot_node.get_node("Label")
+	var label = slot_node.get_node_or_null("SlotContent/Label")
+	if label == null:
+		label = slot_node.get_node_or_null("Label")
+	var icon = slot_node.get_node_or_null("SlotContent/Icon")
 	if item:
-		label.text = item.name
-		label.add_theme_color_override(
-			"font_color", UIThemeManager.get_color("text_primary"))
+		if label:
+			label.text = item.name
+			label.add_theme_color_override(
+				"font_color", UIThemeManager.get_color("text_primary"))
+		if icon:
+			icon.texture = ItemLookup.get_item_texture(item)
+			icon.modulate = Color(1, 1, 1, 1)
 	else:
-		label.text = "[Empty]"
-		var dim = UIThemeManager.get_color("secondary")
-		dim.a = 0.5
-		label.add_theme_color_override("font_color", dim)
+		if label:
+			label.text = "[Empty]"
+			var dim = UIThemeManager.get_color("secondary")
+			dim.a = 0.5
+			label.add_theme_color_override("font_color", dim)
+		if icon:
+			icon.texture = null
 
 
 func _style_equipment_slots():
@@ -178,11 +188,22 @@ func _populate_inventory_grid():
 		slot_button.custom_minimum_size = Vector2(80, 80)
 		slot_button.focus_mode = Control.FOCUS_ALL
 		slot_button.clip_text = true
+		slot_button.expand_icon = true
 
 		if item:
-			slot_button.text = item.name
+			var tex = ItemLookup.get_item_texture(item)
+			if tex:
+				slot_button.icon = tex
+				# Icon-primary: quantity only when stacked
+				if item.stackable and item.quantity > 1:
+					slot_button.text = "x%d" % item.quantity
+				else:
+					slot_button.text = ""
+			else:
+				slot_button.text = item.name
 			slot_button.tooltip_text = (
-				item.description + "\n" + _get_item_stats_text(item))
+				item.name + "\n" + item.description + "\n"
+				+ _get_item_stats_text(item))
 			_apply_slot_styling(slot_button, true)
 		else:
 			slot_button.text = "\u2014"
@@ -250,11 +271,51 @@ func _on_equip_pressed():
 	if selected_item and selected_item.can_equip():
 		var player = GameManager.get_player()
 		if player:
+			var equipped_name = selected_item.name
 			var slot = selected_item.get_equip_slot()
 			var old_item = player.unequip_item(slot)
 			player.equip_item(selected_item, slot)
 			player.inventory[selected_item_index] = old_item
 			refresh_inventory()
+			_flash_equipment_slot(slot)
+			UIToast.toast_on(
+				self,
+				"Equipped: %s" % equipped_name,
+				UIToast.Kind.SUCCESS,
+				1.5
+			)
+
+
+func _flash_equipment_slot(slot: String) -> void:
+	var slot_node = null
+	match slot:
+		"weapon":
+			slot_node = weapon_slot
+		"armor":
+			slot_node = armor_slot
+		"accessory":
+			slot_node = accessory_slot
+	if not slot_node:
+		return
+	var gold = UIThemeManager.get_color("accent")
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.18, 0.14, 0.08, 0.95)
+	style.border_color = gold
+	style.set_border_width_all(SLOT_BORDER_WIDTH + 1)
+	style.set_corner_radius_all(SLOT_BORDER_RADIUS)
+	style.set_content_margin_all(4)
+	slot_node.add_theme_stylebox_override("panel", style)
+	var reduce_motion = ProjectSettings.get_setting(
+		"accessibility/reduced_motion", false)
+	if reduce_motion:
+		await get_tree().create_timer(0.4).timeout
+		_style_equipment_slots()
+		return
+	var tween = create_tween()
+	tween.tween_interval(0.45)
+	await tween.finished
+	tween.kill()
+	_style_equipment_slots()
 
 
 func _on_drop_pressed():

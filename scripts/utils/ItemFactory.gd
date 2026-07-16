@@ -5,6 +5,7 @@ extends Node
 
 static func create_item(item_type: String) -> Item:
 	var item = Item.new()
+	item.item_id = item_type
 
 	match item_type:
 		"sword":
@@ -45,6 +46,7 @@ static func create_item(item_type: String) -> Item:
 
 		_:
 			# Default item
+			item.item_id = "unknown"
 			item.name = "Unknown Item"
 			item.description = "An unknown item"
 			item.type = Item.ItemType.MISC

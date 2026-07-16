@@ -1,0 +1,32 @@
+{
+  "item": {
+    "display_name": "Item Icon",
+    "size": [256, 256],
+    "aspect_ratio": "1:1",
+    "chroma_key": "FF00FF",
+    "framing": "Centered item icon, slightly angled for depth. Object fills 80% of frame. No hand holding it. No text.",
+    "output_subdir": "items",
+    "promote_dir": "assets/items",
+    "filename_prefix": "item"
+  },
+  "monster": {
+    "display_name": "Monster Sprite",
+    "size": [512, 512],
+    "aspect_ratio": "1:1",
+    "chroma_key": "FF00FF",
+    "framing": "Full body, centered, facing left toward player. Dynamic pose. No background elements.",
+    "output_subdir": "monsters",
+    "promote_dir": "assets",
+    "filename_prefix": "monster"
+  },
+  "ui": {
+    "display_name": "UI Element",
+    "size": [256, 256],
+    "aspect_ratio": "1:1",
+    "chroma_key": "FF00FF",
+    "framing": "Flat UI element design. Clean edges suitable for 9-slice or tiling.",
+    "output_subdir": "ui",
+    "promote_dir": "assets/ui",
+    "filename_prefix": "ui"
+  }
+}

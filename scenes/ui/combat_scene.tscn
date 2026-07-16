@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://cg4ikbac8bt18" path="res://scripts/ui/CombatScene.gd" id="2"]
 [ext_resource type="Texture2D" path="res://assets/goblin.png" id="3"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="4"]
-[ext_resource type="Script" path="res://scripts/components/UIProgressBar.gd" id="5"]
+[ext_resource type="PackedScene" uid="uid://bi4pnfxtnky03" path="res://scenes/components/ui_progress_bar.tscn" id="5"]
 [ext_resource type="PackedScene" uid="uid://bvxq8r7y5n2kl" path="res://scenes/components/character_portrait_container.tscn" id="6"]
 [ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="7"]
 [ext_resource type="Texture2D" path="res://assets/icon_sword.png" id="8"]
@@ -45,119 +45,148 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="ArenaPanel" type="PanelContainer" parent="MainContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.6
+size_flags_stretch_ratio = 1.1
 theme_type_variation = "Panel"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MainContainer/ArenaPanel"]
+[node name="ArenaMargin" type="MarginContainer" parent="MainContainer/ArenaPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MainContainer/ArenaPanel/ArenaMargin"]
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 80
+theme_override_constants/separation = 48
 
-[node name="PlayerPortrait" parent="MainContainer/ArenaPanel/HBoxContainer" instance=ExtResource("6")]
-layout_mode = 2
-
-[node name="MonsterPortrait" parent="MainContainer/ArenaPanel/HBoxContainer" instance=ExtResource("6")]
-layout_mode = 2
-
-[node name="InfoPanel" type="HBoxContainer" parent="MainContainer"]
-layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="PlayerInfo" type="PanelContainer" parent="MainContainer/InfoPanel"]
+[node name="PlayerColumn" type="VBoxContainer" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = "Panel"
+theme_override_constants/separation = 8
+alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer/InfoPanel/PlayerInfo"]
+[node name="PlayerPortrait" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn" instance=ExtResource("6")]
 layout_mode = 2
+size_flags_horizontal = 4
 
-[node name="PlayerName" type="Label" parent="MainContainer/InfoPanel/PlayerInfo/VBoxContainer"]
+[node name="PlayerName" type="Label" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn"]
 layout_mode = 2
 text = "Player Name"
 horizontal_alignment = 1
 theme_type_variation = "H2"
 
-[node name="PlayerHealthBar" type="ProgressBar" parent="MainContainer/InfoPanel/PlayerInfo/VBoxContainer"]
+[node name="PlayerHealthBar" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn" instance=ExtResource("5")]
+custom_minimum_size = Vector2(180, 24)
 layout_mode = 2
+size_flags_horizontal = 4
 value = 100.0
-script = ExtResource("5")
+show_percentage = false
 
-[node name="MonsterInfo" type="PanelContainer" parent="MainContainer/InfoPanel"]
+[node name="MonsterColumn" type="VBoxContainer" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = "Panel"
+theme_override_constants/separation = 8
+alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer/InfoPanel/MonsterInfo"]
+[node name="MonsterPortrait" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn" instance=ExtResource("6")]
 layout_mode = 2
+size_flags_horizontal = 4
 
-[node name="MonsterName" type="Label" parent="MainContainer/InfoPanel/MonsterInfo/VBoxContainer"]
+[node name="MonsterName" type="Label" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn"]
 layout_mode = 2
 text = "Monster Name"
 horizontal_alignment = 1
 theme_type_variation = "H2"
 
-[node name="MonsterHealthBar" type="ProgressBar" parent="MainContainer/InfoPanel/MonsterInfo/VBoxContainer"]
+[node name="MonsterHealthBar" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn" instance=ExtResource("5")]
+custom_minimum_size = Vector2(180, 24)
 layout_mode = 2
+size_flags_horizontal = 4
 value = 100.0
-script = ExtResource("5")
+show_percentage = false
 
 [node name="BottomPanel" type="HBoxContainer" parent="MainContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.4
-theme_override_constants/separation = 10
+size_flags_stretch_ratio = 0.75
+theme_override_constants/separation = 8
 
 [node name="CombatLogPanel" type="PanelContainer" parent="MainContainer/BottomPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.7
+size_flags_stretch_ratio = 0.65
 theme_type_variation = "Panel"
 
-[node name="CombatLog" type="RichTextLabel" parent="MainContainer/BottomPanel/CombatLogPanel"]
+[node name="LogMargin" type="MarginContainer" parent="MainContainer/BottomPanel/CombatLogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="CombatLog" type="RichTextLabel" parent="MainContainer/BottomPanel/CombatLogPanel/LogMargin"]
 layout_mode = 2
 bbcode_enabled = true
+scroll_active = true
 text = "[center]Combat begins![/center]"
 
 [node name="ActionPanel" type="PanelContainer" parent="MainContainer/BottomPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.3
+size_flags_stretch_ratio = 0.35
 theme_type_variation = "Panel"
 
-[node name="ActionButtons" type="GridContainer" parent="MainContainer/BottomPanel/ActionPanel"]
+[node name="ActionMargin" type="MarginContainer" parent="MainContainer/BottomPanel/ActionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ActionButtons" type="GridContainer" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin"]
 layout_mode = 2
 columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
 
-[node name="AttackButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
+[node name="AttackButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
 layout_mode = 2
-text = "ATTACK"
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Attack"
 icon = ExtResource("8")
-theme_type_variation = "Small"
 
-[node name="SkillsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
+[node name="SkillsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
 layout_mode = 2
-text = "SKILLS"
-theme_type_variation = "Small"
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Skills"
 
-[node name="ItemsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
+[node name="ItemsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
 layout_mode = 2
-text = "ITEMS"
-theme_type_variation = "Small"
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Items"
 
-[node name="RunButton" parent="MainContainer/BottomPanel/ActionPanel/ActionButtons" instance=ExtResource("4")]
+[node name="RunButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
 layout_mode = 2
-text = "RUN"
-theme_type_variation = "Small"
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Run"
 
-[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionButtons/AttackButton" to="." method="_on_attack_pressed"]
-[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionButtons/SkillsButton" to="." method="_on_skills_pressed"]
-[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionButtons/ItemsButton" to="." method="_on_items_pressed"]
-[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionButtons/RunButton" to="." method="_on_run_pressed"]
+[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/AttackButton" to="." method="_on_attack_pressed"]
+[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/SkillsButton" to="." method="_on_skills_pressed"]
+[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/ItemsButton" to="." method="_on_items_pressed"]
+[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/RunButton" to="." method="_on_run_pressed"]

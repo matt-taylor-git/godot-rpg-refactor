@@ -5,6 +5,7 @@ extends Resource
 
 enum ItemType { WEAPON, ARMOR, ACCESSORY, CONSUMABLE, MISC }
 
+@export var item_id: String = ""  # Stable factory id for icons/lookup
 @export var name: String = ""
 @export var description: String = ""
 @export var type: ItemType = ItemType.MISC
@@ -56,6 +57,7 @@ func get_equip_slot() -> String:
 
 func to_dict() -> Dictionary:
 	return {
+		"item_id": item_id,
 		"name": name,
 		"description": description,
 		"type": type,
@@ -71,6 +73,7 @@ func to_dict() -> Dictionary:
 	}
 
 func from_dict(data: Dictionary) -> void:
+	item_id = data.get("item_id", "")
 	name = data.get("name", "")
 	description = data.get("description", "")
 	type = data.get("type", ItemType.MISC)

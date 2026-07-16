@@ -454,6 +454,12 @@ const FOREST_FLAVOR = [
 		+ "Ice cold and clear.[/color]",
 	"[color=#948d84]Claw marks on a tree trunk. " \
 		+ "Deep. Recent. Something large.[/color]",
+	"[color=#948d84]A broken arrow juts from a stump. " \
+		+ "Whoever shot it was running.[/color]",
+	"[color=#948d84]Mushrooms form a perfect ring. " \
+		+ "You step carefully around it.[/color]",
+	"[color=#948d84]Distant horns call through the trees. " \
+		+ "Hunt, or warning? Hard to say.[/color]",
 ]
 
 const MOUNTAIN_FLAVOR = [
@@ -484,6 +490,12 @@ const CAVE_FLAVOR = [
 		+ "and something faintly metallic.[/color]",
 	"[color=#948d84]A cold draft from an unseen passage. " \
 		+ "This cave breathes.[/color]",
+	"[color=#948d84]Your torch sputters. " \
+		+ "Shadows leap like living things.[/color]",
+	"[color=#948d84]Faded murals line the wall — " \
+		+ "warriors facing a crowned figure of darkness.[/color]",
+	"[color=#948d84]Something wet brushes your boot. " \
+		+ "You decide not to look down.[/color]",
 ]
 
 const PEAK_FLAVOR = [

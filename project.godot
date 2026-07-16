@@ -20,7 +20,7 @@ config/version="1.0"
 run/main_scene="res://scenes/main.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="pyrpg-godot"
-config/features=PackedStringArray("4.6")
+config/features=PackedStringArray("4.7")
 
 [autoload]
 
@@ -30,6 +30,7 @@ DialogueManager="*res://scripts/globals/DialogueManager.gd"
 StoryManager="*res://scripts/globals/StoryManager.gd"
 CodexManager="*res://scripts/globals/CodexManager.gd"
 UIThemeManager="*res://scripts/globals/UIThemeManager.gd"
+SceneTransition="*res://scripts/components/SceneTransition.gd"
 
 [display]
 

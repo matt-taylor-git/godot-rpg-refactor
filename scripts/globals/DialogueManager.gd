@@ -109,22 +109,33 @@ func load_dialogues() -> void:
 				]
 			}
 		},
-        "quest_giver": {
-            "greeting": {
-                "text": "Hello, traveler. I have a task for you, if you're up for it.",
-                "options": [
-                    {"text": "What is it?", "next": "quest_offer"},
-                    {"text": "I'm not interested.", "action": "end"}
-                ]
-            },
-            "quest_offer": {
-                "text": "Goblins have been attacking our farms. We need someone to clear them out.",
-                "options": [
-                    {"text": "I'll do it.", "action": "accept_quest", "quest_type": "kill_goblins"},
-                    {"text": "Sorry, I can't help.", "action": "end"}
-                ]
-            }
-        }
+		"quest_giver": {
+			"greeting": {
+				"text": "Ah, another soul with a sword and a purpose. " \
+					+ "The farms need a champion — and you look the part.",
+				"options": [
+					{"text": "What do you need?", "next": "quest_offer"},
+					{"text": "Tell me about the town.", "next": "about_town"},
+					{"text": "Not today.", "action": "end"}
+				]
+			},
+			"quest_offer": {
+				"text": "Goblins raid the eastern fields at dusk. Drive them back " \
+					+ "and the farmers will pay fair coin — and sleep easier.",
+				"options": [
+					{"text": "I'll clear the goblins.", "action": "accept_quest", "quest_type": "kill_goblins"},
+					{"text": "Sounds dangerous. Maybe later.", "action": "end"}
+				]
+			},
+			"about_town": {
+				"text": "Eldridge is small, but stubborn. Shop keeps us armed, " \
+					+ "the inn keeps us warm, and the gate keeps the dark away.",
+				"options": [
+					{"text": "About that task...", "next": "quest_offer"},
+					{"text": "Farewell.", "action": "end"}
+				]
+			}
+		}
 	}
 
 func start_dialogue(npc_id: String) -> bool:

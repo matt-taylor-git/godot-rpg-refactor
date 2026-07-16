@@ -86,12 +86,17 @@ func set_active_turn(active: CanvasItem) -> void:
 	emit_signal("turn_changed", active)
 
 func _instant_transition(previous: CanvasItem, active: CanvasItem) -> void:
-	# Immediately set visual states
+	# Immediately set visual states for active and inactive portraits
 	if previous and is_instance_valid(previous):
 		previous.modulate = INACTIVE_DIM_COLOR
 
 	if active and is_instance_valid(active):
 		active.modulate = ACTIVE_GLOW_COLOR
+
+	# Also dim the non-active combatant when previous was null (first highlight)
+	var other = monster_node if active == player_node else player_node
+	if other and is_instance_valid(other) and other != active:
+		other.modulate = INACTIVE_DIM_COLOR
 
 func _animated_transition(previous: CanvasItem, active: CanvasItem) -> void:
 	# Dim the previously active node

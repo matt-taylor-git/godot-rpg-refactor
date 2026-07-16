@@ -53,6 +53,9 @@ func _ready():
 	print("GameManager initialized")
 	game_start_time = Time.get_unix_time_from_system()
 
+	# Load persisted accessibility settings early
+	GameSettings.load_settings()
+
 	# Connect to manager signals
 	_connect_manager_signals()
 
@@ -252,16 +255,21 @@ func change_scene(scene_name: String):
 		print("Error: Scene file not found: ", scene_path)
 		return
 	current_scene = scene_name
+	game_data.current_scene = scene_name
 
-	# Directly change the scene instead of using signals
-	# (MainScene may not be in tree after initial scene change)
+	# Fade via SceneTransition autoload when available
 	print("Loading scene: ", scene_path)
-	var error = get_tree().change_scene_to_file(scene_path)
-	if error != OK:
-		print("Error changing scene: ", error)
-	else:
+	if SceneTransition:
+		await SceneTransition.change_scene(scene_path)
 		print("Scene changed successfully to: ", scene_name)
 		emit_signal("scene_changed", scene_name)
+	else:
+		var error = get_tree().change_scene_to_file(scene_path)
+		if error != OK:
+			print("Error changing scene: ", error)
+		else:
+			print("Scene changed successfully to: ", scene_name)
+			emit_signal("scene_changed", scene_name)
 
 func get_current_scene() -> String:
 	return current_scene
@@ -291,7 +299,7 @@ func start_combat():
 
 	# Change to combat scene if not already there
 	if get_tree() and get_tree().current_scene and get_tree().current_scene.name != "CombatScene":
-		get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
+		await change_scene("combat_scene")
 
 	return combat_log
 
@@ -313,7 +321,7 @@ func start_combat_with_type(monster_type: String):
 
 	if get_tree() and get_tree().current_scene \
 		and get_tree().current_scene.name != "CombatScene":
-		get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
+		await change_scene("combat_scene")
 
 	return combat_log
 
@@ -337,7 +345,7 @@ func start_boss_combat(level: int = 1) -> String:
 
 	# Change to combat scene if not already there
 	if get_tree() and get_tree().current_scene and get_tree().current_scene.name != "CombatScene":
-		get_tree().change_scene_to_file("res://scenes/ui/combat_scene.tscn")
+		await change_scene("combat_scene")
 
 	return combat_log
 

@@ -54,6 +54,15 @@ func _ready():
 	# Store original modulate for animations
 	original_modulate = modulate
 
+	# Never show the built-in "100%" percentage text — ValueLabel handles HP
+	show_percentage = false
+
+	# Remove legacy "Progress" label if present in old scene instances
+	if has_node("Label"):
+		var legacy = get_node("Label")
+		if legacy is Label and str(legacy.text).to_lower() in ["progress", ""]:
+			legacy.queue_free()
+
 	# Create child nodes
 	_create_child_nodes()
 
@@ -92,13 +101,17 @@ func _create_child_nodes():
 		gradient_texture = $GradientTexture
 		gradient_texture.visible = false
 
-	# Create value label
+	# Create value label (shows "current/max" HP, not "Progress")
 	if not has_node("ValueLabel"):
 		value_label = Label.new()
 		value_label.name = "ValueLabel"
+		value_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		value_label.mouse_filter = MOUSE_FILTER_IGNORE
+		value_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+		value_label.add_theme_constant_override("shadow_offset_x", 1)
+		value_label.add_theme_constant_override("shadow_offset_y", 1)
 		add_child(value_label)
 	else:
 		value_label = $ValueLabel
@@ -503,11 +516,11 @@ func _update_value_label():
 		value_label.text = "%d/%d%s" % [current_val, max_val, status_text]
 		value_label.visible = true
 
-		# Apply theme-based font color with high contrast fallback
-		var font_color = _get_theme_color("font_color")
-		if font_color == Color(0, 0, 0, 0):  # No theme color set
-			font_color = Color.WHITE  # High contrast fallback
-		value_label.add_theme_color_override("font_color", font_color)
+		# White text + shadow for readability on green/amber/red fills
+		value_label.add_theme_color_override("font_color", Color.WHITE)
+		value_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+		value_label.add_theme_constant_override("shadow_offset_x", 1)
+		value_label.add_theme_constant_override("shadow_offset_y", 1)
 
 		# Apply responsive font sizing
 		var font_size = _get_responsive_font_size()

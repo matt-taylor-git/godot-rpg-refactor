@@ -35,7 +35,12 @@ const UI_THEME = preload("res://resources/ui_theme.tres")
 		is_active = value
 		_update_active_state()
 
-@export var show_health_bar: bool = true
+@export var show_health_bar: bool = true:
+	set(value):
+		show_health_bar = value
+		if health_bar:
+			health_bar.visible = show_health_bar
+
 @export var show_status_effects: bool = true
 @export var respect_reduced_motion: bool = true
 
@@ -100,8 +105,8 @@ func _apply_portrait_theme():
 		# Create stylebox with dark fantasy styling
 		var portrait_style = StyleBoxFlat.new()
 
-		# Background - dark charcoal from theme
-		portrait_style.bg_color = Color(0.08, 0.07, 0.06, 0.9)
+		# Solid dark charcoal — never show light/checker behind transparent sprites
+		portrait_style.bg_color = Color(0.06, 0.05, 0.04, 1.0)
 
 		# Border - bronze from theme
 		portrait_style.border_width_left = 2
@@ -117,11 +122,16 @@ func _apply_portrait_theme():
 		portrait_style.corner_radius_bottom_right = 2
 
 		# Drop shadow
-		portrait_style.shadow_color = Color(0, 0, 0, 0.3)
+		portrait_style.shadow_color = Color(0, 0, 0, 0.45)
 		portrait_style.shadow_size = 4
 		portrait_style.shadow_offset = Vector2(2, 2)
 
 		portrait_panel.add_theme_stylebox_override("panel", portrait_style)
+
+	# Ensure portrait image keeps aspect and sits on the dark plate
+	if portrait_image:
+		portrait_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 func _setup_health_bar():
 	# Setup health bar as overlay

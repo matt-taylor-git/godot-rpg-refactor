@@ -4,6 +4,7 @@ extends "res://scripts/ui/BaseUI.gd"
 # Implements BaseUI patterns for consistent UI functionality
 
 const SAVE_SLOT_DIALOG = preload("res://scenes/ui/save_slot_dialog.tscn")
+const OPTIONS_DIALOG = preload("res://scenes/ui/options_dialog.tscn")
 
 # Animation and visual settings
 var background_animation_tween: Tween = null
@@ -53,7 +54,7 @@ func _setup_accessibility():
 	- Check for reduced motion setting
 	- Setup focus neighbors for keyboard navigation
 	"""
-	# Check system reduced motion setting using ProjectSettings
+	# ProjectSettings is the runtime source of truth (seeded by GameSettings at boot)
 	reduce_motion = ProjectSettings.get_setting("accessibility/reduced_motion", false)
 
 	print("Reduced motion setting: ", reduce_motion)
@@ -227,13 +228,9 @@ func _on_options_pressed():
 	_animate_button_press(options_button)
 	await get_tree().create_timer(0.2).timeout
 
-	# Options menu not implemented in this story (Epic 3.3)
-	# Showing a placeholder message or log for now
-	# If we have a feedback system via BaseUI, we could use it
-	if has_method("show_success_feedback"):
-		show_success_feedback("Options menu coming soon!")
-	else:
-		print("Options menu not yet implemented")
+	var dialog = OPTIONS_DIALOG.instantiate()
+	add_child(dialog)
+	dialog.tree_exited.connect(func(): options_button.grab_focus())
 
 func _on_exit_pressed():
 	print("Exit pressed")

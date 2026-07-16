@@ -28,6 +28,31 @@ func _ready():
 	_populate_statistics()
 	_setup_buttons()
 	_setup_focus_navigation()
+	_animate_entrance()
+
+
+func _animate_entrance() -> void:
+	var reduce_motion = ProjectSettings.get_setting(
+		"accessibility/reduced_motion", false)
+	if game_over_title:
+		game_over_title.add_theme_color_override(
+			"font_color", UIThemeManager.get_color("danger"))
+	if reduce_motion:
+		return
+	if game_over_title:
+		game_over_title.modulate.a = 0.0
+	if stats_grid:
+		stats_grid.modulate.a = 0.0
+	if button_container:
+		button_container.modulate.a = 0.0
+	var tween = create_tween()
+	if game_over_title:
+		tween.tween_property(game_over_title, "modulate:a", 1.0, 0.45)
+	if stats_grid:
+		tween.tween_property(stats_grid, "modulate:a", 1.0, 0.35)
+	if button_container:
+		tween.tween_property(button_container, "modulate:a", 1.0, 0.3)
+	tween.finished.connect(func(): tween.kill())
 
 func _populate_statistics():
 	# Update stat labels in grid

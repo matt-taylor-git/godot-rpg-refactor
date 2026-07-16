@@ -4,40 +4,40 @@ extends Control
 # Integrates animation systems from Story 2.2
 
 const SKILLS_DIALOG = preload("res://scenes/ui/skills_dialog.tscn")
-const HERO_TEXTURE = preload("res://assets/Hero.png")
-const GOBLIN_TEXTURE = preload("res://assets/goblin.png")
-
-var skills_dialog_instance = null
 
 # Animation Controllers - AC-2.2.2, AC-2.2.3
+var skills_dialog_instance = null
 var animation_controller: CombatAnimationController = null
 var turn_indicator: TurnIndicatorController = null
 var performance_monitor: PerformanceMonitor = null
-
 # Accessibility setting - AC-2.2.5
 var reduced_motion: bool = false
+var _phase_banner: Label = null
+var _vignette: ColorRect = null
 
-@onready var player_portrait = $MainContainer/ArenaPanel/HBoxContainer/PlayerPortrait
-@onready var monster_portrait = $MainContainer/ArenaPanel/HBoxContainer/MonsterPortrait
+@onready var player_portrait = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerPortrait
+@onready var monster_portrait = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn/MonsterPortrait
 
-@onready var player_name_label = $MainContainer/InfoPanel/PlayerInfo/VBoxContainer/PlayerName
-@onready var player_health_bar = $MainContainer/InfoPanel/PlayerInfo/VBoxContainer/PlayerHealthBar
+@onready var player_name_label = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerName
+@onready var player_health_bar = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerHealthBar
 
-@onready var monster_name_label = $MainContainer/InfoPanel/MonsterInfo/VBoxContainer/MonsterName
-@onready var monster_health_bar = $MainContainer/InfoPanel/MonsterInfo/VBoxContainer/MonsterHealthBar
+@onready var monster_name_label = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn/MonsterName
+@onready var monster_health_bar = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn/MonsterHealthBar
 
-@onready var combat_log = $MainContainer/BottomPanel/CombatLogPanel/CombatLog
+@onready var combat_log = $MainContainer/BottomPanel/CombatLogPanel/LogMargin/CombatLog
 
-@onready var attack_button = $MainContainer/BottomPanel/ActionPanel/ActionButtons/AttackButton
-@onready var skills_button = $MainContainer/BottomPanel/ActionPanel/ActionButtons/SkillsButton
-@onready var items_button = $MainContainer/BottomPanel/ActionPanel/ActionButtons/ItemsButton
-@onready var run_button = $MainContainer/BottomPanel/ActionPanel/ActionButtons/RunButton
+@onready var attack_button = $MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/AttackButton
+@onready var skills_button = $MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/SkillsButton
+@onready var items_button = $MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/ItemsButton
+@onready var run_button = $MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/RunButton
 
 func _ready():
 	print("CombatScene ready")
 
 	# Initialize animation systems
 	_setup_animation_systems()
+	_configure_health_bars()
+	_style_name_labels()
 
 	# Connect to GameManager signals
 	GameManager.connect("combat_started", Callable(self, "_on_combat_started"))
@@ -55,6 +55,35 @@ func _ready():
 	# Start performance monitoring for combat
 	if performance_monitor:
 		performance_monitor.start_monitoring()
+
+
+func _configure_health_bars() -> void:
+	for bar in [player_health_bar, monster_health_bar]:
+		if bar == null:
+			continue
+		bar.show_percentage = false
+		if "show_value_text" in bar:
+			bar.show_value_text = true
+		if "connect_to_gamemanager" in bar:
+			bar.connect_to_gamemanager = false
+		bar.custom_minimum_size = Vector2(180, 24)
+
+	# Full HP bars sit under names — hide the thin portrait overlays to avoid double bars
+	if player_portrait and "show_health_bar" in player_portrait:
+		player_portrait.show_health_bar = false
+	if monster_portrait and "show_health_bar" in monster_portrait:
+		monster_portrait.show_health_bar = false
+
+
+func _style_name_labels() -> void:
+	var gold = UIThemeManager.get_color("title_gold")
+	for label in [player_name_label, monster_name_label]:
+		if label == null:
+			continue
+		label.add_theme_color_override("font_color", gold)
+		label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+		label.add_theme_constant_override("shadow_offset_x", 1)
+		label.add_theme_constant_override("shadow_offset_y", 1)
 
 func _setup_animation_systems() -> void:
 	# Check for reduced motion preference
@@ -238,16 +267,16 @@ func _on_combat_ended(player_won: bool):
 	var message = ""
 	if player_won:
 		message = "[color=green]Victory! You defeated the monster![/color]"
+		_append_to_log(message)
+		await _play_enemy_defeat_fx()
 		if GameManager.is_boss_combat():
-			_append_to_log(message)
 			if is_inside_tree():
-				await get_tree().create_timer(2.0).timeout
+				await get_tree().create_timer(1.0).timeout
 			GameManager.trigger_victory()
 			GameManager.change_scene("victory_scene")
 		else:
-			_append_to_log(message)
 			if is_inside_tree():
-				await get_tree().create_timer(2.0).timeout
+				await get_tree().create_timer(1.0).timeout
 			_change_to_exploration()
 	else:
 		message = "[color=red]Defeat! You were defeated...[/color]"
@@ -256,19 +285,93 @@ func _on_combat_ended(player_won: bool):
 			await get_tree().create_timer(2.0).timeout
 		GameManager.change_scene("game_over_scene")
 
+func _play_enemy_defeat_fx() -> void:
+	if not monster_portrait:
+		return
+	var reduce_motion = ProjectSettings.get_setting(
+		"accessibility/reduced_motion", false)
+	var portrait_image = monster_portrait.get_node_or_null("PortraitPanel/PortraitImage")
+	var target = portrait_image if portrait_image else monster_portrait
+	if reduce_motion:
+		target.modulate = Color(0.4, 0.4, 0.4, 0.5)
+		return
+	var tween = create_tween()
+	tween.tween_property(target, "modulate", Color(1.2, 0.3, 0.25, 1.0), 0.15)
+	tween.tween_property(target, "modulate", Color(0.35, 0.35, 0.35, 0.35), 0.45)
+	await tween.finished
+	tween.kill()
+
 func _on_loot_dropped(item_name: String):
 	_append_to_log("[color=yellow]You found: " + item_name + "[/color]")
+	UIToast.toast_on(self, "Loot: %s" % item_name, UIToast.Kind.LOOT, 2.0)
 
 func _on_player_leveled_up(new_level: int):
 	_append_to_log("[color=blue]Level up! You are now level " + str(new_level) + "![/color]")
 	_update_ui()
+	UIToast.toast_on(
+		self,
+		"Level up! Now level %d" % new_level,
+		UIToast.Kind.LEVEL_UP,
+		2.4
+	)
+	if player_portrait and not reduced_motion:
+		var tween = create_tween()
+		tween.tween_property(player_portrait, "modulate", Color(1.25, 1.15, 0.7, 1.0), 0.15)
+		tween.tween_property(player_portrait, "modulate", Color.WHITE, 0.35)
+		tween.finished.connect(func(): tween.kill())
 
-func _on_boss_phase_changed(_phase: int, description: String):
+func _on_boss_phase_changed(phase: int, description: String):
 	_append_to_log("[color=red]" + description + "[/color]")
 	_update_ui()
+	UIToast.toast_on(self, "Phase %d — %s" % [phase, description], UIToast.Kind.DANGER, 2.5)
+	_show_phase_banner(description)
+	_flash_vignette()
+
+func _show_phase_banner(text: String) -> void:
+	if _phase_banner == null:
+		_phase_banner = Label.new()
+		_phase_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_phase_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_phase_banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		_phase_banner.offset_top = 80
+		_phase_banner.offset_bottom = 120
+		_phase_banner.offset_left = -300
+		_phase_banner.offset_right = 300
+		_phase_banner.add_theme_font_size_override("font_size", 20)
+		_phase_banner.add_theme_color_override(
+			"font_color", UIThemeManager.get_color("danger"))
+		_phase_banner.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+		_phase_banner.add_theme_constant_override("shadow_offset_x", 2)
+		_phase_banner.add_theme_constant_override("shadow_offset_y", 2)
+		_phase_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_phase_banner)
+	_phase_banner.text = text
+	_phase_banner.modulate.a = 1.0
+	if reduced_motion:
+		return
+	var tween = create_tween()
+	tween.tween_interval(1.4)
+	tween.tween_property(_phase_banner, "modulate:a", 0.0, 0.4)
+	tween.finished.connect(func(): tween.kill())
+
+func _flash_vignette() -> void:
+	if reduced_motion:
+		return
+	if _vignette == null:
+		_vignette = ColorRect.new()
+		_vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_vignette.color = Color(0.6, 0.05, 0.05, 0.0)
+		add_child(_vignette)
+	_vignette.color.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(_vignette, "color:a", 0.35, 0.12)
+	tween.tween_property(_vignette, "color:a", 0.0, 0.35)
+	tween.finished.connect(func(): tween.kill())
 
 func _on_boss_defeated():
 	_append_to_log("[color=gold]THE DARK OVERLORD HAS BEEN DEFEATED![/color]")
+	UIToast.toast_on(self, "The Dark Overlord has fallen!", UIToast.Kind.LEVEL_UP, 3.0)
 
 func _setup_focus_navigation():
 	# 2x2 grid: Attack | Skills
@@ -383,39 +486,12 @@ func _on_skills_cancelled():
 	skills_dialog_instance = null
 
 func _get_player_portrait_texture(player) -> Texture2D:
-	# Get portrait texture based on player class
-	match player.character_class:
-		"Warrior":
-			return load("res://assets/warrior.png")
-		"Mage":
-			return load("res://assets/mage.png")
-		"Rogue":
-			return load("res://assets/rogue.png")
-		"Hero":
-			return HERO_TEXTURE
-		_:
-			return HERO_TEXTURE  # Default fallback
+	return PortraitLookup.get_player_texture(player)
 
 func _get_monster_portrait_texture(monster) -> Texture2D:
-	# Get portrait texture based on monster type using dictionary lookup
-	var monster_textures := {
-		"goblin": "res://assets/goblin.png",
-		"orc": "res://assets/orc.png",
-		"skeleton": "res://assets/skeleton.png",
-		"slime": "res://assets/slime.png",
-		"spider": "res://assets/spider.png",
-		"wolf": "res://assets/wolf.png",
-		"golem": "res://assets/golem.png",
-		"bandit": "res://assets/bandit.png",
-		"boss": "res://assets/boss.png",
-		"final boss": "res://assets/final_boss.png",
-	}
-	var key = monster.name.to_lower()
-	if monster_textures.has(key):
-		var texture = load(monster_textures[key])
-		if texture:
-			return texture
-	return GOBLIN_TEXTURE  # Default fallback
+	if monster == null:
+		return PortraitLookup.get_monster_texture("goblin")
+	return PortraitLookup.get_monster_texture(monster.name)
 
 func _update_player_status_effects(_player):
 	# Update player status effects on portrait

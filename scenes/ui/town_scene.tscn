@@ -8,14 +8,14 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
 shader = ExtResource("4")
-shader_parameter/time_scale = 0.5
-shader_parameter/wave_intensity = 0.3
-shader_parameter/color_primary = Color(0.06, 0.05, 0.04, 1)
-shader_parameter/color_accent = Color(0.12, 0.08, 0.05, 1)
+shader_parameter/time_scale = 0.45
+shader_parameter/wave_intensity = 0.25
+shader_parameter/color_primary = Color(0.07, 0.055, 0.04, 1)
+shader_parameter/color_accent = Color(0.16, 0.10, 0.05, 1)
 shader_parameter/reduce_motion = false
 shader_parameter/grain_intensity = 0.03
-shader_parameter/ember_intensity = 0.04
-shader_parameter/ember_color = Color(0.9, 0.4, 0.1, 1)
+shader_parameter/ember_intensity = 0.07
+shader_parameter/ember_color = Color(0.95, 0.5, 0.15, 1)
 
 [node name="TownScene" type="Control"]
 layout_mode = 3
@@ -44,7 +44,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
 alignment = 1
 
 [node name="Title" type="Label" parent="VBoxContainer"]
@@ -60,24 +60,99 @@ mouse_filter = 2
 texture = ExtResource("5")
 stretch_mode = 5
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="Subtitle" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Rest, resupply, and take on work before the road calls."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="CardsRow" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
 alignment = 1
 
-[node name="ShopButton" parent="VBoxContainer/HBoxContainer" instance=ExtResource("3")]
+[node name="ShopCard" type="PanelContainer" parent="VBoxContainer/CardsRow"]
 layout_mode = 2
-text = "Shop"
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(200, 180)
+theme_type_variation = "Panel"
 
-[node name="QuestGiverButton" parent="VBoxContainer/HBoxContainer" instance=ExtResource("3")]
+[node name="VBox" type="VBoxContainer" parent="VBoxContainer/CardsRow/ShopCard"]
 layout_mode = 2
-text = "Talk to Quest Giver"
+theme_override_constants/separation = 10
+alignment = 1
 
-[node name="LeaveTownButton" parent="VBoxContainer/HBoxContainer" instance=ExtResource("3")]
+[node name="CardTitle" type="Label" parent="VBoxContainer/CardsRow/ShopCard/VBox"]
+layout_mode = 2
+text = "Market"
+horizontal_alignment = 1
+theme_type_variation = "H2"
+
+[node name="Subtitle" type="Label" parent="VBoxContainer/CardsRow/ShopCard/VBox"]
+layout_mode = 2
+text = "Buy potions and gear for the journey."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ShopButton" parent="VBoxContainer/CardsRow/ShopCard/VBox" instance=ExtResource("3")]
+layout_mode = 2
+text = "Open Shop"
+
+[node name="QuestCard" type="PanelContainer" parent="VBoxContainer/CardsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(200, 180)
+theme_type_variation = "Panel"
+
+[node name="VBox" type="VBoxContainer" parent="VBoxContainer/CardsRow/QuestCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CardTitle" type="Label" parent="VBoxContainer/CardsRow/QuestCard/VBox"]
+layout_mode = 2
+text = "Quest Board"
+horizontal_alignment = 1
+theme_type_variation = "H2"
+
+[node name="Subtitle" type="Label" parent="VBoxContainer/CardsRow/QuestCard/VBox"]
+layout_mode = 2
+text = "Speak with the town quest giver."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="QuestGiverButton" parent="VBoxContainer/CardsRow/QuestCard/VBox" instance=ExtResource("3")]
+layout_mode = 2
+text = "Talk"
+
+[node name="GateCard" type="PanelContainer" parent="VBoxContainer/CardsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(200, 180)
+theme_type_variation = "Panel"
+
+[node name="VBox" type="VBoxContainer" parent="VBoxContainer/CardsRow/GateCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CardTitle" type="Label" parent="VBoxContainer/CardsRow/GateCard/VBox"]
+layout_mode = 2
+text = "Town Gate"
+horizontal_alignment = 1
+theme_type_variation = "H2"
+
+[node name="Subtitle" type="Label" parent="VBoxContainer/CardsRow/GateCard/VBox"]
+layout_mode = 2
+text = "Open the world map and set out."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="LeaveTownButton" parent="VBoxContainer/CardsRow/GateCard/VBox" instance=ExtResource("3")]
 layout_mode = 2
 text = "Leave Town"
 
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/ShopButton" to="." method="_on_shop_pressed"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/QuestGiverButton" to="." method="_on_quest_giver_pressed"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/LeaveTownButton" to="." method="_on_leave_town_pressed"]
+[connection signal="pressed" from="VBoxContainer/CardsRow/ShopCard/VBox/ShopButton" to="." method="_on_shop_pressed"]
+[connection signal="pressed" from="VBoxContainer/CardsRow/QuestCard/VBox/QuestGiverButton" to="." method="_on_quest_giver_pressed"]
+[connection signal="pressed" from="VBoxContainer/CardsRow/GateCard/VBox/LeaveTownButton" to="." method="_on_leave_town_pressed"]
