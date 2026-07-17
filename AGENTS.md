@@ -14,7 +14,7 @@ implementation.
 | **Language** | GDScript |
 | **Main scene** | `res://scenes/main.tscn` |
 | **Architecture** | Scene-based UI + autoload singleton managers |
-| **Testing** | GUT 9.5.0 (`addons/gut/`) |
+| **Testing** | GUT 9.7.1 (`addons/gut/`, Godot 4.7 branch) |
 | **Linting** | gdtoolkit / `gdlint` (`.gdlintrc`) |
 
 ---
@@ -475,4 +475,4 @@ Set at character creation; skills via `SkillFactory.get_class_skills(class_name)
 
 **Last updated**: 2026-07-17  
 **Typography**: Cinzel + Source Serif 4 · **Asset pipeline**: Grok Imagine + `.grok/skills/imagine-asset`  
-**GUT**: 9.5.0 · **gdtoolkit**: 4.5.0
+**GUT**: 9.7.1 · **gdtoolkit**: 4.5.0

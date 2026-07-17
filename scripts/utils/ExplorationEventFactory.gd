@@ -24,57 +24,79 @@ const DANGER_FLAVORS = [
 	"Death stalks your every step.",
 ]
 
-# -- Narrative pools per area --
+# -- Atomic combat encounters per area --
+# Keep the displayed identity and combat monster type in the same record so they
+# cannot drift apart when an event is generated.
 const FOREST_COMBAT = [
-	"[color=#d9b359]A Goblin Ambush![/color]\n" \
-		+ "Branches snap. A snarling creature lunges!",
-	"[color=#d9b359]Wolves on the Hunt![/color]\n" \
-		+ "Gleaming eyes between the trees. Unmistakable.",
-	"[color=#d9b359]Forest Stalker![/color]\n" \
-		+ "Something followed you. It finally strikes.",
-	"[color=#d9b359]Slime Swarm![/color]\n" \
-		+ "The ground squelches. Shapes ooze from the roots.",
-	"[color=#d9b359]Bandit Scout![/color]\n" \
-		+ "A figure drops from the canopy, blade drawn.",
+	{
+		"monster_type": "goblin",
+		"title": "A Goblin Ambush!",
+		"narrative": "Branches snap. A snarling goblin lunges!",
+	},
+	{
+		"monster_type": "slime",
+		"title": "Slime from the Roots!",
+		"narrative": "The ground squelches. A slime oozes from the roots.",
+	},
+	{
+		"monster_type": "wolf",
+		"title": "Wolf on the Hunt!",
+		"narrative": "Gleaming eyes appear between the trees. A wolf springs at you.",
+	},
 ]
 
 const MOUNTAIN_COMBAT = [
-	"[color=#d9b359]Orc Raider![/color]\n" \
-		+ "A hulking figure blocks the path, war-axe raised.",
-	"[color=#d9b359]Skeleton Patrol![/color]\n" \
-		+ "Bones rattle in the fog. The dead walk these slopes.",
-	"[color=#d9b359]Rock Slide Ambush![/color]\n" \
-		+ "Stones tumble down -- something is throwing them.",
-	"[color=#d9b359]Mountain Troll![/color]\n" \
-		+ "The boulder you were resting against... moves.",
-	"[color=#d9b359]Wind Wraith![/color]\n" \
-		+ "A howling gust coalesces into something with claws.",
+	{
+		"monster_type": "goblin",
+		"title": "Goblin Rockslide Ambush!",
+		"narrative": "Stones tumble down -- a goblin above you is throwing them.",
+	},
+	{
+		"monster_type": "orc",
+		"title": "Orc Raider!",
+		"narrative": "A hulking orc blocks the path, war-axe raised.",
+	},
+	{
+		"monster_type": "skeleton",
+		"title": "Skeleton Patrol!",
+		"narrative": "Bones rattle in the fog. An armed skeleton advances.",
+	},
 ]
 
 const CAVE_COMBAT = [
-	"[color=#d9b359]Spider's Lair![/color]\n" \
-		+ "Webs cling to your face. Legs skitter above.",
-	"[color=#d9b359]Bat Swarm![/color]\n" \
-		+ "A shriek echoes. Wings fill the tunnel.",
-	"[color=#d9b359]Skeleton Guardian![/color]\n" \
-		+ "Ancient bones rise from a sarcophagus, sword in hand.",
-	"[color=#d9b359]Cave Dweller![/color]\n" \
-		+ "Something pale and eyeless crawls from the wall.",
-	"[color=#d9b359]Trapped![/color]\n" \
-		+ "The passage narrows. Something lurks -- no going back.",
+	{
+		"monster_type": "skeleton",
+		"title": "Skeleton Guardian!",
+		"narrative": "An ancient skeleton rises from a sarcophagus, sword in hand.",
+	},
+	{
+		"monster_type": "spider",
+		"title": "Spider's Lair!",
+		"narrative": "Webs cling to your face. A giant spider skitters above.",
+	},
+	{
+		"monster_type": "bat",
+		"title": "Bat in the Dark!",
+		"narrative": "A shriek echoes. A giant bat dives through the tunnel.",
+	},
 ]
 
 const PEAK_COMBAT = [
-	"[color=#d9b359]Dragon's Territory![/color]\n" \
-		+ "A shadow blots out the sun. Scales glint like obsidian.",
-	"[color=#d9b359]Orc Warlord![/color]\n" \
-		+ "A massive orc stands at the ridge, flanked by brutes.",
-	"[color=#d9b359]Storm Elemental![/color]\n" \
-		+ "Lightning arcs between the crags. The storm attacks.",
-	"[color=#d9b359]Troll Berserker![/color]\n" \
-		+ "The ground shakes. A troll charges down, roaring.",
-	"[color=#d9b359]Peak Guardian![/color]\n" \
-		+ "An ancient sentinel stirs, bound to protect this height.",
+	{
+		"monster_type": "orc",
+		"title": "Orc Warlord!",
+		"narrative": "A massive orc stands at the ridge, war-axe raised.",
+	},
+	{
+		"monster_type": "troll",
+		"title": "Troll Berserker!",
+		"narrative": "The ground shakes. A troll charges down, roaring.",
+	},
+	{
+		"monster_type": "dragon",
+		"title": "Dragon's Territory!",
+		"narrative": "A shadow blots out the sun. Dragon scales glint like obsidian.",
+	},
 ]
 
 const FOREST_DISCOVERY = [
@@ -589,33 +611,26 @@ static func _pick_weighted(weights: Array) -> String:
 static func _generate_combat_event(
 	area_id: String, _player_level: int
 ) -> Dictionary:
-	var pool: Array
-	var monster_pool: Array
+	var encounters: Array
 	match area_id:
 		"forest":
-			pool = FOREST_COMBAT
-			monster_pool = ["goblin", "slime", "wolf"]
+			encounters = FOREST_COMBAT
 		"mountain":
-			pool = MOUNTAIN_COMBAT
-			monster_pool = ["goblin", "orc", "skeleton"]
+			encounters = MOUNTAIN_COMBAT
 		"cave":
-			pool = CAVE_COMBAT
-			monster_pool = ["skeleton", "spider", "bat"]
+			encounters = CAVE_COMBAT
 		"peak":
-			pool = PEAK_COMBAT
-			monster_pool = ["orc", "troll", "dragon"]
+			encounters = PEAK_COMBAT
 		_:
-			pool = FOREST_COMBAT
-			monster_pool = ["goblin"]
+			encounters = [FOREST_COMBAT[0]]
 
-	var narrative = pool[randi() % pool.size()]
-	var monster_type = monster_pool[randi() % monster_pool.size()]
+	var encounter: Dictionary = encounters[randi() % encounters.size()]
 
 	return {
 		"type": "combat",
-		"title": "Combat Encounter",
-		"narrative": narrative,
-		"monster_type": monster_type,
+		"title": encounter.title,
+		"narrative": encounter.narrative,
+		"monster_type": encounter.monster_type,
 		"choices": [],
 		"rewards": {},
 	}

@@ -3,6 +3,23 @@ extends GutTest
 # Tests for ExplorationEventFactory
 
 const Factory = preload("res://scripts/utils/ExplorationEventFactory.gd")
+const AREA_MONSTERS = {
+	"forest": ["goblin", "slime", "wolf"],
+	"mountain": ["goblin", "orc", "skeleton"],
+	"cave": ["skeleton", "spider", "bat"],
+	"peak": ["orc", "troll", "dragon"],
+}
+const MONSTER_TITLES = {
+	"goblin": ["A Goblin Ambush!", "Goblin Rockslide Ambush!"],
+	"slime": ["Slime from the Roots!"],
+	"wolf": ["Wolf on the Hunt!"],
+	"orc": ["Orc Raider!", "Orc Warlord!"],
+	"skeleton": ["Skeleton Patrol!", "Skeleton Guardian!"],
+	"spider": ["Spider's Lair!"],
+	"bat": ["Bat in the Dark!"],
+	"troll": ["Troll Berserker!"],
+	"dragon": ["Dragon's Territory!"],
+}
 
 
 func test_event_has_valid_structure():
@@ -45,6 +62,43 @@ func test_combat_event_has_monster_type():
 			)
 			break
 	assert_true(found_combat, "Should find at least one combat event in 100 tries")
+
+
+func test_combat_event_identity_matches_monster_type_in_every_area():
+	for area_id in AREA_MONSTERS:
+		for _i in range(100):
+			var event = Factory._generate_combat_event(area_id, 1)
+			assert_has(AREA_MONSTERS[area_id], event.monster_type)
+			assert_has(
+				MONSTER_TITLES[event.monster_type],
+				event.title,
+				"%s combat title should match %s" % [area_id, event.monster_type]
+			)
+			assert_true(
+				event.narrative.to_lower().contains(event.monster_type),
+				"%s combat narrative should name %s" % [area_id, event.monster_type]
+			)
+
+
+func test_combat_event_monsters_match_factory_names_and_have_portraits():
+	for monster_type in MONSTER_TITLES:
+		var monster = MonsterFactory.create_monster(monster_type, 1)
+		assert_eq(monster.name.to_lower(), monster_type)
+		assert_has(
+			PortraitLookup.MONSTER_TEXTURES,
+			monster_type,
+			"Dedicated combat portrait should exist for %s" % monster_type
+		)
+		assert_not_null(
+			PortraitLookup.get_monster_texture(monster.name),
+			"Combat portrait should resolve for %s" % monster_type
+		)
+
+
+func test_unknown_area_combat_defaults_to_matching_goblin_event():
+	var event = Factory._generate_combat_event("nonexistent", 1)
+	assert_eq(event.monster_type, "goblin")
+	assert_eq(event.title, "A Goblin Ambush!")
 
 
 func test_discovery_event_has_rewards():
