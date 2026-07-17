@@ -1,6 +1,7 @@
 extends Control
 
-# WorldMap - A simple world map for navigating between locations
+# WorldMap - DEPRECATED: absorbed into exploration hub map (GameManager aliases world_map).
+# Kept so old scene files still load if opened directly.
 
 @onready var background = $Background
 @onready var town_button = $VBoxContainer/HBoxContainer/TownButton

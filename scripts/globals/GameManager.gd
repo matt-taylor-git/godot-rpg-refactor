@@ -32,6 +32,12 @@ signal game_victory()
 signal operation_succeeded(message: String)  # Success feedback signal
 signal operation_failed(message: String)  # Error feedback signal
 
+# Old town/world_map screens absorbed into the unified exploration hub.
+const SCENE_ALIASES := {
+	"town_scene": "exploration_scene",
+	"world_map": "exploration_scene",
+}
+
 var current_scene: String = ""
 var game_data = {}
 
@@ -169,7 +175,7 @@ func start_new_game():
 	game_data.current_scene = "character_creation"
 	emit_signal("game_started")
 
-func load_game(save_slot: int):
+func load_game(save_slot: int) -> bool:
 	print("Loading game from slot ", save_slot)
 	var loaded_data = _load_from_file(save_slot)
 	if loaded_data:
@@ -199,9 +205,11 @@ func load_game(save_slot: int):
 
 		emit_signal("game_loaded")
 		emit_signal("operation_succeeded", "Game loaded successfully!")  # AC-UI-011
-	else:
-		print("Failed to load save slot ", save_slot)
-		emit_signal("operation_failed", "Failed to load game")  # AC-UI-012
+		return true
+
+	print("Failed to load save slot ", save_slot)
+	emit_signal("operation_failed", "Failed to load game")  # AC-UI-012
+	return false
 
 func _load_from_file(save_slot: int) -> Variant:
 	var save_path = "user://save_slot_%d.json" % save_slot
@@ -221,7 +229,7 @@ func _load_from_file(save_slot: int) -> Variant:
 		print("Save file does not exist")
 	return null
 
-func save_game(save_slot: int):
+func save_game(save_slot: int) -> bool:
 	print("Saving game to slot ", save_slot)
 	if game_data.player:
 		game_data.save_slots[save_slot] = {
@@ -235,11 +243,14 @@ func save_game(save_slot: int):
 			},
 			"game_start_time": game_start_time
 		}
-		_save_to_file(save_slot)
-	else:
-		print("No player data to save")
+		return _save_to_file(save_slot)
 
-func _save_to_file(save_slot: int):
+	print("No player data to save")
+	emit_signal("operation_failed", "Failed to save game")
+	return false
+
+
+func _save_to_file(save_slot: int) -> bool:
 	var save_path = "user://save_slot_%d.json" % save_slot
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
@@ -248,32 +259,47 @@ func _save_to_file(save_slot: int):
 		file.close()
 		print("Game saved to ", save_path)
 		emit_signal("operation_succeeded", "Game saved successfully!")  # AC-UI-011
-	else:
-		print("Failed to save game")
-		emit_signal("operation_failed", "Failed to save game")  # AC-UI-012
+		return true
+
+	print("Failed to save game")
+	emit_signal("operation_failed", "Failed to save game")  # AC-UI-012
+	return false
+
+func resolve_scene_name(scene_name: String) -> String:
+	return SCENE_ALIASES.get(scene_name, scene_name)
+
 
 func change_scene(scene_name: String):
 	print("Changing scene to: ", scene_name)
-	var scene_path = "res://scenes/ui/" + scene_name + ".tscn"
+	# Force town area when callers still request the old town hub.
+	if scene_name == "town_scene":
+		var state = get_exploration_state().duplicate(true)
+		if state.is_empty():
+			state = {}
+		state["current_area_id"] = "town"
+		set_exploration_state(state)
+
+	var resolved = resolve_scene_name(scene_name)
+	var scene_path = "res://scenes/ui/" + resolved + ".tscn"
 	if not ResourceLoader.exists(scene_path):
 		print("Error: Scene file not found: ", scene_path)
 		return
-	current_scene = scene_name
-	game_data.current_scene = scene_name
+	current_scene = resolved
+	game_data.current_scene = resolved
 
 	# Fade via SceneTransition autoload when available
 	print("Loading scene: ", scene_path)
 	if SceneTransition:
 		await SceneTransition.change_scene(scene_path)
-		print("Scene changed successfully to: ", scene_name)
-		emit_signal("scene_changed", scene_name)
+		print("Scene changed successfully to: ", resolved)
+		emit_signal("scene_changed", resolved)
 	else:
 		var error = get_tree().change_scene_to_file(scene_path)
 		if error != OK:
 			print("Error changing scene: ", error)
 		else:
-			print("Scene changed successfully to: ", scene_name)
-			emit_signal("scene_changed", scene_name)
+			print("Scene changed successfully to: ", resolved)
+			emit_signal("scene_changed", resolved)
 
 func get_current_scene() -> String:
 	return current_scene
@@ -628,7 +654,8 @@ func _check_combat_end():
 		end_combat()
 
 func go_to_town():
-	change_scene("town_scene")
+	change_scene("town_scene")  # aliases to exploration hub at town
+
 
 func go_to_exploration():
 	change_scene("exploration_scene")

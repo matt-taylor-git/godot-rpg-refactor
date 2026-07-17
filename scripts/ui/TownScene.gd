@@ -1,6 +1,7 @@
 extends Control
 
-# TownScene - The central hub of the game
+# TownScene - DEPRECATED: absorbed into exploration hub (GameManager aliases town_scene).
+# Kept so old scene files still load if opened directly.
 
 @onready var title_label = $VBoxContainer/Title
 @onready var shop_button = $VBoxContainer/CardsRow/ShopCard/VBox/ShopButton

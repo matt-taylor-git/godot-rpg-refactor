@@ -3,16 +3,17 @@ extends RefCounted
 
 # PortraitLookup - Central texture resolution for classes, monsters, NPCs
 
-const DEFAULT_PLAYER := "res://assets/Hero.png"
+const DEFAULT_PLAYER := "res://assets/characters/hero.png"
 # Prefer transparent cutouts (goblin_t) over RGB plates with light backgrounds
 const DEFAULT_MONSTER := "res://assets/goblin_t.png"
 const DEFAULT_NPC := "res://assets/warrior.png"
 
+# Full-body class art for hub (and shared player display)
 const CLASS_TEXTURES := {
-	"Warrior": "res://assets/warrior.png",
-	"Mage": "res://assets/mage.png",
-	"Rogue": "res://assets/rogue.png",
-	"Hero": "res://assets/Hero.png",
+	"Warrior": "res://assets/characters/warrior.png",
+	"Mage": "res://assets/characters/mage.png",
+	"Rogue": "res://assets/characters/rogue.png",
+	"Hero": "res://assets/characters/hero.png",
 }
 
 const MONSTER_TEXTURES := {

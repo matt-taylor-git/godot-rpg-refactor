@@ -94,11 +94,13 @@ func save_quests() -> Dictionary:
 	var active_data = []
 	for quest in active_quests:
 		active_data.append({
+			"id": quest.id,
 			"title": quest.title,
 			"description": quest.description,
 			"type": quest.type,
 			"target_count": quest.target_count,
 			"current_count": quest.current_count,
+			"target_area": quest.target_area,
 			"reward_exp": quest.reward_exp,
 			"reward_gold": quest.reward_gold,
 			"completed": quest.completed
@@ -107,11 +109,13 @@ func save_quests() -> Dictionary:
 	var completed_data = []
 	for quest in completed_quests:
 		completed_data.append({
+			"id": quest.id,
 			"title": quest.title,
 			"description": quest.description,
 			"type": quest.type,
 			"target_count": quest.target_count,
 			"current_count": quest.current_count,
+			"target_area": quest.target_area,
 			"reward_exp": quest.reward_exp,
 			"reward_gold": quest.reward_gold,
 			"completed": quest.completed
@@ -130,11 +134,13 @@ func load_quests(data: Dictionary) -> void:
 	if data.has("active"):
 		for quest_data in data.active:
 			var quest = QuestFactory.Quest.new()
+			quest.id = quest_data.get("id", "")
 			quest.title = quest_data.get("title", "")
 			quest.description = quest_data.get("description", "")
 			quest.type = quest_data.get("type", "")
 			quest.target_count = quest_data.get("target_count", 0)
 			quest.current_count = quest_data.get("current_count", 0)
+			quest.target_area = quest_data.get("target_area", "")
 			quest.reward_exp = quest_data.get("reward_exp", 0)
 			quest.reward_gold = quest_data.get("reward_gold", 0)
 			quest.completed = quest_data.get("completed", false)
@@ -144,11 +150,13 @@ func load_quests(data: Dictionary) -> void:
 	if data.has("completed"):
 		for quest_data in data.completed:
 			var quest = QuestFactory.Quest.new()
+			quest.id = quest_data.get("id", "")
 			quest.title = quest_data.get("title", "")
 			quest.description = quest_data.get("description", "")
 			quest.type = quest_data.get("type", "")
 			quest.target_count = quest_data.get("target_count", 0)
 			quest.current_count = quest_data.get("current_count", 0)
+			quest.target_area = quest_data.get("target_area", "")
 			quest.reward_exp = quest_data.get("reward_exp", 0)
 			quest.reward_gold = quest_data.get("reward_gold", 0)
 			quest.completed = quest_data.get("completed", true)

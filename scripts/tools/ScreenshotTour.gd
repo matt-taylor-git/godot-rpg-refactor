@@ -12,32 +12,31 @@ const SETTLE_TIMEOUT_SEC := 5.0
 const TOUR: Array = [
 	{"id": "main_menu", "scene": "main_menu"},
 	{"id": "character_creation", "scene": "character_creation"},
-	{"id": "town", "scene": "town_scene"},
-	{"id": "world_map", "scene": "world_map"},
-	{"id": "exploration", "scene": "exploration_scene"},
+	# town_scene / world_map alias to exploration hub
+	{"id": "hub", "scene": "exploration_scene"},
 	{"id": "combat", "start_combat": true},
 	{"id": "victory", "scene": "victory_scene"},
 	{"id": "game_over", "scene": "game_over_scene"},
-	{"id": "shop", "scene": "town_scene", "dialog": "res://scenes/ui/shop_dialog.tscn"},
-	{"id": "inventory", "scene": "town_scene", "dialog": "res://scenes/ui/inventory_dialog.tscn"},
-	{"id": "skills", "scene": "town_scene", "dialog": "res://scenes/ui/skills_dialog.tscn"},
-	{"id": "quest_log", "scene": "town_scene", "dialog": "res://scenes/ui/quest_log_dialog.tscn"},
+	{"id": "shop", "scene": "exploration_scene", "dialog": "res://scenes/ui/shop_dialog.tscn"},
+	{"id": "inventory", "scene": "exploration_scene", "dialog": "res://scenes/ui/inventory_dialog.tscn"},
+	{"id": "skills", "scene": "exploration_scene", "dialog": "res://scenes/ui/skills_dialog.tscn"},
+	{"id": "quest_log", "scene": "exploration_scene", "dialog": "res://scenes/ui/quest_log_dialog.tscn"},
 	{
 		"id": "dialogue",
-		"scene": "town_scene",
+		"scene": "exploration_scene",
 		"dialog": "res://scenes/ui/dialogue_scene.tscn",
 		"start_dialogue": "quest_giver",
 	},
 	{
 		"id": "quest_complete",
-		"scene": "town_scene",
+		"scene": "exploration_scene",
 		"dialog": "res://scenes/ui/quest_completion_dialog.tscn",
 		"quest_complete_demo": true,
 	},
 	{"id": "options", "scene": "main_menu", "dialog": "res://scenes/ui/options_dialog.tscn"},
 	{"id": "save_slot", "scene": "main_menu", "dialog": "res://scenes/ui/save_slot_dialog.tscn"},
-	{"id": "game_menu", "scene": "town_scene", "dialog": "res://scenes/ui/game_menu_dialog.tscn"},
-	{"id": "codex", "scene": "town_scene", "dialog": "res://scenes/ui/codex_dialog.tscn"},
+	{"id": "game_menu", "scene": "exploration_scene", "dialog": "res://scenes/ui/game_menu_dialog.tscn"},
+	{"id": "codex", "scene": "exploration_scene", "dialog": "res://scenes/ui/codex_dialog.tscn"},
 ]
 
 var _output_dir: String = ""

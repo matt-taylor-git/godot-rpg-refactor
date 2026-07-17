@@ -270,7 +270,7 @@ func _on_save_slot_selected(slot_number: int):
 		if GameManager.in_combat:
 			GameManager.change_scene("combat_scene")
 		else:
-			GameManager.change_scene("town_scene")
+			GameManager.change_scene("exploration_scene")
 	else:
 		print("Failed to load game from slot ", slot_number)
 		# Could show error message

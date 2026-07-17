@@ -118,11 +118,19 @@ GameManager.change_scene("town_scene")  # → res://scenes/ui/town_scene.tscn
 - `UIButton`: read/write `button.button_text`, not `button.text` (cleared in `_ready`).
 - Prefer `print()` over `push_warning()` in code under GUT (warnings fail tests).
 
-### UI layout (800×600)
+### UI layout (1280×720, 16:9)
 
-- VBox children need `size_flags_vertical = 3` (EXPAND_FILL) to grow.
+- Base viewport is **1280×720** (16:9). Stretch mode remains `canvas_items` / `expand`.
+- Main gameplay hub is `exploration_scene`. `town_scene` and `world_map` alias to it.
+- Hub columns ≈ **260px / flexible / 340px** (character HUD · map · location + actions).
+- Visual reading order: **map → selected location → primary action → character condition**.
+- Left HUD is **content-sized** (no full-height empty panel). Map fills center; no
+  duplicate location footer under the map.
+- Right column: location card → one gold **primary CTA** → muted secondaries →
+  narrative → compact utility bar (Inventory / Quests / Menu).
+- Map markers: `scripts/components/MapMarker.gd` (teardrop pins + collision-aware labels).
+- VBox children need `size_flags_vertical = 3` (EXPAND_FILL) only when they should grow.
 - Hide unused controls as the **last** step of `_ready()`.
-- Footer: more than ~3–4 `UIButton`s overflows horizontally — hide unused ones.
 - In `.tscn`, `parent=` is from scene root; nested nodes need full parent paths.
 
 ---
@@ -130,6 +138,9 @@ GameManager.change_scene("town_scene")  # → res://scenes/ui/town_scene.tscn
 ## Theme & Visual Style
 
 Central theme: `resources/ui_theme.tres` via `UIThemeManager`.
+Full reference: `docs/style-guide.md`.
+
+### Color tokens
 
 | Purpose | Token | Approx |
 |---------|-------|--------|
@@ -140,8 +151,32 @@ Central theme: `resources/ui_theme.tres` via `UIThemeManager`.
 | Titles / focus | `accent` / `title_gold` | gold |
 | Success / danger | `success` / `danger` | green / red |
 
-Dark fantasy: no pure white/black, bronze borders, gold emphasis, ~2px corners.
-Full reference: `docs/style-guide.md`.
+Dark fantasy: **no pure white/black**, warm umber/charcoal surfaces, ~2px corners.
+
+### Typography (Cinzel + Source Serif 4)
+
+| Role | Face | Path |
+|------|------|------|
+| Display / headings / primary CTA | **Cinzel** | `assets/Cinzel-VariableFont_wght.ttf` |
+| Body, stats, narrative, captions, marker labels | **Source Serif 4** | `assets/fonts/SourceSerif4-VariableFont_opsz_wght.ttf` |
+
+- License: SIL OFL — keep `assets/fonts/OFL-SourceSerif4.txt` with the font.
+- Sizes (see `UITypography`): H1 28 / H2 24 / H3 20 / body 14–16 / caption 12.
+- Prefer Source Serif 4 for 12–14px UI on dark backgrounds; Cinzel for titles and
+  emphasis only. Avoid long all-caps body copy.
+- Do **not** use `assets/fonts/default_font.ttf` for new UI body text.
+- Google Fonts (OFL) may be fetched into `assets/fonts/` for companions; ship files
+  on disk (no runtime CDN webfonts).
+
+### Borders, chrome, and hierarchy
+
+- **Bright gold** borders/motion only for: selected map markers, focused controls,
+  primary CTAs, important state changes.
+- **Quiet panels** (map, HUD card, narrative): 0–1px muted bronze or soft separators.
+- **Framed panels** (location card): fuller bronze edge OK.
+- Secondary / utility buttons: smaller height, caption type, muted borders — never
+  equal weight to the primary action.
+- Micro-motion: ~150–200ms; respect `GameSettings.get_reduced_motion()`.
 
 When editing `ui_theme.tres`, **do not** put inline comments on color lines.
 
@@ -348,7 +383,7 @@ Keep zero lint errors on touched files before finishing work.
 .\Export-AndServe.ps1 -SkipExport  # serve existing build
 ```
 
-Game URL: `http://localhost:8060/rpg.html` (800×600). Skill: `web-export`.
+Game URL: `http://localhost:8060/rpg.html` (1280×720). Skill: `web-export`.
 
 ---
 
@@ -420,6 +455,6 @@ Set at character creation; skills via `SkillFactory.get_class_skills(class_name)
 
 ---
 
-**Last updated**: 2026-07-16  
-**Asset pipeline**: Grok Imagine + `.grok/skills/imagine-asset`  
+**Last updated**: 2026-07-17  
+**Typography**: Cinzel + Source Serif 4 · **Asset pipeline**: Grok Imagine + `.grok/skills/imagine-asset`  
 **GUT**: 9.5.0 · **gdtoolkit**: 4.5.0

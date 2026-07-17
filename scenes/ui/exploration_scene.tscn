@@ -1,21 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://c8x8x8x8x8x8x8x8x8x8x8"]
+[gd_scene load_steps=5 format=3 uid="uid://c8x8x8x8x8x8x8x8x8x8x8"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/ExplorationScene.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="3"]
-[ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="5"]
-[ext_resource type="Texture2D" path="res://assets/divider.png" id="6"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
-shader = ExtResource("5")
-shader_parameter/time_scale = 0.5
-shader_parameter/wave_intensity = 0.3
-shader_parameter/color_primary = Color(0.06, 0.05, 0.04, 1)
-shader_parameter/color_accent = Color(0.15, 0.10, 0.06, 1)
-shader_parameter/reduce_motion = false
-shader_parameter/grain_intensity = 0.03
-shader_parameter/ember_intensity = 0.06
-shader_parameter/ember_color = Color(0.9, 0.4, 0.1, 1)
+[ext_resource type="PackedScene" uid="uid://bi4pnfxtnky03" path="res://scenes/components/ui_progress_bar.tscn" id="4"]
 
 [node name="ExplorationScene" type="Control"]
 layout_mode = 3
@@ -35,166 +23,270 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-material = SubResource("ShaderMaterial_bg")
 
-[node name="UI" type="VBoxContainer" parent="."]
+[node name="Hub" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
 
-[node name="TopBar" type="HBoxContainer" parent="UI"]
+[node name="LeftColumn" type="VBoxContainer" parent="Hub"]
+custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
-custom_minimum_size = Vector2(0, 48)
+size_flags_vertical = 0
+theme_override_constants/separation = 0
 
-[node name="AreaInfo" type="VBoxContainer" parent="UI/TopBar"]
+[node name="HudPanel" type="PanelContainer" parent="Hub/LeftColumn"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 0)
-theme_override_constants/separation = 2
+size_flags_vertical = 0
 
-[node name="AreaName" type="Label" parent="UI/TopBar/AreaInfo"]
+[node name="LeftMargin" type="MarginContainer" parent="Hub/LeftColumn/HudPanel"]
 layout_mode = 2
-text = "Town"
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
-[node name="DangerLevel" type="Label" parent="UI/TopBar/AreaInfo"]
+[node name="LeftVBox" type="VBoxContainer" parent="Hub/LeftColumn/HudPanel/LeftMargin"]
 layout_mode = 2
-text = "The air is calm and still."
+theme_override_constants/separation = 6
 
-[node name="DangerBar" type="ProgressBar" parent="UI/TopBar/AreaInfo"]
+[node name="CharacterPortrait" type="TextureRect" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox"]
+custom_minimum_size = Vector2(140, 160)
 layout_mode = 2
+size_flags_horizontal = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLevelRow" type="HBoxContainer" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NameBanner" type="Label" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/NameLevelRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Hero"
+theme_type_variation = &"H2"
+
+[node name="LevelLabel" type="Label" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/NameLevelRow"]
+layout_mode = 2
+text = "Lv 1"
+horizontal_alignment = 2
+
+[node name="HpBar" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox" instance=ExtResource("4")]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+max_value = 100.0
+value = 100.0
+show_percentage = false
+show_value_text = true
+connect_to_gamemanager = false
+bar_kind = "health"
+
+[node name="MpBar" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox" instance=ExtResource("4")]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+max_value = 100.0
+value = 0.0
+show_percentage = false
+show_value_text = true
+connect_to_gamemanager = false
+bar_kind = "mana"
+
+[node name="GoldLabel" type="Label" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+text = "Gold: 0"
+
+[node name="StatusChip" type="PanelContainer" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+
+[node name="StatusChipMargin" type="MarginContainer" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/StatusChip"]
+layout_mode = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 4
+
+[node name="StatusChipRow" type="HBoxContainer" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/StatusChip/StatusChipMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="StatusIcon" type="TextureRect" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/StatusChip/StatusChipMargin/StatusChipRow"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StatusLabel" type="Label" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/StatusChip/StatusChipMargin/StatusChipRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Calm"
+autowrap_mode = 3
+
+[node name="DangerBar" type="ProgressBar" parent="Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox"]
 custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
 max_value = 25.0
 show_percentage = false
 
-[node name="PlayerStats" type="Label" parent="UI/TopBar"]
+[node name="CenterColumn" type="VBoxContainer" parent="Hub"]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 2
-text = "Hero (Lv.1) - HP: 100/100 - Gold: 0"
+size_flags_vertical = 3
+theme_override_constants/separation = 0
 
-[node name="TopDivider" type="TextureRect" parent="UI"]
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
-texture = ExtResource("6")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="MiddleSection" type="PanelContainer" parent="UI"]
+[node name="MapPanel" type="PanelContainer" parent="Hub/CenterColumn"]
 layout_mode = 2
 size_flags_vertical = 3
+size_flags_stretch_ratio = 5.0
 
-[node name="NarrativeLog" type="RichTextLabel" parent="UI/MiddleSection"]
-layout_mode = 2
-bbcode_enabled = true
-scroll_active = true
-scroll_following = true
-text = ""
-
-[node name="BottomDivider" type="TextureRect" parent="UI"]
-custom_minimum_size = Vector2(0, 72)
+[node name="MapInner" type="Control" parent="Hub/CenterColumn/MapPanel"]
+clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
-texture = ExtResource("6")
-expand_mode = 1
-stretch_mode = 5
+size_flags_vertical = 3
 
-[node name="BottomBar" type="VBoxContainer" parent="UI"]
-layout_mode = 2
-size_flags_vertical = 0
-theme_override_constants/separation = 4
-
-[node name="ActionButtons" type="GridContainer" parent="UI/BottomBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-columns = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 6
-
-[node name="ExploreButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
-custom_minimum_size = Vector2(120, 40)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Explore"
-
-[node name="RestButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
-custom_minimum_size = Vector2(120, 40)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Rest"
-
-[node name="TravelButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
-custom_minimum_size = Vector2(120, 40)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Travel"
-
-[node name="InventoryButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
-custom_minimum_size = Vector2(120, 40)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Inventory"
-
-[node name="MoreButton" parent="UI/BottomBar/ActionButtons" instance=ExtResource("3")]
-custom_minimum_size = Vector2(120, 40)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "More"
-
-[node name="MorePanel" type="PanelContainer" parent="."]
-visible = false
+[node name="MapTexture" type="TextureRect" parent="Hub/CenterColumn/MapPanel/MapInner"]
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -220.0
-offset_top = -220.0
-offset_right = -12.0
-offset_bottom = -68.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_type_variation = "Panel"
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+mouse_filter = 2
 
-[node name="MoreMargin" type="MarginContainer" parent="MorePanel"]
+[node name="MarkersLayer" type="Control" parent="Hub/CenterColumn/MapPanel/MapInner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="RightColumn" type="VBoxContainer" parent="Hub"]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="LocationCard" type="PanelContainer" parent="Hub/RightColumn"]
+layout_mode = 2
+
+[node name="LocationCardMargin" type="MarginContainer" parent="Hub/RightColumn/LocationCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="MoreButtons" type="VBoxContainer" parent="MorePanel/MoreMargin"]
+[node name="LocationCardVBox" type="VBoxContainer" parent="Hub/RightColumn/LocationCard/LocationCardMargin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 4
 
-[node name="ShopButton" parent="MorePanel/MoreMargin/MoreButtons" instance=ExtResource("3")]
+[node name="LocationArt" type="TextureRect" parent="Hub/RightColumn/LocationCard/LocationCardMargin/LocationCardVBox"]
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="LocationName" type="Label" parent="Hub/RightColumn/LocationCard/LocationCardMargin/LocationCardVBox"]
+layout_mode = 2
+text = "Town"
+horizontal_alignment = 1
+theme_type_variation = &"H2"
+
+[node name="LocationDescription" type="Label" parent="Hub/RightColumn/LocationCard/LocationCardMargin/LocationCardVBox"]
+layout_mode = 2
+text = "A safe town with shops and NPCs"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="LocationStatus" type="Label" parent="Hub/RightColumn/LocationCard/LocationCardMargin/LocationCardVBox"]
+layout_mode = 2
+text = "You are here"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="PrimaryAction" parent="Hub/RightColumn" instance=ExtResource("3")]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rest"
+
+[node name="SecondaryActions" type="HBoxContainer" parent="Hub/RightColumn"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ExploreButton" parent="Hub/RightColumn/SecondaryActions" instance=ExtResource("3")]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Explore"
+
+[node name="RestButton" parent="Hub/RightColumn/SecondaryActions" instance=ExtResource("3")]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rest"
+
+[node name="TravelButton" parent="Hub/RightColumn/SecondaryActions" instance=ExtResource("3")]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Travel"
+
+[node name="ShopButton" parent="Hub/RightColumn/SecondaryActions" instance=ExtResource("3")]
+layout_mode = 2
+size_flags_horizontal = 3
 text = "Shop"
 
-[node name="QuestLogButton" parent="MorePanel/MoreMargin/MoreButtons" instance=ExtResource("3")]
+[node name="NarrativePanel" type="PanelContainer" parent="Hub/RightColumn"]
 layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.2
+
+[node name="NarrativeLog" type="RichTextLabel" parent="Hub/RightColumn/NarrativePanel"]
+layout_mode = 2
+bbcode_enabled = true
+scroll_active = true
+scroll_following = true
+fit_content = false
+text = ""
+
+[node name="ContextActions" type="VBoxContainer" parent="Hub/RightColumn"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="UtilityBar" type="HBoxContainer" parent="Hub/RightColumn"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="InventoryButton" parent="Hub/RightColumn/UtilityBar" instance=ExtResource("3")]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Inventory"
+
+[node name="QuestLogButton" parent="Hub/RightColumn/UtilityBar" instance=ExtResource("3")]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
 text = "Quests"
 
-[node name="CodexButton" parent="MorePanel/MoreMargin/MoreButtons" instance=ExtResource("3")]
+[node name="MenuButton" parent="Hub/RightColumn/UtilityBar" instance=ExtResource("3")]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
-text = "Codex"
-
-[node name="MenuButton" parent="MorePanel/MoreMargin/MoreButtons" instance=ExtResource("3")]
-layout_mode = 2
+size_flags_horizontal = 3
 text = "Menu"
 
-[connection signal="pressed" from="UI/BottomBar/ActionButtons/ExploreButton" to="." method="_on_explore_pressed"]
-[connection signal="pressed" from="UI/BottomBar/ActionButtons/RestButton" to="." method="_on_rest_pressed"]
-[connection signal="pressed" from="UI/BottomBar/ActionButtons/TravelButton" to="." method="_on_travel_pressed"]
-[connection signal="pressed" from="UI/BottomBar/ActionButtons/InventoryButton" to="." method="_on_inventory_pressed"]
-[connection signal="pressed" from="UI/BottomBar/ActionButtons/MoreButton" to="." method="_on_more_pressed"]
-[connection signal="pressed" from="MorePanel/MoreMargin/MoreButtons/ShopButton" to="." method="_on_shop_pressed"]
-[connection signal="pressed" from="MorePanel/MoreMargin/MoreButtons/QuestLogButton" to="." method="_on_quest_log_pressed"]
-[connection signal="pressed" from="MorePanel/MoreMargin/MoreButtons/CodexButton" to="." method="_on_codex_pressed"]
-[connection signal="pressed" from="MorePanel/MoreMargin/MoreButtons/MenuButton" to="." method="_on_menu_pressed"]
+[connection signal="pressed" from="Hub/RightColumn/PrimaryAction" to="." method="_on_primary_action_pressed"]
+[connection signal="pressed" from="Hub/RightColumn/SecondaryActions/ExploreButton" to="." method="_on_explore_pressed"]
+[connection signal="pressed" from="Hub/RightColumn/SecondaryActions/RestButton" to="." method="_on_rest_pressed"]
+[connection signal="pressed" from="Hub/RightColumn/SecondaryActions/TravelButton" to="." method="_on_travel_confirm_pressed"]
+[connection signal="pressed" from="Hub/RightColumn/SecondaryActions/ShopButton" to="." method="_on_shop_pressed"]
+[connection signal="pressed" from="Hub/RightColumn/UtilityBar/InventoryButton" to="." method="_on_inventory_pressed"]
+[connection signal="pressed" from="Hub/RightColumn/UtilityBar/QuestLogButton" to="." method="_on_quest_log_pressed"]
+[connection signal="pressed" from="Hub/RightColumn/UtilityBar/MenuButton" to="." method="_on_menu_pressed"]

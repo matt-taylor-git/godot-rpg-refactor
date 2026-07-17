@@ -34,24 +34,34 @@ Think: old tavern at night, torchlit dungeon, ancient tome.
 
 ## Typography
 
-### Font Family
-**Cinzel** - A classical serif with medieval/Renaissance character
-- Use Variable Font weight: 400 (regular), 600 (semibold), 700 (bold)
+### Font Families
+| Role | Face | Path |
+|------|------|------|
+| **Display / headings** | **Cinzel** — classical inscriptional serif | `assets/Cinzel-VariableFont_wght.ttf` |
+| **Body / stats / UI copy** | **Source Serif 4** — readable classical companion | `assets/fonts/SourceSerif4-VariableFont_opsz_wght.ttf` |
+
+Both are SIL Open Font License (OFL). Bundle `assets/fonts/OFL-SourceSerif4.txt` with Source Serif 4.
+
+- Cinzel weights: 400 (regular), 600 (semibold), 700 (bold)
+- Source Serif 4: prefer Regular/Medium for 12–14px UI on dark backgrounds
+- Avoid long all-caps body copy; reserve Cinzel for titles, location names, primary CTAs
+- Do **not** use `assets/fonts/default_font.ttf` for new UI body text
 
 ### Type Scale
-| Style | Size | Weight | Usage |
-|-------|------|--------|-------|
-| H1 | 28px | 600 | Screen titles |
-| H2 | 24px | 600 | Section headers |
-| H3 | 20px | 500 | Subsection headers |
-| Body Large | 16px | 400 | Important text, buttons |
-| Body Regular | 14px | 400 | General content |
-| Caption | 12px | 400 | Labels, hints |
+| Style | Size | Face | Usage |
+|-------|------|------|-------|
+| H1 | 28px | Cinzel | Screen titles |
+| H2 | 24px | Cinzel | Section headers |
+| H3 | 20px | Cinzel | Subsection headers / location names |
+| Body Large | 16px | Cinzel or Source Serif 4 | Primary actions, important text |
+| Body Regular | 14px | Source Serif 4 | General content, stats, narrative |
+| Caption | 12px | Source Serif 4 | Labels, chips, map marker names |
 
 ### Text Styling
 - Titles: Gold color (`accent`) with 2px drop shadow
 - Body: Parchment color (`text_primary`)
 - Always use text shadow on dark backgrounds for readability
+- Exploration hub: bright gold borders only for selected markers, focus, and primary CTAs — use subtle 1px separators elsewhere
 
 ## Spacing System
 

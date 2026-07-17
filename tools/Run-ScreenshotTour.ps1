@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     Boots the game windowed with --screenshot-tour, which walks scenes and dialogs
-    via GameManager and saves an 800x600 gallery. Safe to re-run anytime; each run
+    via GameManager and saves a 1280x720 gallery. Safe to re-run anytime; each run
     wipes and regenerates screenshots/latest/.
 
 .PARAMETER Archive
@@ -42,10 +42,10 @@ Write-Host "Project: $ProjectRoot"
 
 $latestDir = Join-Path $ProjectRoot "screenshots\latest"
 
-Write-Host "Launching tour (windowed 800x600)..."
+Write-Host "Launching tour (windowed 1280x720)..."
 $proc = Start-Process -FilePath $godotExe -ArgumentList @(
     "--path", $ProjectRoot,
-    "--resolution", "800x600",
+    "--resolution", "1280x720",
     "--",
     "--screenshot-tour"
 ) -Wait -PassThru -NoNewWindow

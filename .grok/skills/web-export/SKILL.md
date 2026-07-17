@@ -84,7 +84,7 @@ If the user passed `--test`, use the `agent-browser` skill to:
 - The Godot export preset "Web" is already configured in `export_presets.cfg`
 - Threading is disabled in the export (no SharedArrayBuffer required, but COOP/COEP headers are included for future-proofing)
 - The `webexport/` directory is gitignored
-- Game viewport is 800x600
+- Game viewport is 1280x720
 - The server binds to `127.0.0.1` only (localhost)
 - `serve_web.py` sets correct MIME types for `.wasm`/`.pck` and adds COOP/COEP headers automatically
 

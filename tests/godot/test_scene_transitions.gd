@@ -25,11 +25,14 @@ func test_load_game_routing_combat():
 	assert_eq(GameManager.current_scene, "combat_scene", "Should route to combat scene when in combat")
 
 func test_load_game_routing_no_combat():
-	# Test that loading a game while not in_combat routes to town_scene
-	# Test the routing logic directly via GameManager
+	# town_scene aliases to the unified exploration hub
 	GameManager.in_combat = false
 	GameManager.change_scene("town_scene")
-	assert_eq(GameManager.current_scene, "town_scene", "Should route to town scene when not in combat")
+	assert_eq(
+		GameManager.current_scene,
+		"exploration_scene",
+		"Should route to exploration hub when not in combat (town_scene alias)"
+	)
 
 func test_game_manager_change_scene_error_handling():
 	# Test error handling for invalid scene names

@@ -29,6 +29,38 @@
     "promote_dir": "assets",
     "filename_prefix": "character"
   },
+  "fullbody": {
+    "display_name": "Full-Body Character",
+    "size": [512, 768],
+    "aspect_ratio": "2:3",
+    "chroma_key": "FF00FF",
+    "framing": "Full body head-to-toe character, facing slightly right, centered, feet near bottom. No ground plane text. Character fills most of the frame height.",
+    "output_subdir": "characters",
+    "promote_dir": "assets/characters",
+    "filename_prefix": "fullbody"
+  },
+  "location": {
+    "display_name": "Location Illustration",
+    "size": [640, 360],
+    "aspect_ratio": "16:9",
+    "chroma_key": null,
+    "no_chroma": true,
+    "framing": "Atmospheric establishing shot of a fantasy location. No UI chrome, no text, no watermarks. Dark fantasy mood.",
+    "output_subdir": "locations",
+    "promote_dir": "assets/locations",
+    "filename_prefix": "location"
+  },
+  "map": {
+    "display_name": "World Map",
+    "size": [960, 540],
+    "aspect_ratio": "16:9",
+    "chroma_key": null,
+    "no_chroma": true,
+    "framing": "Parchment fantasy world map, top-down, aged paper texture, hand-drawn ink style. Dark fantasy. No modern UI, no watermarks, no package credits.",
+    "output_subdir": "ui",
+    "promote_dir": "assets/ui",
+    "filename_prefix": "map"
+  },
   "ui": {
     "display_name": "UI Element",
     "size": [256, 256],

@@ -5,11 +5,13 @@ extends Node
 
 # Simple quest resource for now
 class Quest extends Resource:
+	var id: String = ""
 	var title: String = ""
 	var description: String = ""
-	var type: String = ""  # kill, delivery, exploration
+	var type: String = ""  # kill, collect, exploration, misc
 	var target_count: int = 0
 	var current_count: int = 0
+	var target_area: String = ""  # exploration area id when type == "exploration"
 	var reward_exp: int = 0
 	var reward_gold: int = 0
 	var completed: bool = false
@@ -22,6 +24,7 @@ class Quest extends Resource:
 
 static func create_quest(quest_type: String, level: int = 1) -> Quest:
 	var quest = Quest.new()
+	quest.id = quest_type
 
 	match quest_type:
 		"kill_goblins":
@@ -44,11 +47,13 @@ static func create_quest(quest_type: String, level: int = 1) -> Quest:
 			quest.title = "Cave Exploration"
 			quest.description = "Explore the mysterious cave"
 			quest.type = "exploration"
+			quest.target_area = "cave"
 			quest.target_count = 1
 			quest.reward_exp = 75 + level * 15
 			quest.reward_gold = 40 + level * 8
 
 		_:
+			quest.id = "unknown"
 			quest.title = "Unknown Quest"
 			quest.description = "Complete this mysterious task"
 			quest.type = "misc"
