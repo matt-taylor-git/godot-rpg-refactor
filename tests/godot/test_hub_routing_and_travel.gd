@@ -124,49 +124,28 @@ func test_hub_scene_has_expected_structure():
 	add_child_autofree(hub)
 	await get_tree().process_frame
 
-	assert_not_null(
-		hub.get_node_or_null("Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/CharacterPortrait")
-	)
-	assert_not_null(
-		hub.get_node_or_null("Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/NameLevelRow/NameBanner")
-	)
-	assert_not_null(hub.get_node_or_null("Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/HpBar"))
-	assert_not_null(hub.get_node_or_null("Hub/LeftColumn/HudPanel/LeftMargin/LeftVBox/StatusChip"))
-	assert_not_null(hub.get_node_or_null("Hub/CenterColumn/MapPanel/MapInner/MarkersLayer"))
-	assert_null(hub.get_node_or_null("Hub/CenterColumn/MapFooter"))
+	# Full-bleed map + floating docks
+	assert_not_null(hub.get_node_or_null("MapRoot/MapClip/MapContent/MarkersLayer"))
+	assert_not_null(hub.get_node_or_null("MapRoot/MapControls/ZoomInButton"))
+	assert_not_null(hub.get_node_or_null("MapRoot/MapControls/RecenterButton"))
+	assert_not_null(hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/CharacterPortrait"))
+	assert_not_null(hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/ThreatRow/ThreatTag"))
+	assert_not_null(hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/ThreatRow/DangerBar"))
 	assert_not_null(
 		hub.get_node_or_null(
-			"Hub/RightColumn/LocationCard/LocationCardMargin/LocationCardVBox/LocationArt"
+			"RightDock/RightVBox/LocationCard/LocationCardVBox/ArtFrame/LocationArt"
 		)
+	)
+	assert_not_null(hub.get_node_or_null("RightDock/RightVBox/PrimaryAction"))
+	assert_not_null(
+		hub.get_node_or_null("RightDock/RightVBox/EventCard/EventMargin/EventVBox/EventEyebrow")
 	)
 	assert_not_null(
-		hub.get_node_or_null(
-			"Hub/RightColumn/LocationCard/LocationCardMargin/LocationCardVBox/LocationName"
-		)
+		hub.get_node_or_null("RightDock/RightVBox/EventCard/EventMargin/EventVBox/ContextActions")
 	)
-	assert_not_null(
-		hub.get_node_or_null(
-			"Hub/RightColumn/LocationCard/LocationCardMargin/LocationCardVBox/LocationDescription"
-		)
-	)
-	assert_not_null(hub.get_node_or_null("Hub/RightColumn/PrimaryAction"))
-	assert_not_null(hub.get_node_or_null("Hub/RightColumn/SecondaryActions/ExploreButton"))
-	assert_not_null(hub.get_node_or_null("Hub/RightColumn/SecondaryActions/TravelButton"))
-	assert_not_null(hub.get_node_or_null("Hub/RightColumn/SecondaryActions/ShopButton"))
-	assert_not_null(hub.get_node_or_null("Hub/RightColumn/NarrativePanel/NarrativeLog"))
-	assert_not_null(hub.get_node_or_null("Hub/RightColumn/ContextActions"))
-	assert_not_null(hub.get_node_or_null("Hub/RightColumn/UtilityBar/InventoryButton"))
-	assert_not_null(hub.get_node_or_null("Hub/RightColumn/UtilityBar/QuestLogButton"))
-	assert_not_null(hub.get_node_or_null("Hub/RightColumn/UtilityBar/MenuButton"))
-	# No quest list UI on hub
+	assert_not_null(hub.get_node_or_null("RightDock/RightVBox/UtilityBar/InventoryButton"))
+	assert_null(hub.get_node_or_null("Hub/CenterColumn"))
 	assert_null(hub.get_node_or_null("QuestList"))
-	assert_null(hub.get_node_or_null("Hub/QuestList"))
-
-	# Column proportions for hierarchy redesign
-	var left_col: Control = hub.get_node("Hub/LeftColumn")
-	var right_col: Control = hub.get_node("Hub/RightColumn")
-	assert_eq(int(left_col.custom_minimum_size.x), 260, "left column ~260px")
-	assert_eq(int(right_col.custom_minimum_size.x), 340, "right column ~340px")
 
 
 func test_load_game_returns_true_on_success():
