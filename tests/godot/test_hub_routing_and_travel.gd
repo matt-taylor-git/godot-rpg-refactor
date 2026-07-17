@@ -128,8 +128,14 @@ func test_hub_scene_has_expected_structure():
 	assert_not_null(hub.get_node_or_null("MapRoot/MapClip/MapContent/MarkersLayer"))
 	assert_not_null(hub.get_node_or_null("MapRoot/MapControls/ZoomInButton"))
 	assert_not_null(hub.get_node_or_null("MapRoot/MapControls/RecenterButton"))
+	var legend_btn = hub.get_node_or_null("MapRoot/MapControls/LegendButton")
+	assert_not_null(legend_btn)
+	assert_eq(str(legend_btn.text), "Legend", "map control Key renamed to Legend")
 	assert_not_null(hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/CharacterPortrait"))
-	assert_not_null(hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/ThreatRow/ThreatTag"))
+	assert_not_null(hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/ThreatRow/ThreatIcon"))
+	var threat_tag = hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/ThreatRow/ThreatTag")
+	assert_not_null(threat_tag)
+	assert_true(str(threat_tag.text).begins_with("Threat:"), "threat row shows Threat: level")
 	assert_not_null(hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/ThreatRow/DangerBar"))
 	assert_not_null(
 		hub.get_node_or_null(
@@ -137,9 +143,16 @@ func test_hub_scene_has_expected_structure():
 		)
 	)
 	assert_not_null(hub.get_node_or_null("RightDock/RightVBox/PrimaryAction"))
-	assert_not_null(
-		hub.get_node_or_null("RightDock/RightVBox/EventCard/EventMargin/EventVBox/EventEyebrow")
+	var event_eyebrow = hub.get_node_or_null(
+		"RightDock/RightVBox/EventCard/EventMargin/EventVBox/EventEyebrow"
 	)
+	assert_not_null(event_eyebrow)
+	assert_eq(str(event_eyebrow.text), "Ready", "idle event strip uses Ready")
+	var narrative = hub.get_node_or_null(
+		"RightDock/RightVBox/EventCard/EventMargin/EventVBox/NarrativeLog"
+	)
+	assert_not_null(narrative)
+	assert_false(narrative.visible, "narrative collapsed when idle")
 	assert_not_null(
 		hub.get_node_or_null("RightDock/RightVBox/EventCard/EventMargin/EventVBox/ContextActions")
 	)

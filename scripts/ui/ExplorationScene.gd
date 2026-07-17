@@ -7,6 +7,7 @@ const QuestLogDialog = preload("res://scenes/ui/quest_log_dialog.tscn")
 const GameMenuDialog = preload("res://scenes/ui/game_menu_dialog.tscn")
 const UI_BUTTON_SCENE = preload("res://scenes/components/ui_button.tscn")
 const MapMarkerScript = preload("res://scripts/components/MapMarker.gd")
+const HubChrome = preload("res://scripts/ui/ExplorationHubChrome.gd")
 const DANGER_MAX := 25.0
 const BODY_FONT_PATH := "res://assets/fonts/SourceSerif4-VariableFont_opsz_wght.ttf"
 const DISPLAY_FONT_PATH := "res://assets/Cinzel-VariableFont_wght.ttf"
@@ -16,6 +17,8 @@ const STATUS_ICON_DANGER := "res://assets/ui/icons/error.png"
 const MAP_ZOOM_MIN := 1.0
 const MAP_ZOOM_MAX := 1.75
 const MAP_ZOOM_STEP := 0.15
+const EVENT_EXPANDED_MIN_H := 140.0
+const EVENT_NARRATIVE_MIN_H := 64.0
 var current_area_id: String = "town"
 var selected_area_id: String = "town"
 var danger_level: float = 0.0
@@ -34,11 +37,9 @@ var level_label: Label
 var hp_bar: ProgressBar
 var mp_bar: ProgressBar
 var gold_label: Label
-var status_chip: PanelContainer
-var status_icon: TextureRect
-var status_label: Label
 var danger_bar: ProgressBar
 var threat_tag: Label
+var threat_icon: TextureRect
 var map_texture: TextureRect
 var markers_layer: Control
 var map_content: Control
@@ -46,6 +47,10 @@ var map_clip: Control
 var left_dock: Control
 var right_dock: Control
 var legend_panel: Control
+var zoom_out_button: Button
+var zoom_in_button: Button
+var recenter_button: Button
+var legend_button: Button
 var location_art: TextureRect
 var location_name: Label
 var location_description: Label
@@ -58,6 +63,7 @@ var travel_button: Button
 var shop_button: Button
 var narrative_log: RichTextLabel
 var event_card: PanelContainer
+var event_margin: MarginContainer
 var event_eyebrow: Label
 var event_title: Label
 var context_actions: VBoxContainer
@@ -71,6 +77,7 @@ var _primary_kind: int = PrimaryKind.REST
 var _primary_disable_reason: String = ""
 var _map_zoom: float = 1.0
 var _map_pan: Vector2 = Vector2.ZERO
+var _event_expanded: bool = false
 func _ready():
 	print("ExplorationScene ready")
 	_bind_nodes()
@@ -88,6 +95,10 @@ func _ready():
 	GameManager.connect("game_loaded", Callable(self, "_on_game_loaded"))
 	_setup_focus_navigation()
 	await get_tree().process_frame
+	# UIButton._ready sets large min sizes; re-apply compact chrome after children settle.
+	_style_map_controls()
+	_style_utility_buttons()
+	_style_secondary_buttons()
 	_layout_docks()
 	_layout_map_markers()
 	_apply_map_transform()
@@ -122,6 +133,10 @@ func _bind_nodes() -> void:
 	map_texture = $MapRoot/MapClip/MapContent/MapTexture
 	markers_layer = $MapRoot/MapClip/MapContent/MarkersLayer
 	legend_panel = $MapRoot/LegendPanel
+	zoom_out_button = $MapRoot/MapControls/ZoomOutButton
+	zoom_in_button = $MapRoot/MapControls/ZoomInButton
+	recenter_button = $MapRoot/MapControls/RecenterButton
+	legend_button = $MapRoot/MapControls/LegendButton
 	var left: Node = $LeftDock/HudPanel/LeftMargin/LeftVBox
 	character_portrait = left.get_node("CharacterPortrait")
 	name_banner = left.get_node("NameLevelRow/NameBanner")
@@ -132,9 +147,10 @@ func _bind_nodes() -> void:
 	mp_tag = left.get_node("MpRow/MpTag")
 	mp_bar = left.get_node("MpRow/MpBar")
 	gold_label = left.get_node("MetaRow/GoldLabel")
-	status_chip = left.get_node("MetaRow/StatusChip")
-	status_icon = left.get_node("MetaRow/StatusChip/StatusChipMargin/StatusChipRow/StatusIcon")
-	status_label = left.get_node("MetaRow/StatusChip/StatusChipMargin/StatusChipRow/StatusLabel")
+	var status_chip: Control = left.get_node_or_null("MetaRow/StatusChip")
+	if status_chip:
+		status_chip.visible = false
+	threat_icon = left.get_node("ThreatRow/ThreatIcon")
 	threat_tag = left.get_node("ThreatRow/ThreatTag")
 	danger_bar = left.get_node("ThreatRow/DangerBar")
 	var art: Node = $RightDock/RightVBox/LocationCard/LocationCardVBox/ArtFrame
@@ -150,6 +166,7 @@ func _bind_nodes() -> void:
 	travel_button = $RightDock/RightVBox/SecondaryActions/TravelButton
 	shop_button = $RightDock/RightVBox/SecondaryActions/ShopButton
 	event_card = $RightDock/RightVBox/EventCard
+	event_margin = $RightDock/RightVBox/EventCard/EventMargin
 	event_eyebrow = $RightDock/RightVBox/EventCard/EventMargin/EventVBox/EventEyebrow
 	event_title = $RightDock/RightVBox/EventCard/EventMargin/EventVBox/EventTitle
 	narrative_log = $RightDock/RightVBox/EventCard/EventMargin/EventVBox/NarrativeLog
@@ -164,7 +181,7 @@ func _load_fonts() -> void:
 		display_font = load(DISPLAY_FONT_PATH)
 func _apply_typography() -> void:
 	var body_c := UIThemeManager.get_text_primary_color()
-	for node in [level_label, gold_label, status_label, location_description, location_status,
+	for node in [level_label, gold_label, location_description, location_status,
 			narrative_log, hp_tag, mp_tag, threat_tag, event_eyebrow, event_title]:
 		if node == null:
 			continue
@@ -172,7 +189,7 @@ func _apply_typography() -> void:
 			node.add_theme_font_override("font", body_font)
 		if node is Label:
 			var size := UITypography.FONT_SIZE_BODY_REGULAR
-			if node in [status_label, location_status, hp_tag, mp_tag, threat_tag, event_eyebrow]:
+			if node in [location_status, hp_tag, mp_tag, threat_tag, event_eyebrow]:
 				size = UITypography.FONT_SIZE_CAPTION
 			node.add_theme_font_size_override("font_size", size)
 			node.add_theme_color_override("font_color", body_c)
@@ -191,17 +208,22 @@ func _apply_typography() -> void:
 		if primary_action:
 			primary_action.add_theme_font_override("font", display_font)
 			primary_action.add_theme_font_size_override("font_size", UITypography.FONT_SIZE_BODY_LARGE)
+	for btn in [inventory_button, quest_log_button, menu_button]:
+		if btn == null:
+			continue
+		if body_font:
+			btn.add_theme_font_override("font", body_font)
+		btn.add_theme_font_size_override("font_size", UITypography.FONT_SIZE_CAPTION)
 func _style_panels() -> void:
 	if background:
 		var bg_style := StyleBoxFlat.new()
 		bg_style.bg_color = Color(0.09, 0.07, 0.055, 1.0)
 		background.add_theme_stylebox_override("panel", bg_style)
-	_style_floating_panel($LeftDock/HudPanel)
-	_style_floating_panel($RightDock/RightVBox/LocationCard)
-	_style_floating_panel(event_card)
+	HubChrome.style_floating_panel($LeftDock/HudPanel)
+	HubChrome.style_floating_panel($RightDock/RightVBox/LocationCard)
+	HubChrome.style_floating_panel(event_card)
 	if legend_panel:
-		_style_floating_panel(legend_panel)
-	_apply_panel_style(status_chip, false)
+		HubChrome.style_floating_panel(legend_panel)
 	if name_banner:
 		name_banner.add_theme_color_override("font_color", UIThemeManager.get_color("title_gold"))
 	if location_name:
@@ -212,88 +234,18 @@ func _style_panels() -> void:
 	_style_primary_action_button()
 	_style_secondary_buttons()
 	_style_utility_buttons()
-func _style_floating_panel(node: Control) -> void:
-	if node == null:
-		return
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.08, 0.06, 0.93)
-	style.border_color = Color(0.55, 0.42, 0.22, 0.55)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.shadow_color = Color(0, 0, 0, 0.4)
-	style.shadow_size = 6
-	style.shadow_offset = Vector2(0, 2)
-	style.set_content_margin_all(2)
-	if node is PanelContainer or node is Panel:
-		node.add_theme_stylebox_override("panel", style)
-func _apply_panel_style(node: Control, framed: bool) -> void:
-	if node == null:
-		return
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.10, 0.08, 0.06, 0.94)
-	style.set_corner_radius_all(2)
-	if framed:
-		style.border_color = UIThemeManager.get_border_bronze_color()
-		style.border_color.a = 0.75
-		style.set_border_width_all(2)
-	else:
-		var edge := UIThemeManager.get_border_bronze_color()
-		edge.a = 0.28
-		style.border_color = edge
-		style.set_border_width_all(1)
-	style.set_content_margin_all(4)
-	if node is PanelContainer or node is Panel:
-		node.add_theme_stylebox_override("panel", style)
+	_style_map_controls()
 func _style_primary_action_button() -> void:
-	if primary_action == null:
-		return
-	var gold := UIThemeManager.get_color("title_gold")
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.22, 0.16, 0.08, 0.95)
-	style.border_color = gold
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(2)
-	style.set_content_margin_all(8)
-	primary_action.add_theme_stylebox_override("normal", style)
-	var hover := style.duplicate()
-	hover.bg_color = Color(0.28, 0.20, 0.10, 0.98)
-	hover.border_color = gold.lightened(0.12)
-	primary_action.add_theme_stylebox_override("hover", hover)
-	primary_action.add_theme_stylebox_override("focus", hover)
-	var pressed := style.duplicate()
-	pressed.bg_color = Color(0.16, 0.12, 0.06, 1.0)
-	primary_action.add_theme_stylebox_override("pressed", pressed)
-	var disabled := style.duplicate()
-	disabled.bg_color = Color(0.12, 0.10, 0.08, 0.55)
-	disabled.border_color = UIThemeManager.get_secondary_color()
-	disabled.border_color.a = 0.35
-	primary_action.add_theme_stylebox_override("disabled", disabled)
-	primary_action.custom_minimum_size = Vector2(0, 48)
-	primary_action.add_theme_color_override("font_color", UIThemeManager.get_text_primary_color())
-	if primary_action.disabled and _primary_disable_reason != "":
-		primary_action.tooltip_text = _primary_disable_reason
-	else:
-		primary_action.tooltip_text = ""
+	HubChrome.style_primary_action(primary_action, _primary_disable_reason)
 func _style_secondary_buttons() -> void:
-	for btn in [explore_button, rest_button, travel_button, shop_button]:
-		if btn: btn.custom_minimum_size = Vector2(0, 30)
+	HubChrome.style_quiet_buttons(
+		[explore_button, rest_button, travel_button, shop_button], body_font, 34.0, 6)
 func _style_utility_buttons() -> void:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.14, 0.11, 0.08, 0.92)
-	style.border_color = Color(0.55, 0.42, 0.22, 0.45)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(2)
-	var hover := style.duplicate()
-	hover.bg_color = Color(0.2, 0.15, 0.1, 0.96)
-	hover.border_color = UIThemeManager.get_accent_color()
-	for btn in [inventory_button, quest_log_button, menu_button]:
-		if btn == null:
-			continue
-		btn.disabled = false
-		btn.custom_minimum_size = Vector2(0, 34)
-		btn.add_theme_stylebox_override("normal", style)
-		btn.add_theme_stylebox_override("hover", hover)
-		btn.add_theme_color_override("font_color", UIThemeManager.get_text_primary_color())
+	HubChrome.style_utility_buttons(
+		[inventory_button, quest_log_button, menu_button], body_font)
+func _style_map_controls() -> void:
+	HubChrome.style_map_controls(
+		zoom_out_button, zoom_in_button, recenter_button, legend_button, body_font)
 func _layout_docks() -> void:
 	if left_dock == null or right_dock == null:
 		return
@@ -545,36 +497,19 @@ func _update_ui():
 		mp_bar.visible = false
 	if gold_label:
 		gold_label.text = "Gold  %d" % player.gold
-	_update_status_chip()
 	_update_danger_visuals()
 	_style_map_markers()
 	_update_action_hierarchy()
-func _update_status_chip() -> void:
-	var short := _danger_short_label(danger_level)
-	var color := _danger_color(danger_level)
-	if status_label:
-		status_label.text = short
-		status_label.add_theme_color_override("font_color", color)
-		status_label.tooltip_text = ExplorationEventFactory.get_danger_flavor(danger_level)
-	if status_icon:
-		var path := STATUS_ICON_CALM
-		if danger_level >= 15.0:
-			path = STATUS_ICON_DANGER
-		elif danger_level >= 5.0:
-			path = STATUS_ICON_WARN
-		if ResourceLoader.exists(path):
-			status_icon.texture = load(path)
-		status_icon.modulate = color
-func _danger_short_label(level: float) -> String:
+func _threat_level_word(level: float) -> String:
 	if level < 5.0:
-		return "Calm"
+		return "Low"
 	if level < 10.0:
-		return "Uneasy"
+		return "Moderate"
 	if level < 15.0:
-		return "Tense"
+		return "Elevated"
 	if level < 20.0:
-		return "Dangerous"
-	return "Perilous"
+		return "High"
+	return "Critical"
 func _danger_color(level: float) -> Color:
 	var t := clampf(level / DANGER_MAX, 0.0, 1.0)
 	var safe_color := UIThemeManager.get_color("success")
@@ -583,6 +518,11 @@ func _danger_color(level: float) -> Color:
 	if t < 0.4:
 		return safe_color.lerp(warn_color, t / 0.4)
 	return warn_color.lerp(danger_color, (t - 0.4) / 0.6)
+func _restrained_threat_color(level: float) -> Color:
+	var c := _danger_color(level)
+	# Soften so the row never competes with combat/danger UI.
+	c.a = 0.88
+	return c.lerp(UIThemeManager.get_text_primary_color(), 0.18)
 func _style_fill_bar(bar: ProgressBar, color: Color) -> void:
 	if bar == null:
 		return
@@ -595,58 +535,109 @@ func _style_fill_bar(bar: ProgressBar, color: Color) -> void:
 	bg.set_corner_radius_all(2)
 	bar.add_theme_stylebox_override("background", bg)
 func _update_danger_visuals():
+	var word := _threat_level_word(danger_level)
+	var color := _restrained_threat_color(danger_level)
+	var tip := (
+		"Area threat (%.0f / %.0f). Higher threat raises combat odds while exploring. %s"
+		% [danger_level, DANGER_MAX, ExplorationEventFactory.get_danger_flavor(danger_level)]
+	)
+	if threat_tag:
+		threat_tag.text = "Threat: %s" % word
+		threat_tag.add_theme_color_override("font_color", color)
+		threat_tag.tooltip_text = tip
+	if threat_icon:
+		var path := STATUS_ICON_CALM
+		if danger_level >= 15.0:
+			path = STATUS_ICON_DANGER
+		elif danger_level >= 5.0:
+			path = STATUS_ICON_WARN
+		if ResourceLoader.exists(path):
+			threat_icon.texture = load(path)
+		threat_icon.modulate = color
+		threat_icon.tooltip_text = tip
 	if danger_bar:
 		danger_bar.max_value = DANGER_MAX
 		danger_bar.value = danger_level
 		danger_bar.show_percentage = false
-		_style_fill_bar(danger_bar, _danger_color(danger_level))
-		danger_bar.tooltip_text = (
-			"Area threat (%.0f / %.0f). Higher threat raises combat odds while exploring."
-			% [danger_level, DANGER_MAX]
+		var bar_color := color
+		bar_color.a = 0.65
+		_style_fill_bar(danger_bar, bar_color)
+		danger_bar.tooltip_text = tip
+func _set_event_card_expanded(expanded: bool) -> void:
+	_event_expanded = expanded
+	if event_margin:
+		var v_margin := 6 if expanded else 4
+		event_margin.add_theme_constant_override("margin_top", v_margin)
+		event_margin.add_theme_constant_override("margin_bottom", v_margin)
+		event_margin.add_theme_constant_override("margin_left", 8)
+		event_margin.add_theme_constant_override("margin_right", 8)
+	if event_card:
+		event_card.custom_minimum_size = (
+			Vector2(0, EVENT_EXPANDED_MIN_H) if expanded else Vector2.ZERO
 		)
-	if threat_tag:
-		threat_tag.tooltip_text = danger_bar.tooltip_text if danger_bar else ""
+	if event_title:
+		event_title.visible = expanded and event_title.text != ""
+	if narrative_log:
+		narrative_log.visible = expanded
+		narrative_log.custom_minimum_size = (
+			Vector2(0, EVENT_NARRATIVE_MIN_H) if expanded else Vector2.ZERO
+		)
+	if context_actions:
+		var has_choices := showing_choices or (
+			context_actions.get_child_count() > 0 and expanded
+		)
+		context_actions.visible = expanded and has_choices
 func _append_narrative(bbcode_text: String):
 	if not narrative_log:
 		return
-	if narrative_log.text.length() > 0:
+	if not _event_expanded:
+		if event_eyebrow:
+			var cur := event_eyebrow.text
+			if cur == "" or cur == "Ready" or cur == "READY":
+				event_eyebrow.text = "Notice"
+				event_eyebrow.add_theme_color_override(
+					"font_color", UIThemeManager.get_color("title_gold"))
+		if narrative_log:
+			narrative_log.clear()
+	elif narrative_log.get_parsed_text().length() > 0:
 		narrative_log.append_text("\n[color=#99804020]---[/color]\n")
 	narrative_log.append_text(bbcode_text + "\n")
+	_set_event_card_expanded(true)
 func _set_event_idle() -> void:
 	if event_eyebrow:
-		event_eyebrow.text = "READY"
+		event_eyebrow.text = "Ready"
 		event_eyebrow.add_theme_color_override(
-			"font_color", UIThemeManager.get_color("title_gold"))
+			"font_color", UIThemeManager.get_secondary_color())
 	if event_title:
 		event_title.text = ""
 		event_title.visible = false
 	if narrative_log:
 		narrative_log.clear()
-		narrative_log.append_text(
-			"[color=#d8d0c0]Explore the wilds, rest in town, or travel the map.[/color]")
+	_clear_context_actions()
+	showing_choices = false
+	_set_event_card_expanded(false)
 func _present_event(event: Dictionary) -> void:
 	var kind := str(event.get("type", "flavor"))
 	var title := str(event.get("title", ""))
 	var narrative := str(event.get("narrative", ""))
-	var eyebrow := "ENCOUNTER"
+	var eyebrow := "Encounter"
 	match kind:
 		"combat":
-			eyebrow = "COMBAT"
+			eyebrow = "Combat"
 		"discovery":
-			eyebrow = "DISCOVERY"
+			eyebrow = "Discovery"
 		"choice":
-			eyebrow = "ENCOUNTER"
+			eyebrow = "Encounter"
 		"quest":
-			eyebrow = "QUEST"
+			eyebrow = "Quest"
 		"flavor":
-			eyebrow = "TRAVEL"
+			eyebrow = "Travel"
 	if event_eyebrow:
 		event_eyebrow.text = eyebrow
 		event_eyebrow.add_theme_color_override(
 			"font_color", UIThemeManager.get_color("title_gold"))
 	if event_title:
 		if title != "":
-			event_title.visible = true
 			event_title.text = title
 			if display_font:
 				event_title.add_theme_font_override("font", display_font)
@@ -655,7 +646,7 @@ func _present_event(event: Dictionary) -> void:
 			event_title.add_theme_color_override(
 				"font_color", UIThemeManager.get_text_primary_color())
 		else:
-			event_title.visible = false
+			event_title.text = ""
 	if narrative_log:
 		narrative_log.clear()
 		var body := narrative
@@ -664,6 +655,7 @@ func _present_event(event: Dictionary) -> void:
 			body = body.replace(title_bb + "\n", "")
 			body = body.replace(title_bb, "")
 		narrative_log.append_text(body)
+	_set_event_card_expanded(true)
 func _on_primary_action_pressed() -> void:
 	match _primary_kind:
 		PrimaryKind.REST:
@@ -808,6 +800,7 @@ func _show_choice_buttons(choices: Array):
 		context_actions.add_child(btn)
 		choice_buttons.append(btn)
 		i += 1
+	_set_event_card_expanded(true)
 	if choice_buttons.size() > 0:
 		_restore_focus(choice_buttons[0])
 	_update_action_hierarchy()
