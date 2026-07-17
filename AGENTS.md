@@ -117,6 +117,8 @@ GameManager.change_scene("town_scene")  # → res://scenes/ui/town_scene.tscn
 - Use `preload()` for compile-time resources; `load()` when avoiding circular deps.
 - `UIButton`: read/write `button.button_text`, not `button.text` (cleared in `_ready`).
 - Prefer `print()` over `push_warning()` in code under GUT (warnings fail tests).
+- Keep touched scripts within the `gdlint` max-file-lines limit (currently 1000).
+  Move reusable UI behavior into components instead of growing scene controllers.
 
 ### UI layout (1280×720, 16:9)
 
@@ -167,6 +169,11 @@ Dark fantasy: **no pure white/black**, warm umber/charcoal surfaces, ~2px corner
 - Do **not** use `assets/fonts/default_font.ttf` for new UI body text.
 - Google Fonts (OFL) may be fetched into `assets/fonts/` for companions; ship files
   on disk (no runtime CDN webfonts).
+- Sibling HUD labels (for example HP / MP / XP) must use the same font face, size,
+  weight, and color unless the design intentionally distinguishes one of them.
+- When sibling labels receive runtime typography in a controller, register every new
+  label in that same typography pass or give it an explicit matching theme override.
+  Do not rely on default theme inheritance when neighboring controls are overridden.
 
 ### Borders, chrome, and hierarchy
 
@@ -355,11 +362,22 @@ Steps live in `scripts/tools/ScreenshotTour.gd` (`TOUR`). Output is gitignored.
 
 After adding new scripts/assets, run once with `--import` if GUT ignores a new file.
 
+A successful screenshot tour only proves that captures were produced. After every
+visual UI change, open and inspect each affected PNG at full size or with a tight
+crop. Compare sibling typography, alignment, spacing, clipping, contrast, and visual
+hierarchy before reporting the change complete.
+
+Add regression assertions for style parity between related controls (font size,
+theme variation, minimum size, visibility, and similar properties), not only for
+node existence or text content.
+
 **Gotchas**
 
 - Headless FPS is low — use generous performance thresholds.
 - Do not `await obj.ready` after `add_child` if `_ready` already ran; use `await get_tree().process_frame`.
 - Theme inheritance: child `.theme` may be `null`; check `get_theme_color()`.
+- Cumulative progress bars may have a non-zero `min_value`; normalize fill and
+  accessibility percentages over `(value - min_value) / (max_value - min_value)`.
 - Prefer GUT `watch_signals()` / `assert_signal_emitted()`.
 
 ---

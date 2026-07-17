@@ -234,6 +234,29 @@ show_value_text = true
 connect_to_gamemanager = false
 bar_kind = "mana"
 
+[node name="XpRow" type="HBoxContainer" parent="LeftDock/HudPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="XpTag" type="Label" parent="LeftDock/HudPanel/LeftMargin/LeftVBox/XpRow"]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+text = "XP"
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 12
+
+[node name="XpBar" parent="LeftDock/HudPanel/LeftMargin/LeftVBox/XpRow" instance=ExtResource("4")]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 282.0
+value = 0.0
+show_percentage = false
+show_value_text = true
+connect_to_gamemanager = false
+bar_kind = "experience"
+tooltip_text = "Experience progress toward the next level."
+
 [node name="MetaRow" type="HBoxContainer" parent="LeftDock/HudPanel/LeftMargin/LeftVBox"]
 layout_mode = 2
 theme_override_constants/separation = 10

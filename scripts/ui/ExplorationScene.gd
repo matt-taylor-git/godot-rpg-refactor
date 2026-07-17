@@ -36,6 +36,7 @@ var name_banner: Label
 var level_label: Label
 var hp_bar: ProgressBar
 var mp_bar: ProgressBar
+var xp_bar: UIProgressBar
 var gold_label: Label
 var danger_bar: ProgressBar
 var threat_tag: Label
@@ -146,6 +147,7 @@ func _bind_nodes() -> void:
 	mp_row = left.get_node("MpRow")
 	mp_tag = left.get_node("MpRow/MpTag")
 	mp_bar = left.get_node("MpRow/MpBar")
+	xp_bar = left.get_node("XpRow/XpBar")
 	gold_label = left.get_node("MetaRow/GoldLabel")
 	var status_chip: Control = left.get_node_or_null("MetaRow/StatusChip")
 	if status_chip:
@@ -495,6 +497,7 @@ func _update_ui():
 		if mp_row:
 			mp_row.visible = false
 		mp_bar.visible = false
+	xp_bar.set_experience_progress(player)
 	if gold_label:
 		gold_label.text = "Gold  %d" % player.gold
 	_update_danger_visuals()

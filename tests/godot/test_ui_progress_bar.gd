@@ -29,6 +29,19 @@ func test_value_text_display():
 	assert_not_null(value_label, "Value label should exist")
 	assert_true(value_label.visible, "Value label should be visible when show_value_text is true")
 	assert_eq(value_label.text, "75/100", "Value label should show current/max values")
+func test_experience_progress_shows_total_and_next_level_threshold():
+	var player := Player.new()
+	player.level = 2
+	player.experience = 300
+
+	progress_bar.set_experience_progress(player)
+
+	assert_eq(progress_bar.min_value, float(player.get_exp_for_level(2)))
+	assert_eq(progress_bar.value, 300.0)
+	assert_eq(progress_bar.max_value, float(player.get_exp_for_level(3)))
+	assert_true(progress_bar.tooltip_text.contains("219 XP until level 3"))
+	assert_eq(progress_bar.bar_kind, "experience")
+
 
 func test_animated_value_change():
 	# Test animated value transitions

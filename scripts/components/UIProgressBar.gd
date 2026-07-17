@@ -31,7 +31,7 @@ const ANIMATION_TRANS = Tween.TRANS_QUAD
 @export var connect_to_gamemanager: bool = true  # Auto-connect to GameManager signals
 @export var colorblind_friendly: bool = false  # Use patterns/text instead of color-only indicators
 @export var respect_reduced_motion: bool = true  # Disable animations if reduced motion is enabled
-## "health" uses green/yellow/red thresholds; "mana" uses a steady blue fill.
+## "health" uses green/yellow/red thresholds; mana and experience use steady fills.
 @export var bar_kind: String = "health"
 ## When true, damage animates as a fast fill drop plus a slower trailing segment.
 @export var enable_damage_trail: bool = false
@@ -219,7 +219,8 @@ func _update_visual_state():
 
 func _apply_fill_style():
 	# Apply solid fill color based on current health percentage
-	var percentage = (value / max_value) * 100.0 if max_value > 0 else 0.0
+	var value_range := max_value - min_value
+	var percentage := ((value - min_value) / value_range) * 100.0 if value_range > 0 else 0.0
 	var fill_color = _get_fill_color_for_percentage(percentage)
 
 	# Create fill stylebox
@@ -250,6 +251,9 @@ func _get_fill_color_for_percentage(percentage: float) -> Color:
 	if bar_kind == "mana":
 		# Steady arcane blue so MP is distinct from HP thresholds
 		return Color(0.35, 0.55, 0.85, 1.0)
+	if bar_kind == "experience":
+		# Gold keeps level progression distinct from health and mana.
+		return UIThemeManager.get_accent_color()
 	# Health: solid color based on percentage using theme colors
 	if percentage >= HEALTH_GREEN_THRESHOLD:
 		return UIThemeManager.get_success_color()
@@ -398,6 +402,27 @@ func _on_player_status_effect_added(effect_type: String, _duration: int) -> void
 	# Handle player status effect added (only if this is a player health bar)
 	if name.to_lower().contains("player") or name.to_lower().contains("hero"):
 		add_status_effect_overlay(effect_type)
+
+func set_experience_progress(player: Player) -> void:
+	bar_kind = "experience"
+	if player.level >= 100:
+		min_value = 0
+		max_value = maxi(1, player.experience)
+		set_value_animated(max_value, false)
+		if value_label:
+			value_label.text = "MAX"
+		tooltip_text = "Maximum level reached; %d total XP" % player.experience
+		return
+	var level_start_xp := 0
+	if player.level > 1:
+		level_start_xp = player.get_exp_for_level(player.level)
+	var next_level_xp := player.get_exp_for_level(player.level + 1)
+	min_value = level_start_xp
+	max_value = next_level_xp
+	set_value_animated(clampi(player.experience, level_start_xp, next_level_xp), false)
+	var remaining_xp := maxi(0, next_level_xp - player.experience)
+	tooltip_text = "%d total XP; %d XP until level %d" % [
+		player.experience, remaining_xp, player.level + 1]
 
 func set_value_animated(new_value: float, animate: bool = true) -> void:
 	# Set value with optional animation (AC-2.1.3)
@@ -598,7 +623,8 @@ func _update_value_label():
 	if value_label and show_value_text:
 		var current_val = int(value)
 		var max_val = int(max_value)
-		var percentage = (value / max_value) * 100
+		var value_range := max_value - min_value
+		var percentage := ((value - min_value) / value_range) * 100.0 if value_range > 0 else 0.0
 
 		var status_text = ""
 		if colorblind_friendly:

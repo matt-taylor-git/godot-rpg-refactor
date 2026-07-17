@@ -132,6 +132,13 @@ func test_hub_scene_has_expected_structure():
 	assert_not_null(legend_btn)
 	assert_eq(str(legend_btn.text), "Legend", "map control Key renamed to Legend")
 	assert_not_null(hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/CharacterPortrait"))
+	var xp_bar = hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/XpRow/XpBar")
+	assert_not_null(xp_bar, "character HUD shows experience progress")
+	assert_eq(str(xp_bar.bar_kind), "experience", "XP progress has distinct styling")
+	var xp_tag = hub.get_node("LeftDock/HudPanel/LeftMargin/LeftVBox/XpRow/XpTag")
+	var hp_tag = hub.get_node("LeftDock/HudPanel/LeftMargin/LeftVBox/HpRow/HpTag")
+	assert_eq(xp_tag.get_theme_font_size("font_size"), hp_tag.get_theme_font_size("font_size"),
+		"XP and HP tags use the same caption size")
 	assert_not_null(hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/ThreatRow/ThreatIcon"))
 	var threat_tag = hub.get_node_or_null("LeftDock/HudPanel/LeftMargin/LeftVBox/ThreatRow/ThreatTag")
 	assert_not_null(threat_tag)
