@@ -135,16 +135,27 @@ layout_mode = 2
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 12
+theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 4
 
-[node name="EventLabel" type="RichTextLabel" parent="MainColumn/DockLayer/EventStrip/EventMargin"]
+[node name="EventRow" type="HBoxContainer" parent="MainColumn/DockLayer/EventStrip/EventMargin"]
 layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EventLabel" type="RichTextLabel" parent="MainColumn/DockLayer/EventStrip/EventMargin/EventRow"]
+layout_mode = 2
+size_flags_horizontal = 3
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
 autowrap_mode = 2
 text = "Combat begins."
+
+[node name="HistoryToggle" type="Button" parent="MainColumn/DockLayer/EventStrip/EventMargin/EventRow"]
+custom_minimum_size = Vector2(96, 28)
+layout_mode = 2
+size_flags_vertical = 4
+text = "History ▾"
 
 [node name="ActionDock" type="PanelContainer" parent="MainColumn/DockLayer"]
 layout_mode = 2
@@ -247,12 +258,6 @@ text = "No usable items."
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="LogToggle" parent="MainColumn/DockLayer/LogSection" instance=ExtResource("3")]
-custom_minimum_size = Vector2(0, 28)
-layout_mode = 2
-size_flags_horizontal = 0
-text = "Combat Log ▾"
-
 [node name="CombatLogPanel" type="PanelContainer" parent="MainColumn/DockLayer/LogSection"]
 visible = false
 custom_minimum_size = Vector2(0, 100)
@@ -279,4 +284,4 @@ text = ""
 [connection signal="pressed" from="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/RunButton" to="." method="_on_run_pressed"]
 [connection signal="pressed" from="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillsHeader/SkillsBackButton" to="." method="_on_skills_back_pressed"]
 [connection signal="pressed" from="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsHeader/ItemsBackButton" to="." method="_on_items_back_pressed"]
-[connection signal="pressed" from="MainColumn/DockLayer/LogSection/LogToggle" to="." method="_on_log_toggle_pressed"]
+[connection signal="pressed" from="MainColumn/DockLayer/EventStrip/EventMargin/EventRow/HistoryToggle" to="." method="_on_log_toggle_pressed"]

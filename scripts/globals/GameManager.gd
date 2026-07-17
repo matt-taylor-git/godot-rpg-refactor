@@ -480,7 +480,8 @@ func _intent_label_for(action_id: String, monster_name: String) -> String:
 			elif "spider" in lower:
 				label = "Venom Strike"
 			elif "slime" in lower:
-				label = "Slam"
+				# Sword-wielding slime art reads as a slash, not a body slam
+				label = "Slash"
 			elif "dragon" in lower:
 				label = "Claw"
 			else:

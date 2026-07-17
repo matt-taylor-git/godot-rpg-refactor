@@ -6,7 +6,8 @@ const StageChrome = preload("res://scripts/ui/CombatStageChrome.gd")
 const CombatActionCardScript = preload("res://scripts/components/CombatActionCard.gd")
 const LOW_HP_THRESHOLD := 0.25
 const FLEE_CHANCE := 0.5
-const SWORD_ICON := "res://assets/icon_sword.png"
+const EVENT_IDLE_DELAY := 1.4
+const EVENT_IDLE_PROMPT := "Choose an action."
 
 var animation_controller: CombatAnimationController = null
 var turn_indicator: TurnIndicatorController = null
@@ -29,6 +30,8 @@ var run_card = null
 var _low_hp_active: bool = false
 var _phase_banner: Label = null
 var _history: PackedStringArray = PackedStringArray()
+var _event_token: int = 0
+var _showing_idle_prompt: bool = false
 
 @onready var stage_background: TextureRect = $StageLayer/StageBackground
 @onready var stage_darken: ColorRect = $StageLayer/StageDarken
@@ -38,7 +41,12 @@ var _history: PackedStringArray = PackedStringArray()
 @onready var monster_stage = $MainColumn/ArenaLayer/Combatants/MonsterStage
 @onready var fx_layer: Control = $MainColumn/ArenaLayer/FXLayer
 @onready var event_strip: PanelContainer = $MainColumn/DockLayer/EventStrip
-@onready var event_label: RichTextLabel = $MainColumn/DockLayer/EventStrip/EventMargin/EventLabel
+@onready var event_label: RichTextLabel = (
+	$MainColumn/DockLayer/EventStrip/EventMargin/EventRow/EventLabel
+)
+@onready var history_toggle: Button = (
+	$MainColumn/DockLayer/EventStrip/EventMargin/EventRow/HistoryToggle
+)
 @onready var action_dock: PanelContainer = $MainColumn/DockLayer/ActionDock
 @onready var root_actions: HBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions
 @onready var attack_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/AttackButton
@@ -51,9 +59,10 @@ var _history: PackedStringArray = PackedStringArray()
 @onready var items_panel: VBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel
 @onready var items_list: HBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsList
 @onready var items_empty: Label = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsEmpty
-@onready var log_toggle: Button = $MainColumn/DockLayer/LogSection/LogToggle
 @onready var combat_log_panel: PanelContainer = $MainColumn/DockLayer/LogSection/CombatLogPanel
-@onready var combat_log: RichTextLabel = $MainColumn/DockLayer/LogSection/CombatLogPanel/LogMargin/CombatLog
+@onready var combat_log: RichTextLabel = (
+	$MainColumn/DockLayer/LogSection/CombatLogPanel/LogMargin/CombatLog
+)
 
 
 func _ready() -> void:
@@ -227,7 +236,10 @@ func _style_chrome() -> void:
 	StageChrome.style_quiet_strip(event_strip)
 	StageChrome.style_borderless_dock(action_dock)
 	StageChrome.style_floating_panel(combat_log_panel)
-	StageChrome.style_log_toggle(log_toggle)
+	StageChrome.style_log_toggle(history_toggle)
+	if history_toggle:
+		StageChrome.set_button_label(history_toggle, "History ▾")
+		history_toggle.custom_minimum_size = Vector2(96, 28)
 	if event_label:
 		var serif := "res://assets/fonts/SourceSerif4-VariableFont_opsz_wght.ttf"
 		if ResourceLoader.exists(serif):
@@ -244,24 +256,16 @@ func _configure_root_actions() -> void:
 	skills_card = _upgrade_to_action_card(skills_button)
 	items_card = _upgrade_to_action_card(items_button)
 	run_card = _upgrade_to_action_card(run_button)
-	var sword_tex: Texture2D = null
-	if ResourceLoader.exists(SWORD_ICON):
-		sword_tex = load(SWORD_ICON)
 	if attack_card:
-		attack_card.setup(
-			"ATTACK",
-			"1 · — damage",
-			CombatActionCardScript.Kind.PRIMARY,
-			sword_tex
-		)
+		attack_card.setup("[1] ATTACK", "— damage", CombatActionCardScript.Kind.PRIMARY, null)
 	if skills_card:
-		skills_card.setup("SKILLS", "2 · — ready", CombatActionCardScript.Kind.SECONDARY, null)
+		skills_card.setup("[2] SKILLS", "— ready", CombatActionCardScript.Kind.SECONDARY, null)
 	if items_card:
-		items_card.setup("ITEMS", "3 · — usable", CombatActionCardScript.Kind.SECONDARY, null)
+		items_card.setup("[3] ITEMS", "— usable", CombatActionCardScript.Kind.SECONDARY, null)
 	if run_card:
 		run_card.setup(
-			"RUN",
-			"4 · ~%d%% chance" % int(FLEE_CHANCE * 100),
+			"[4] RUN",
+			"%d%% escape chance" % int(FLEE_CHANCE * 100),
 			CombatActionCardScript.Kind.DANGER,
 			null
 		)
@@ -294,6 +298,14 @@ func _upgrade_to_action_card(btn: Button):
 func _refresh_action_subtitles() -> void:
 	var player = GameManager.get_player()
 	var monster = GameManager.get_current_monster()
+	if attack_card:
+		attack_card.set_title("[1] ATTACK")
+	if skills_card:
+		skills_card.set_title("[2] SKILLS")
+	if items_card:
+		items_card.set_title("[3] ITEMS")
+	if run_card:
+		run_card.set_title("[4] RUN")
 	if attack_card and player and monster:
 		var dmg: Dictionary = GameManager.estimate_damage_range(
 			player.get_attack_power(),
@@ -303,29 +315,29 @@ func _refresh_action_subtitles() -> void:
 		var dmin: int = int(dmg.get("min", 1))
 		var dmax: int = int(dmg.get("max", 1))
 		if dmin == dmax:
-			attack_card.set_subtitle("1 · %d damage" % dmin)
+			attack_card.set_subtitle("%d damage" % dmin)
 		else:
-			attack_card.set_subtitle("1 · %d–%d damage" % [dmin, dmax])
+			attack_card.set_subtitle("%d–%d damage" % [dmin, dmax])
 	elif attack_card:
-		attack_card.set_subtitle("1 · Attack")
+		attack_card.set_subtitle("Attack")
 	if skills_card and player:
 		var ready := 0
 		for skill in player.skills:
 			if skill and skill.can_use(player):
 				ready += 1
-		skills_card.set_subtitle("2 · %d ready" % ready)
+		skills_card.set_subtitle("%d ready" % ready)
 	elif skills_card:
-		skills_card.set_subtitle("2 · Skills")
+		skills_card.set_subtitle("Skills")
 	if items_card and player:
 		var count := 0
 		for item in player.inventory:
 			if item and item.is_consumable() and item.quantity > 0:
 				count += item.quantity
-		items_card.set_subtitle("3 · %d usable" % count)
+		items_card.set_subtitle("%d usable" % count)
 	elif items_card:
-		items_card.set_subtitle("3 · Items")
+		items_card.set_subtitle("Items")
 	if run_card:
-		run_card.set_subtitle("4 · ~%d%% chance" % int(FLEE_CHANCE * 100))
+		run_card.set_subtitle("%d%% escape chance" % int(FLEE_CHANCE * 100))
 
 
 func _setup_focus_navigation() -> void:
@@ -377,10 +389,10 @@ func _set_log_expanded(expanded: bool) -> void:
 	log_expanded = expanded
 	if combat_log_panel:
 		combat_log_panel.visible = expanded
-	if log_toggle:
+	if history_toggle:
 		StageChrome.set_button_label(
-			log_toggle,
-			"Combat Log ▴" if expanded else "Combat Log ▾"
+			history_toggle,
+			"History ▴" if expanded else "History ▾"
 		)
 
 
@@ -429,29 +441,71 @@ func _refresh_intent() -> void:
 	var min_d: int = int(intent.get("min", 0))
 	var max_d: int = int(intent.get("max", 0))
 	var text := label
+	var show_icon := str(intent.get("id", "")) != "defend"
 	if min_d > 0 and max_d > 0 and str(intent.get("id", "")) != "defend":
 		if min_d == max_d:
 			text = "%s • %d damage" % [label, min_d]
 		else:
 			text = "%s • %d–%d damage" % [label, min_d, max_d]
-	monster_stage.set_intent(text)
+	monster_stage.set_intent(text, show_icon)
 
 
-func _append_event(message: String, kind: String = "auto") -> void:
+func _append_event(message: String, kind: String = "auto", idle_after: bool = true) -> void:
 	var clean := _strip_bbcode(message).strip_edges()
 	if clean.is_empty():
 		return
 	var line := clean.replace("\n", " ")
-	var bb := _colorize_event(line, kind)
+	var resolved_kind := kind
+	if resolved_kind == "auto":
+		resolved_kind = _classify_event(line)
+	# Clarify that enemy lines are prior resolution when it is the player's turn again
+	var display_line := line
+	if resolved_kind == "enemy" and not input_locked:
+		display_line = "Last: " + line
+	var bb := _colorize_event(display_line, resolved_kind)
+	_showing_idle_prompt = false
+	_event_token += 1
+	var token := _event_token
 	if event_label:
+		event_label.modulate.a = 1.0
 		event_label.text = bb
 	_history.append(line)
 	if combat_log:
+		var log_bb := _colorize_event(line, resolved_kind)
 		if combat_log.text.is_empty():
-			combat_log.text = bb
+			combat_log.text = log_bb
 		else:
-			combat_log.text += "\n" + bb
+			combat_log.text += "\n" + log_bb
 		combat_log.scroll_to_line(combat_log.get_line_count() - 1)
+	if idle_after and GameManager.in_combat and not input_locked:
+		_schedule_event_idle(token)
+
+
+func _schedule_event_idle(token: int) -> void:
+	if not is_inside_tree():
+		return
+	await get_tree().create_timer(EVENT_IDLE_DELAY).timeout
+	if token != _event_token:
+		return
+	if not GameManager.in_combat or input_locked:
+		return
+	_showing_idle_prompt = true
+	if event_label:
+		var muted := UIThemeManager.get_color("secondary").to_html(false)
+		event_label.text = "[color=#%s]%s[/color]" % [muted, EVENT_IDLE_PROMPT]
+
+
+func _classify_event(line: String) -> String:
+	var lower := line.to_lower()
+	if "heal" in lower or "restores" in lower or ("use " in lower and "potion" in lower):
+		return "heal"
+	if "strikes" in lower or "critical" in lower or "you attack" in lower:
+		return "player"
+	if "attacks for" in lower or "hits for" in lower:
+		return "enemy"
+	if "damage" in lower and "strike" not in lower:
+		return "enemy"
+	return "neutral"
 
 
 func _strip_bbcode(text: String) -> String:
@@ -464,22 +518,7 @@ func _colorize_event(line: String, kind: String) -> String:
 	var gold := UIThemeManager.get_color("title_gold").to_html(false)
 	var danger := UIThemeManager.get_color("danger").to_html(false)
 	var success := UIThemeManager.get_color("success").to_html(false)
-	var resolved := kind
-	if resolved == "auto":
-		var lower := line.to_lower()
-		if "heal" in lower or "restores" in lower or "use " in lower and "potion" in lower:
-			resolved = "heal"
-		elif "strikes" in lower or "critical" in lower or "deals" in lower:
-			resolved = "player"
-		elif "attacks for" in lower or "hits for" in lower or "damage!" in lower:
-			# Enemy messages often end with damage!
-			if "you strike" in lower or "strikes" in lower:
-				resolved = "player"
-			else:
-				resolved = "enemy"
-		else:
-			resolved = "neutral"
-	# Tint numbers and key verbs by kind
+	var resolved := kind if kind != "auto" else _classify_event(line)
 	var out := line
 	var num_re := RegEx.new()
 	num_re.compile("\\b(\\d+)\\b")
@@ -512,6 +551,10 @@ func _show_player_turn(animate: bool) -> void:
 		monster_stage.is_active = false
 	_set_input_locked(false)
 	_set_dock_mode("root")
+	# If last message was an enemy hit, schedule idle prompt so it does not fight the banner
+	if not _showing_idle_prompt and event_label and "Last:" in event_label.text:
+		_event_token += 1
+		_schedule_event_idle(_event_token)
 
 
 func _show_enemy_turn(animate: bool) -> void:
