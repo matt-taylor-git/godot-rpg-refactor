@@ -14,7 +14,26 @@ const TOUR: Array = [
 	{"id": "character_creation", "scene": "character_creation"},
 	# town_scene / world_map alias to exploration hub
 	{"id": "hub", "scene": "exploration_scene"},
-	{"id": "combat", "start_combat": true},
+	{
+		"id": "combat",
+		"start_combat": true,
+		"combat_monster": "wolf",
+		"combat_area": "forest",
+	},
+	{
+		"id": "combat_skills",
+		"start_combat": true,
+		"combat_monster": "goblin",
+		"combat_area": "cave",
+		"combat_ui": "skills",
+	},
+	{
+		"id": "combat_low_hp",
+		"start_combat": true,
+		"combat_monster": "orc",
+		"combat_area": "mountain",
+		"combat_seed": {"player_hp_frac": 0.2},
+	},
 	{"id": "victory", "scene": "victory_scene"},
 	{"id": "game_over", "scene": "game_over_scene"},
 	{"id": "shop", "scene": "exploration_scene", "dialog": "res://scenes/ui/shop_dialog.tscn"},
@@ -134,10 +153,29 @@ func _execute_step(step: Dictionary) -> String:
 	if start_combat:
 		if not GameManager.get_player():
 			return "no player for combat"
-		var combat_msg = await GameManager.start_combat()
+		var area_id: String = str(step.get("combat_area", ""))
+		if not area_id.is_empty() and GameManager.game_data is Dictionary:
+			GameManager.game_data["current_area_id"] = area_id
+		var monster_type: String = str(step.get("combat_monster", ""))
+		var combat_msg
+		if not monster_type.is_empty():
+			combat_msg = await GameManager.start_combat_with_type(monster_type)
+		else:
+			combat_msg = await GameManager.start_combat()
 		if typeof(combat_msg) == TYPE_STRING and str(combat_msg).begins_with("No player"):
 			return str(combat_msg)
 		await _wait_for_scene_host()
+		var host := await _wait_for_scene_host()
+		if host and host.has_method("apply_screenshot_state"):
+			var seed_state: Dictionary = {}
+			if step.has("combat_seed") and step["combat_seed"] is Dictionary:
+				seed_state = (step["combat_seed"] as Dictionary).duplicate()
+			if step.has("combat_ui"):
+				seed_state["combat_ui"] = step["combat_ui"]
+			if not seed_state.is_empty():
+				host.apply_screenshot_state(seed_state)
+			await get_tree().process_frame
+			await get_tree().process_frame
 	elif not scene_name.is_empty():
 		var expected := "res://scenes/ui/%s.tscn" % scene_name
 		if not ResourceLoader.exists(expected):

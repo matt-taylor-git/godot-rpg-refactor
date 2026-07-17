@@ -119,6 +119,26 @@ func test_sprites_exist():
 func test_combat_log_exists():
 	assert_not_null(combat_scene.combat_log, "Combat log should exist")
 
+func test_stage_background_exists():
+	var bg = combat_scene.get_node_or_null("StageLayer/StageBackground")
+	assert_not_null(bg, "Stage background TextureRect should exist")
+
+func test_action_dock_is_horizontal():
+	assert_not_null(combat_scene.root_actions, "Root actions row should exist")
+	assert_true(combat_scene.root_actions is HBoxContainer, "Actions should be horizontal dock")
+
+func test_event_strip_exists():
+	assert_not_null(combat_scene.event_label, "Latest event strip should exist")
+
+func test_turn_banner_exists():
+	assert_not_null(combat_scene.turn_banner, "Turn banner should exist")
+
+func test_input_lock_disables_actions():
+	combat_scene._set_input_locked(true)
+	assert_true(combat_scene.attack_button.disabled, "Attack should disable when locked")
+	combat_scene._set_input_locked(false)
+	assert_false(combat_scene.attack_button.disabled, "Attack should enable when unlocked")
+
 # ===== UIProgressBar Integration (from Story 2.1) =====
 
 func test_player_health_bar_has_animated_method():

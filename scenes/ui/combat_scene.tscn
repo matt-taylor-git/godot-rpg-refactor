@@ -1,24 +1,11 @@
 [gd_scene load_steps=7 format=3 uid="uid://ck6d6rke5lknx"]
 
 [ext_resource type="Theme" uid="uid://b7w5k8j6x2q1a" path="res://resources/ui_theme.tres" id="1"]
-[ext_resource type="Script" uid="uid://cg4ikbac8bt18" path="res://scripts/ui/CombatScene.gd" id="2"]
-[ext_resource type="Texture2D" path="res://assets/goblin.png" id="3"]
-[ext_resource type="PackedScene" uid="uid://banlt66gdvndq" path="res://scenes/components/ui_button.tscn" id="4"]
-[ext_resource type="PackedScene" uid="uid://bi4pnfxtnky03" path="res://scenes/components/ui_progress_bar.tscn" id="5"]
-[ext_resource type="PackedScene" uid="uid://bvxq8r7y5n2kl" path="res://scenes/components/character_portrait_container.tscn" id="6"]
-[ext_resource type="Shader" path="res://assets/main_menu_bg.gdshader" id="7"]
-[ext_resource type="Texture2D" path="res://assets/icon_sword.png" id="8"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
-shader = ExtResource("7")
-shader_parameter/time_scale = 0.5
-shader_parameter/wave_intensity = 0.4
-shader_parameter/color_primary = Color(0.06, 0.05, 0.04, 1)
-shader_parameter/color_accent = Color(0.15, 0.10, 0.06, 1)
-shader_parameter/reduce_motion = false
-shader_parameter/grain_intensity = 0.03
-shader_parameter/ember_intensity = 0.15
-shader_parameter/ember_color = Color(0.9, 0.4, 0.1, 1)
+[ext_resource type="Script" path="res://scripts/ui/CombatScene.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/components/ui_button.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/components/combatant_stage_view.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/components/combat_turn_banner.tscn" id="5"]
+[ext_resource type="Texture2D" path="res://assets/icon_sword.png" id="6"]
 
 [node name="CombatScene" type="Control"]
 layout_mode = 3
@@ -30,7 +17,7 @@ grow_vertical = 2
 theme = ExtResource("1")
 script = ExtResource("2")
 
-[node name="Background" type="Panel" parent="."]
+[node name="StageLayer" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -38,169 +25,258 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-material = SubResource("ShaderMaterial_bg")
 
-[node name="MainContainer" type="VBoxContainer" parent="."]
+[node name="StageBackground" type="TextureRect" parent="StageLayer"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+mouse_filter = 2
+
+[node name="StageDarken" type="ColorRect" parent="StageLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.03, 0.025, 0.48)
+mouse_filter = 2
+
+[node name="StageVignette" type="ColorRect" parent="StageLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.02, 0.02, 0)
+mouse_filter = 2
+
+[node name="MainColumn" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
 offset_top = 8.0
-offset_right = -8.0
-offset_bottom = -8.0
+offset_right = -12.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
 
-[node name="ArenaPanel" type="PanelContainer" parent="MainContainer"]
+[node name="ArenaLayer" type="Control" parent="MainColumn"]
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 1.1
-theme_type_variation = "Panel"
+size_flags_stretch_ratio = 2.8
 
-[node name="ArenaMargin" type="MarginContainer" parent="MainContainer/ArenaPanel"]
+[node name="TurnBanner" parent="MainColumn/ArenaLayer" instance=ExtResource("5")]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -140.0
+offset_top = 4.0
+offset_right = 140.0
+offset_bottom = 68.0
+grow_horizontal = 2
+
+[node name="Combatants" type="HBoxContainer" parent="MainColumn/ArenaLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 72.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 48
+alignment = 1
+
+[node name="PlayerStage" parent="MainColumn/ArenaLayer/Combatants" instance=ExtResource("4")]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+is_player_side = true
+show_mana = true
+
+[node name="MonsterStage" parent="MainColumn/ArenaLayer/Combatants" instance=ExtResource("4")]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+is_player_side = false
+show_mana = false
+
+[node name="FXLayer" type="Control" parent="MainColumn/ArenaLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DockLayer" type="VBoxContainer" parent="MainColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.0
+theme_override_constants/separation = 6
+
+[node name="EventStrip" type="PanelContainer" parent="MainColumn/DockLayer"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+
+[node name="EventMargin" type="MarginContainer" parent="MainColumn/DockLayer/EventStrip"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
+theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_bottom = 6
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MainContainer/ArenaPanel/ArenaMargin"]
+[node name="EventLabel" type="Label" parent="MainColumn/DockLayer/EventStrip/EventMargin"]
 layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 48
+text = "Combat begins."
+autowrap_mode = 2
+vertical_alignment = 1
 
-[node name="PlayerColumn" type="VBoxContainer" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer"]
+[node name="ActionDock" type="PanelContainer" parent="MainColumn/DockLayer"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-alignment = 1
 
-[node name="PlayerPortrait" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn" instance=ExtResource("6")]
-layout_mode = 2
-size_flags_horizontal = 4
-
-[node name="PlayerName" type="Label" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn"]
-layout_mode = 2
-text = "Player Name"
-horizontal_alignment = 1
-theme_type_variation = "H2"
-
-[node name="PlayerHealthBar" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn" instance=ExtResource("5")]
-custom_minimum_size = Vector2(180, 24)
-layout_mode = 2
-size_flags_horizontal = 4
-value = 100.0
-show_percentage = false
-
-[node name="PlayerManaBar" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn" instance=ExtResource("5")]
-custom_minimum_size = Vector2(180, 24)
-layout_mode = 2
-size_flags_horizontal = 4
-value = 100.0
-show_percentage = false
-bar_kind = "mana"
-
-[node name="MonsterColumn" type="VBoxContainer" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="MonsterPortrait" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn" instance=ExtResource("6")]
-layout_mode = 2
-size_flags_horizontal = 4
-
-[node name="MonsterName" type="Label" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn"]
-layout_mode = 2
-text = "Monster Name"
-horizontal_alignment = 1
-theme_type_variation = "H2"
-
-[node name="MonsterHealthBar" parent="MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn" instance=ExtResource("5")]
-custom_minimum_size = Vector2(180, 24)
-layout_mode = 2
-size_flags_horizontal = 4
-value = 100.0
-show_percentage = false
-
-[node name="BottomPanel" type="HBoxContainer" parent="MainContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.75
-theme_override_constants/separation = 8
-
-[node name="CombatLogPanel" type="PanelContainer" parent="MainContainer/BottomPanel"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.65
-theme_type_variation = "Panel"
-
-[node name="LogMargin" type="MarginContainer" parent="MainContainer/BottomPanel/CombatLogPanel"]
+[node name="ActionMargin" type="MarginContainer" parent="MainColumn/DockLayer/ActionDock"]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="CombatLog" type="RichTextLabel" parent="MainContainer/BottomPanel/CombatLogPanel/LogMargin"]
+[node name="DockStack" type="VBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="RootActions" type="HBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="AttackButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions" instance=ExtResource("3")]
+custom_minimum_size = Vector2(180, 76)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "1  Attack"
+icon = ExtResource("6")
+expand_icon = false
+
+[node name="SkillsButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions" instance=ExtResource("3")]
+custom_minimum_size = Vector2(180, 76)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "2  Skills"
+
+[node name="ItemsButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions" instance=ExtResource("3")]
+custom_minimum_size = Vector2(180, 76)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "3  Items"
+
+[node name="RunButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions" instance=ExtResource("3")]
+custom_minimum_size = Vector2(180, 76)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "4  Run"
+
+[node name="SkillsPanel" type="VBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SkillsHeader" type="HBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel"]
+layout_mode = 2
+
+[node name="SkillsTitle" type="Label" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillsHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Skills"
+
+[node name="SkillsBackButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillsHeader" instance=ExtResource("3")]
+custom_minimum_size = Vector2(90, 32)
+layout_mode = 2
+text = "Back"
+
+[node name="SkillsList" type="HBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SkillDesc" type="Label" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel"]
+layout_mode = 2
+text = ""
+autowrap_mode = 2
+
+[node name="ItemsPanel" type="VBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ItemsHeader" type="HBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel"]
+layout_mode = 2
+
+[node name="ItemsTitle" type="Label" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Items"
+
+[node name="ItemsBackButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsHeader" instance=ExtResource("3")]
+custom_minimum_size = Vector2(90, 32)
+layout_mode = 2
+text = "Back"
+
+[node name="ItemsList" type="HBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ItemsEmpty" type="Label" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel"]
+visible = false
+layout_mode = 2
+text = "No usable items."
+
+[node name="LogSection" type="VBoxContainer" parent="MainColumn/DockLayer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="LogToggle" parent="MainColumn/DockLayer/LogSection" instance=ExtResource("3")]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Combat Log ▾"
+
+[node name="CombatLogPanel" type="PanelContainer" parent="MainColumn/DockLayer/LogSection"]
+visible = false
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="LogMargin" type="MarginContainer" parent="MainColumn/DockLayer/LogSection/CombatLogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="CombatLog" type="RichTextLabel" parent="MainColumn/DockLayer/LogSection/CombatLogPanel/LogMargin"]
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
 bbcode_enabled = true
 scroll_active = true
-text = "[center]Combat begins![/center]"
+fit_content = false
+text = ""
 
-[node name="ActionPanel" type="PanelContainer" parent="MainContainer/BottomPanel"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.35
-theme_type_variation = "Panel"
-
-[node name="ActionMargin" type="MarginContainer" parent="MainContainer/BottomPanel/ActionPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="ActionButtons" type="GridContainer" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin"]
-layout_mode = 2
-columns = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-
-[node name="AttackButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
-custom_minimum_size = Vector2(100, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/icon_max_width = 32
-text = "Attack"
-icon = ExtResource("8")
-expand_icon = false
-
-[node name="SkillsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
-custom_minimum_size = Vector2(100, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-text = "Skills"
-
-[node name="ItemsButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
-custom_minimum_size = Vector2(100, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-text = "Items"
-
-[node name="RunButton" parent="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons" instance=ExtResource("4")]
-custom_minimum_size = Vector2(100, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-text = "Run"
-
-[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/AttackButton" to="." method="_on_attack_pressed"]
-[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/SkillsButton" to="." method="_on_skills_pressed"]
-[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/ItemsButton" to="." method="_on_items_pressed"]
-[connection signal="pressed" from="MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/RunButton" to="." method="_on_run_pressed"]
+[connection signal="pressed" from="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/AttackButton" to="." method="_on_attack_pressed"]
+[connection signal="pressed" from="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/SkillsButton" to="." method="_on_skills_pressed"]
+[connection signal="pressed" from="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/ItemsButton" to="." method="_on_items_pressed"]
+[connection signal="pressed" from="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/RunButton" to="." method="_on_run_pressed"]
+[connection signal="pressed" from="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillsHeader/SkillsBackButton" to="." method="_on_skills_back_pressed"]
+[connection signal="pressed" from="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsHeader/ItemsBackButton" to="." method="_on_items_back_pressed"]
+[connection signal="pressed" from="MainColumn/DockLayer/LogSection/LogToggle" to="." method="_on_log_toggle_pressed"]

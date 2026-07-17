@@ -47,12 +47,12 @@ func test_setup():
 
 func test_attack_animation_signal():
 	watch_signals(controller)
-	controller._play_attack_animation(player_node, monster_node)
+	controller._play_attack_sequence(player_node, monster_node, 10, false)
 
 	assert_signal_emitted(controller, "animation_started", "Should emit animation_started")
 
-	# Wait for animation to complete (ATTACK_DURATION = 0.3)
-	await get_tree().create_timer(0.4).timeout
+	# Wait for full attack sequence (~0.5s)
+	await get_tree().create_timer(0.7).timeout
 
 	assert_signal_emitted(controller, "animation_completed", "Should emit animation_completed")
 
@@ -63,12 +63,9 @@ func test_damage_number_spawning():
 
 	assert_signal_emitted(controller, "damage_number_spawned")
 
-	# Check if popup was added to parent
-	# In the test environment, player_node is child of test script (this node)
-	# So popup should be child of this node
-	var children = get_children()
+	# Popup is parented to particle_container when available
 	var found_popup = false
-	for child in children:
+	for child in container_node.get_children():
 		if child.get_script() == DamageNumberPopupScript:
 			found_popup = true
 			assert_eq(child.value, 100)
@@ -110,8 +107,8 @@ func test_integration_with_gamemanager_signals():
 	# Animation start should be immediate
 	assert_signal_emitted(controller, "animation_started")
 
-	# Damage number spawns after delay
-	await get_tree().create_timer(0.2).timeout
+	# Damage number spawns after windup + lunge (~0.3s)
+	await get_tree().create_timer(0.45).timeout
 	assert_signal_emitted(controller, "damage_number_spawned")
 
 # ===== AC-2.2.5: Accessibility Tests =====
@@ -198,12 +195,14 @@ func test_is_animating():
 
 	assert_false(controller.is_animating(), "Should not be animating initially")
 
-	controller._play_attack_animation(player_node, monster_node)
+	controller._play_attack_sequence(player_node, monster_node, 10, false)
 
+	# Allow the sequence to mark active_animations
+	await get_tree().process_frame
 	assert_true(controller.is_animating(), "Should be animating after starting attack")
 
-	# Wait for animation
-	await get_tree().create_timer(0.4).timeout
+	# Wait for full attack sequence
+	await get_tree().create_timer(0.7).timeout
 
 	assert_false(controller.is_animating(), "Should not be animating after completion")
 

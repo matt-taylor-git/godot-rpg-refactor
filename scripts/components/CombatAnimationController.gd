@@ -15,13 +15,18 @@ signal animation_completed(animation_id: String)
 signal damage_number_spawned(value: int, position: Vector2)
 signal spell_impact(spell_type: String, target: CanvasItem)
 
-# Configuration
-const ATTACK_DURATION = 0.3
-const SHAKE_DURATION = 0.1
-const SHAKE_INTENSITY = 5.0
+# Configuration — normal attacks land in ~400–700ms total
+const ATTACK_WINDUP = 0.12
+const ATTACK_LUNGE = 0.18
+const ATTACK_RETURN = 0.16
+const ATTACK_DURATION = 0.46 # windup + lunge + return (compat)
+const SHAKE_DURATION = 0.12
+const SHAKE_INTENSITY = 6.0
 const SPELL_DURATION = 0.5
 const PARTICLE_TRAVEL_DURATION = 0.5
 const IMPACT_DURATION = 0.2
+const RECOIL_DISTANCE = 18.0
+const LUNGE_DISTANCE = 70.0
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/components/damage_number_popup.tscn")
 
 # Particle pooling - AC-2.2.2, AC-2.2.4
@@ -140,19 +145,10 @@ func _connect_signals() -> void:
 func _on_player_attacked(damage: int, is_critical: bool) -> void:
 	# Player attacks Monster - AC-2.2.2
 	if reduced_motion:
-		# Instant feedback without animation - AC-2.2.5
 		spawn_damage_number(monster_node, damage, "damage", is_critical)
 		return
 
-	_play_attack_animation(player_node, monster_node)
-
-	# Delay damage number slightly to match impact
-	await get_tree().create_timer(ATTACK_DURATION * 0.5).timeout
-
-	spawn_damage_number(monster_node, damage, "damage", is_critical)
-
-	if is_critical or damage > 20: # Arbitrary threshold for "impactful"
-		_play_screen_shake()
+	await _play_attack_sequence(player_node, monster_node, damage, is_critical)
 
 func _on_monster_attacked(damage: int) -> void:
 	# Monster attacks Player - AC-2.2.2
@@ -160,53 +156,93 @@ func _on_monster_attacked(damage: int) -> void:
 		spawn_damage_number(player_node, damage, "damage", false)
 		return
 
-	_play_attack_animation(monster_node, player_node)
+	await _play_attack_sequence(monster_node, player_node, damage, false)
 
-	await get_tree().create_timer(ATTACK_DURATION * 0.5).timeout
 
-	spawn_damage_number(player_node, damage, "damage", false)
-
-func _play_attack_animation(attacker: CanvasItem, target: CanvasItem) -> void:
-	if not attacker or not target: return
+func _play_attack_sequence(
+	attacker: CanvasItem, target: CanvasItem, damage: int, is_critical: bool
+) -> void:
+	if not attacker or not target:
+		spawn_damage_number(target, damage, "damage", is_critical)
+		return
 
 	var anim_id = _generate_animation_id("attack")
 	active_animations[anim_id] = true
 	emit_signal("animation_started", anim_id)
 
-	var original_pos = attacker.position
-	var target_pos = target.position
+	var attacker_origin = _get_global_pos(attacker)
+	var target_origin = _get_global_pos(target)
+	var direction = (target_origin - attacker_origin).normalized()
+	if direction == Vector2.ZERO:
+		direction = Vector2.RIGHT
 
-	# Handle different node types for position
-	if attacker is Control:
-		original_pos = attacker.global_position
-		target_pos = target.global_position if target is Control else target.position
+	# 1) Anticipation / wind-up
+	var windup_pos = attacker_origin - direction * 12.0
+	await _tween_global_pos(attacker, windup_pos, ATTACK_WINDUP, Tween.EASE_OUT)
 
-	var direction = (target_pos - original_pos).normalized()
-	var lunge_distance = 50.0
+	# 2) Lunge
+	var lunge_pos = attacker_origin + direction * LUNGE_DISTANCE
+	await _tween_global_pos(attacker, lunge_pos, ATTACK_LUNGE, Tween.EASE_IN)
 
+	# 3) Impact flash + recoil on target + damage number
+	_play_impact_flash(target)
+	_play_recoil(target, direction)
+	spawn_damage_number(target, damage, "damage", is_critical)
+	if is_critical or damage > 20:
+		_play_screen_shake()
+
+	# 4) Return
+	await _tween_global_pos(attacker, attacker_origin, ATTACK_RETURN, Tween.EASE_OUT)
+
+	active_animations.erase(anim_id)
+	emit_signal("animation_completed", anim_id)
+
+
+func _get_global_pos(node: CanvasItem) -> Vector2:
+	if node is Control:
+		return node.global_position
+	return node.position
+
+
+func _tween_global_pos(
+	node: CanvasItem, to_pos: Vector2, duration: float, ease_type: int
+) -> void:
+	if not node or not is_instance_valid(node):
+		return
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_QUAD)
-	tween.set_ease(Tween.EASE_OUT)
-
-	# Lunge forward
-	var lunge_target = original_pos + (direction * lunge_distance)
-	if attacker is Control:
-		tween.tween_property(attacker, "global_position", lunge_target, ATTACK_DURATION * 0.5)
+	tween.set_ease(ease_type)
+	if node is Control:
+		tween.tween_property(node, "global_position", to_pos, duration)
 	else:
-		tween.tween_property(attacker, "position", lunge_target, ATTACK_DURATION * 0.5)
+		tween.tween_property(node, "position", to_pos, duration)
+	await tween.finished
+	tween.kill()
 
-	# Return back
-	tween.set_ease(Tween.EASE_IN)
-	if attacker is Control:
-		tween.tween_property(attacker, "global_position", original_pos, ATTACK_DURATION * 0.5)
+
+func _play_impact_flash(target: CanvasItem) -> void:
+	if not target or not is_instance_valid(target):
+		return
+	var tween = create_tween()
+	tween.tween_property(target, "modulate", Color(1.8, 1.5, 1.2, 1.0), 0.05)
+	tween.tween_property(target, "modulate", Color.WHITE, 0.15)
+	tween.tween_callback(func(): tween.kill())
+
+
+func _play_recoil(target: CanvasItem, hit_direction: Vector2) -> void:
+	if not target or not is_instance_valid(target):
+		return
+	var origin = _get_global_pos(target)
+	var recoil_pos = origin + hit_direction * RECOIL_DISTANCE
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_QUAD)
+	if target is Control:
+		tween.tween_property(target, "global_position", recoil_pos, 0.08)
+		tween.tween_property(target, "global_position", origin, 0.14)
 	else:
-		tween.tween_property(attacker, "position", original_pos, ATTACK_DURATION * 0.5)
-
-	tween.tween_callback(func():
-		active_animations.erase(anim_id)
-		emit_signal("animation_completed", anim_id)
-		tween.kill()
-	)
+		tween.tween_property(target, "position", recoil_pos, 0.08)
+		tween.tween_property(target, "position", origin, 0.14)
+	tween.tween_callback(func(): tween.kill())
 
 func _play_screen_shake() -> void:
 	if reduced_motion: return # AC-2.2.5
@@ -228,27 +264,46 @@ func _play_screen_shake() -> void:
 	tween.tween_callback(func(): tween.kill())
 
 func spawn_damage_number(target: CanvasItem, value: int, type: String, is_critical: bool) -> void:
-	if not target: return
+	if not target:
+		return
 
 	var popup = DAMAGE_NUMBER_SCENE.instantiate()
-	# Add to the same parent as target so it overlays correctly
-	var parent = target.get_parent()
+	var parent = particle_container if particle_container else target.get_parent()
 	if parent:
 		parent.add_child(popup)
 	else:
 		add_child(popup)
 
-	# Position at center of target
-	var center_offset = Vector2.ZERO
+	# Position at center of target in parent-local space when possible
 	if target is Control:
-		center_offset = target.size / 2
-		popup.position = target.position + center_offset
+		var ctrl := target as Control
+		var center: Vector2 = ctrl.global_position + ctrl.size / 2.0
+		if parent is Control:
+			popup.global_position = center - popup.size / 2.0
+		else:
+			popup.position = center
 	else:
 		popup.position = target.position
 
 	popup.setup(value, type, is_critical)
-
 	emit_signal("damage_number_spawned", value, popup.position)
+
+
+func spawn_result_text(target: CanvasItem, text: String, type: String = "status") -> void:
+	if not target:
+		return
+	var popup = DAMAGE_NUMBER_SCENE.instantiate()
+	var parent = particle_container if particle_container else target.get_parent()
+	if parent:
+		parent.add_child(popup)
+	else:
+		add_child(popup)
+	if target is Control:
+		var ctrl := target as Control
+		var center: Vector2 = ctrl.global_position + ctrl.size / 2.0
+		popup.global_position = center
+	popup.setup_text(text, type, false)
+	emit_signal("damage_number_spawned", 0, popup.position)
 
 # Spell casting with particle effects - AC-2.2.2
 func play_spell_cast(caster: CanvasItem, target: CanvasItem, spell_type: String) -> void:

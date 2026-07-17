@@ -12,6 +12,8 @@ signal combat_started(monster_name: String)
 signal combat_ended(player_won: bool)
 signal player_attacked(damage: int, is_critical: bool)
 signal monster_attacked(damage: int)
+signal player_turn_started
+signal monster_turn_started
 signal player_leveled_up(new_level: int)
 signal loot_dropped(item_name: String)
 
@@ -45,6 +47,7 @@ var game_data = {}
 var current_monster: Monster = null
 var in_combat: bool = false
 var combat_log: String = ""
+var pending_monster_intent: Dictionary = {}
 var game_start_time: float = 0.0
 
 # Statistics tracking
@@ -321,6 +324,7 @@ func start_combat():
 	in_combat = true
 	_reset_skill_cooldowns()
 	combat_log = "Combat started! A " + current_monster.name + " (Level " + str(current_monster.level) + ") appears!"
+	refresh_monster_intent()
 
 	game_data.combat_state.current_monster = current_monster.to_dict()
 	game_data.combat_state.in_combat = true
@@ -344,6 +348,7 @@ func start_combat_with_type(monster_type: String):
 	_reset_skill_cooldowns()
 	combat_log = "Combat started! A " + current_monster.name \
 		+ " (Level " + str(current_monster.level) + ") appears!"
+	refresh_monster_intent()
 
 	game_data.combat_state.current_monster = current_monster.to_dict()
 	game_data.combat_state.in_combat = true
@@ -369,6 +374,7 @@ func start_boss_combat(level: int = 1) -> String:
 	combat_log = "Combat started! " + current_monster.get_phase_description() \
 		+ "\n" + current_monster.name + " (Level " \
 		+ str(current_monster.level) + ") appears!"
+	refresh_monster_intent()
 
 	game_data.combat_state.current_monster = current_monster.to_dict()
 	game_data.combat_state.in_combat = true
@@ -383,12 +389,138 @@ func start_boss_combat(level: int = 1) -> String:
 	return combat_log
 
 func is_boss_combat() -> bool:
-	return current_monster != null and current_monster.get_script().get_class() == "FinalBoss"
+	return current_monster != null and current_monster is FinalBoss
 
 func get_boss_phase() -> int:
 	if is_boss_combat():
 		return current_monster.current_phase
 	return -1
+
+
+func get_monster_intent() -> Dictionary:
+	return pending_monster_intent.duplicate()
+
+
+func refresh_monster_intent() -> Dictionary:
+	pending_monster_intent = {}
+	if not current_monster or not game_data.player:
+		return pending_monster_intent
+
+	var action_id := "attack"
+	if current_monster.has_method("get_ai_action"):
+		# Peek without consuming random boss rolls twice: use stable display from type
+		if is_boss_combat():
+			action_id = _peek_boss_intent_id()
+		else:
+			action_id = current_monster.get_ai_action()
+
+	var label := _intent_label_for(action_id, current_monster.name)
+	var atk_mult := _intent_attack_multiplier(action_id)
+	var dmg_range := estimate_damage_range(
+		int(current_monster.attack * atk_mult),
+		current_monster.level,
+		game_data.player.get_defense_power()
+	)
+	if action_id == "defend" or action_id == "last_stand" or action_id == "dark_curse":
+		dmg_range = {"min": 0, "max": 0}
+
+	pending_monster_intent = {
+		"id": action_id,
+		"label": label,
+		"min": dmg_range.min,
+		"max": dmg_range.max,
+	}
+	return pending_monster_intent.duplicate()
+
+
+func estimate_damage_range(base_damage: int, attacker_level: int, defender_defense: int) -> Dictionary:
+	# Mirrors _calculate_damage mid-point without crit/variance roll extremes.
+	var level_multiplier = 1.0 + (attacker_level * 0.1)
+	if level_multiplier > 10.0:
+		level_multiplier = 10.0
+	var mid = int(base_damage * level_multiplier) - defender_defense
+	if mid < 1:
+		mid = 1
+	var variance = maxi(1, int(mid * 0.1))
+	return {"min": maxi(1, mid - variance), "max": mid + variance}
+
+
+func _peek_boss_intent_id() -> String:
+	if current_monster == null:
+		return "attack"
+	var phase: int = current_monster.current_phase if "current_phase" in current_monster else 1
+	match phase:
+		1:
+			return "attack"
+		2:
+			return "power_strike"
+		3:
+			return "dark_curse"
+		_:
+			return "attack"
+
+
+func _intent_label_for(action_id: String, monster_name: String) -> String:
+	var label := "Strike"
+	match action_id:
+		"defend", "last_stand":
+			label = "Defending"
+		"power_strike":
+			label = "Power Strike"
+		"dark_curse":
+			label = "Dark Curse"
+		"whirlwind":
+			label = "Whirlwind"
+		"realm_collapse":
+			label = "Realm Collapse"
+		"attack":
+			var lower := monster_name.to_lower()
+			if "wolf" in lower:
+				label = "Bite"
+			elif "spider" in lower:
+				label = "Venom Strike"
+			elif "slime" in lower:
+				label = "Slam"
+			elif "dragon" in lower:
+				label = "Claw"
+			else:
+				label = "Strike"
+		_:
+			label = "Strike"
+	return label
+
+
+func _intent_attack_multiplier(action_id: String) -> float:
+	match action_id:
+		"power_strike":
+			return 1.5
+		"whirlwind":
+			return 1.6
+		"realm_collapse":
+			return 2.0
+		"defend", "last_stand", "dark_curse":
+			return 0.0
+		_:
+			return 1.0
+
+
+func player_use_consumable(inventory_index: int) -> String:
+	if not in_combat or not game_data.player:
+		return "Not in combat"
+	if inventory_index < 0 or inventory_index >= game_data.player.inventory.size():
+		return "Invalid item"
+	var item = game_data.player.inventory[inventory_index]
+	if item == null or not item.is_consumable():
+		return "That item cannot be used in combat."
+	var item_name: String = item.name
+	var used: bool = item.use(game_data.player)
+	if not used:
+		return "Could not use %s." % item_name
+	if item.quantity <= 0:
+		game_data.player.remove_item(inventory_index)
+	combat_log = "You use %s." % item_name
+	game_data.combat_state.combat_log = combat_log
+	return combat_log
 
 func player_attack() -> String:
 	if not in_combat or not current_monster or not game_data.player:
@@ -401,10 +533,11 @@ func player_attack() -> String:
 	current_monster.take_damage(damage)
 
 	var attack_msg = ""
+	var pname: String = game_data.player.name if game_data.player else "You"
 	if is_critical:
-		attack_msg = "**CRITICAL HIT!** You strike for " + str(damage) + " damage!"
+		attack_msg = "Critical hit! %s strikes %s for %d damage." % [pname, current_monster.name, damage]
 	else:
-		attack_msg = "You attack for " + str(damage) + " damage!"
+		attack_msg = "%s strikes %s for %d damage." % [pname, current_monster.name, damage]
 
 	# Check for boss phase transition
 	if is_boss_combat() and current_monster.health > 0:
@@ -551,6 +684,7 @@ func monster_attack() -> String:
 	game_data.combat_state.combat_log = combat_log
 
 	emit_signal("monster_attacked", total_damage)
+	refresh_monster_intent()
 
 	_check_combat_end()
 	return combat_log
@@ -573,6 +707,7 @@ func end_combat():
 		return
 
 	in_combat = false
+	pending_monster_intent = {}
 	var player_won = current_monster and current_monster.health <= 0 and game_data.player and game_data.player.health > 0
 
 	game_data.combat_state.in_combat = false

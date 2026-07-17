@@ -21,8 +21,10 @@ const LIFETIME = 1.0 # Total lifetime
 
 # Properties
 var value: int = 0
-var type: String = "damage" # "damage", "healing"
+var type: String = "damage" # "damage", "healing", "miss", "blocked", "status"
 var is_critical: bool = false
+var _text_override: String = ""
+var _use_text_override: bool = false
 
 # Nodes
 @onready var label: Label = $Label
@@ -36,21 +38,39 @@ func setup(new_value: int, new_type: String, critical: bool = false) -> void:
 	value = new_value
 	type = new_type
 	is_critical = critical
+	_use_text_override = false
 
 	# Update immediately if ready, otherwise _ready will handle it
 	if is_node_ready() and label:
 		_update_visuals()
 		_start_animation()
 
-func _update_visuals() -> void:
-	label.text = str(value)
 
-	# Set color based on type
-	if type == "healing":
-		label.modulate = HEALING_COLOR
-		label.text = "+" + label.text
+func setup_text(text: String, new_type: String = "status", critical: bool = false) -> void:
+	# Floating text modes: MISS, BLOCKED, status names, etc.
+	value = 0
+	type = new_type
+	is_critical = critical
+	_text_override = text
+	_use_text_override = true
+	if is_node_ready() and label:
+		_update_visuals()
+		_start_animation()
+
+
+func _update_visuals() -> void:
+	if _use_text_override and _text_override != "":
+		label.text = _text_override
+	elif type == "miss":
+		label.text = "MISS"
+	elif type == "blocked":
+		label.text = "BLOCKED"
+	elif type == "healing":
+		label.text = "+" + str(value)
 	else:
-		label.modulate = DAMAGE_COLOR
+		label.text = str(value)
+
+	_apply_type_color()
 
 	# Set scale based on critical
 	var target_scale = CRITICAL_SCALE if is_critical else NORMAL_SCALE
@@ -58,6 +78,18 @@ func _update_visuals() -> void:
 
 	# Center pivot for correct scaling
 	pivot_offset = size / 2
+
+
+func _apply_type_color() -> void:
+	match type:
+		"healing":
+			label.modulate = HEALING_COLOR
+		"miss", "blocked":
+			label.modulate = Color(0.85, 0.85, 0.9, 1.0)
+		"status":
+			label.modulate = Color(0.85, 0.7, 1.0, 1.0)
+		_:
+			label.modulate = DAMAGE_COLOR
 
 func _start_animation() -> void:
 	var tween = create_tween()

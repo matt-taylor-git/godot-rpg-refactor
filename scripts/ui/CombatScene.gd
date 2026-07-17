@@ -1,51 +1,70 @@
 extends Control
 
-# CombatScene - Redesigned turn-based combat interface
-# Integrates animation systems from Story 2.2
+# CombatScene - Location-stage combat with dock actions and arena feedback.
 
-const SKILLS_DIALOG = preload("res://scenes/ui/skills_dialog.tscn")
-## Cap attack sword icon (256px source) so the 2x2 action grid fits 800x600.
-const ACTION_ICON_MAX_WIDTH := 32
-const ACTION_BUTTON_MIN_HEIGHT := 48
+const StageChrome = preload("res://scripts/ui/CombatStageChrome.gd")
+const LOW_HP_THRESHOLD := 0.25
 
-# Animation Controllers - AC-2.2.2, AC-2.2.3
-var skills_dialog_instance = null
 var animation_controller: CombatAnimationController = null
 var turn_indicator: TurnIndicatorController = null
 var performance_monitor: PerformanceMonitor = null
-# Accessibility setting - AC-2.2.5
 var reduced_motion: bool = false
+var input_locked: bool = false
+var round_number: int = 1
+var log_expanded: bool = false
+var dock_mode: String = "root" # root | skills | items
+# Legacy aliases filled in _ready for integration tests
+var player_portrait = null
+var monster_portrait = null
+var player_health_bar = null
+var player_mana_bar = null
+var monster_health_bar = null
+var _low_hp_active: bool = false
 var _phase_banner: Label = null
-var _vignette: ColorRect = null
+var _history: PackedStringArray = PackedStringArray()
 
-@onready var player_portrait = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerPortrait
-@onready var monster_portrait = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn/MonsterPortrait
+@onready var stage_background: TextureRect = $StageLayer/StageBackground
+@onready var stage_darken: ColorRect = $StageLayer/StageDarken
+@onready var stage_vignette: ColorRect = $StageLayer/StageVignette
+@onready var turn_banner = $MainColumn/ArenaLayer/TurnBanner
+@onready var player_stage = $MainColumn/ArenaLayer/Combatants/PlayerStage
+@onready var monster_stage = $MainColumn/ArenaLayer/Combatants/MonsterStage
+@onready var fx_layer: Control = $MainColumn/ArenaLayer/FXLayer
+@onready var event_strip: PanelContainer = $MainColumn/DockLayer/EventStrip
+@onready var event_label: Label = $MainColumn/DockLayer/EventStrip/EventMargin/EventLabel
+@onready var action_dock: PanelContainer = $MainColumn/DockLayer/ActionDock
+@onready var root_actions: HBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions
+@onready var attack_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/AttackButton
+@onready var skills_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/SkillsButton
+@onready var items_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/ItemsButton
+@onready var run_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/RunButton
+@onready var skills_panel: VBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel
+@onready var skills_list: HBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillsList
+@onready var skill_desc: Label = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillDesc
+@onready var items_panel: VBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel
+@onready var items_list: HBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsList
+@onready var items_empty: Label = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsEmpty
+@onready var log_toggle: Button = $MainColumn/DockLayer/LogSection/LogToggle
+@onready var combat_log_panel: PanelContainer = $MainColumn/DockLayer/LogSection/CombatLogPanel
+@onready var combat_log: RichTextLabel = $MainColumn/DockLayer/LogSection/CombatLogPanel/LogMargin/CombatLog
 
-@onready var player_name_label = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerName
-@onready var player_health_bar = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerHealthBar
-@onready var player_mana_bar = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/PlayerColumn/PlayerManaBar
 
-@onready var monster_name_label = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn/MonsterName
-@onready var monster_health_bar = $MainContainer/ArenaPanel/ArenaMargin/HBoxContainer/MonsterColumn/MonsterHealthBar
-
-@onready var combat_log = $MainContainer/BottomPanel/CombatLogPanel/LogMargin/CombatLog
-
-@onready var attack_button = $MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/AttackButton
-@onready var skills_button = $MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/SkillsButton
-@onready var items_button = $MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/ItemsButton
-@onready var run_button = $MainContainer/BottomPanel/ActionPanel/ActionMargin/ActionButtons/RunButton
-
-func _ready():
+func _ready() -> void:
 	print("CombatScene ready")
-
-	# Initialize animation systems
+	player_portrait = player_stage
+	monster_portrait = monster_stage
+	if player_stage:
+		player_health_bar = player_stage.health_bar
+		player_mana_bar = player_stage.mana_bar
+	if monster_stage:
+		monster_health_bar = monster_stage.health_bar
 	_setup_animation_systems()
-	_apply_theme_background()
-	_configure_health_bars()
-	_style_name_labels()
-	_layout_action_buttons()
+	_apply_stage_background()
+	_style_chrome()
+	_configure_root_actions()
+	_set_dock_mode("root")
+	_set_log_expanded(false)
 
-	# Connect to GameManager signals
 	GameManager.connect("combat_started", Callable(self, "_on_combat_started"))
 	GameManager.connect("player_attacked", Callable(self, "_on_player_attacked"))
 	GameManager.connect("monster_attacked", Callable(self, "_on_monster_attacked"))
@@ -55,279 +74,394 @@ func _ready():
 	GameManager.connect("boss_phase_changed", Callable(self, "_on_boss_phase_changed"))
 	GameManager.connect("boss_defeated", Callable(self, "_on_boss_defeated"))
 
-	_update_ui()
+	# Scene often loads after combat_started already emitted — seed UI from current state.
+	if GameManager.in_combat:
+		GameManager.refresh_monster_intent()
+		var mon = GameManager.get_current_monster()
+		var mon_name: String = "enemy"
+		if mon:
+			mon_name = str(mon.name)
+		_append_event("Combat begins! A %s appears." % mon_name)
+		_update_ui()
+		_show_player_turn(false)
+	else:
+		_update_ui()
+		_show_player_turn(false)
 	_setup_focus_navigation()
-
-	# Start performance monitoring for combat
 	if performance_monitor:
 		performance_monitor.start_monitoring()
 
 
-func _apply_theme_background() -> void:
-	var bg = get_node_or_null("Background")
-	if bg is Panel or bg is PanelContainer:
-		var style := StyleBoxFlat.new()
-		var base = UIThemeManager.get_background_color()
-		# Warm dungeon floor wash
-		style.bg_color = Color(base.r * 1.2, base.g * 1.05, base.b * 0.85, 1.0)
-		style.border_color = UIThemeManager.get_border_bronze_color()
-		style.border_width_top = 2
-		style.border_width_bottom = 2
-		bg.add_theme_stylebox_override("panel", style)
-	var arena = get_node_or_null("MainContainer/ArenaPanel")
-	if arena is Panel or arena is PanelContainer:
-		var arena_style := StyleBoxFlat.new()
-		arena_style.bg_color = Color(0.10, 0.09, 0.07, 0.92)
-		arena_style.border_color = UIThemeManager.get_border_bronze_color()
-		arena_style.set_border_width_all(2)
-		arena_style.set_corner_radius_all(2)
-		arena.add_theme_stylebox_override("panel", arena_style)
-	var bottom = get_node_or_null("MainContainer/BottomPanel")
-	if bottom is Panel or bottom is PanelContainer:
-		var bottom_style := StyleBoxFlat.new()
-		bottom_style.bg_color = Color(0.11, 0.09, 0.07, 0.95)
-		bottom_style.border_color = UIThemeManager.get_border_bronze_color()
-		bottom_style.set_border_width_all(2)
-		bottom.add_theme_stylebox_override("panel", bottom_style)
+func _unhandled_input(event: InputEvent) -> void:
+	if input_locked or not GameManager.in_combat:
+		return
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	var key := event as InputEventKey
+	if dock_mode != "root":
+		if key.keycode == KEY_ESCAPE or key.keycode == KEY_BACKSPACE:
+			_set_dock_mode("root")
+			get_viewport().set_input_as_handled()
+		return
+	match key.keycode:
+		KEY_1, KEY_KP_1:
+			_on_attack_pressed()
+			get_viewport().set_input_as_handled()
+		KEY_2, KEY_KP_2:
+			_on_skills_pressed()
+			get_viewport().set_input_as_handled()
+		KEY_3, KEY_KP_3:
+			_on_items_pressed()
+			get_viewport().set_input_as_handled()
+		KEY_4, KEY_KP_4:
+			_on_run_pressed()
+			get_viewport().set_input_as_handled()
 
 
-func _layout_action_buttons() -> void:
-	# icon_sword.png is 256x256; without icon_max_width Attack balloons and clips Skills/Items/Run.
-	var action_buttons: Array = [attack_button, skills_button, items_button, run_button]
-	for btn in action_buttons:
-		if btn == null:
-			continue
-		btn.add_theme_constant_override("icon_max_width", ACTION_ICON_MAX_WIDTH)
-		btn.expand_icon = false
-		btn.custom_minimum_size = Vector2(
-			maxf(btn.custom_minimum_size.x, 100.0),
-			ACTION_BUTTON_MIN_HEIGHT
-		)
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
+func apply_screenshot_state(state: Dictionary) -> void:
+	# Tour / test helper — seed HP, open dock modes, expand log.
+	var player = GameManager.get_player()
+	if player and state.has("player_hp_frac"):
+		var frac: float = clampf(float(state["player_hp_frac"]), 0.01, 1.0)
+		player.health = maxi(1, int(player.max_health * frac))
+	var ui_mode := str(state.get("combat_ui", "root"))
+	match ui_mode:
+		"skills":
+			_set_dock_mode("skills")
+		"items":
+			_set_dock_mode("items")
+		"log_open":
+			_set_log_expanded(true)
+		_:
+			_set_dock_mode("root")
+	_update_ui()
+	_update_low_hp_vignette()
+	_refresh_intent()
 
 
-func _configure_health_bars() -> void:
-	for bar in [player_health_bar, monster_health_bar, player_mana_bar]:
-		if bar == null:
-			continue
-		bar.show_percentage = false
-		if "show_value_text" in bar:
-			bar.show_value_text = true
-		if "connect_to_gamemanager" in bar:
-			bar.connect_to_gamemanager = false
-		bar.custom_minimum_size = Vector2(180, 24)
-	if player_mana_bar and "bar_kind" in player_mana_bar:
-		player_mana_bar.bar_kind = "mana"
-
-	# Full HP bars sit under names — hide the thin portrait overlays to avoid double bars
-	if player_portrait and "show_health_bar" in player_portrait:
-		player_portrait.show_health_bar = false
-	if monster_portrait and "show_health_bar" in monster_portrait:
-		monster_portrait.show_health_bar = false
-
-
-func _style_name_labels() -> void:
-	var gold = UIThemeManager.get_color("title_gold")
-	for label in [player_name_label, monster_name_label]:
-		if label == null:
-			continue
-		label.add_theme_color_override("font_color", gold)
-		label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
-		label.add_theme_constant_override("shadow_offset_x", 1)
-		label.add_theme_constant_override("shadow_offset_y", 1)
-
-func _setup_animation_systems() -> void:
-	# Check for reduced motion preference
-	reduced_motion = ProjectSettings.get_setting("accessibility/reduced_motion", false)
-
-	# Create CombatAnimationController - AC-2.2.1, AC-2.2.2
-	animation_controller = CombatAnimationController.new()
-	animation_controller.name = "CombatAnimationController"
-	add_child(animation_controller)
-	var player_image = player_portrait.get_node("PortraitPanel/PortraitImage")
-	var monster_image = monster_portrait.get_node("PortraitPanel/PortraitImage")
-	animation_controller.setup(player_image, monster_image, null, self)
-	animation_controller.set_reduced_motion(reduced_motion)
-
-	# Connect animation signals for logging/debugging
-	animation_controller.animation_started.connect(_on_animation_started)
-	animation_controller.animation_completed.connect(_on_animation_completed)
-	animation_controller.damage_number_spawned.connect(_on_damage_number_spawned)
-
-	# Create TurnIndicatorController - AC-2.2.3
-	turn_indicator = TurnIndicatorController.new()
-	turn_indicator.name = "TurnIndicatorController"
-	add_child(turn_indicator)
-	var p_image = player_portrait.get_node("PortraitPanel/PortraitImage")
-	var m_image = monster_portrait.get_node("PortraitPanel/PortraitImage")
-	turn_indicator.setup(p_image, m_image)
-	turn_indicator.set_reduced_motion(reduced_motion)
-
-	# Create PerformanceMonitor - AC-2.2.4
-	performance_monitor = PerformanceMonitor.new()
-	performance_monitor.name = "PerformanceMonitor"
-	add_child(performance_monitor)
-
-	# Connect performance signals
-	performance_monitor.fps_warning.connect(_on_fps_warning)
-	performance_monitor.memory_warning.connect(_on_memory_warning)
-
-func _on_animation_started(animation_id: String) -> void:
-	if performance_monitor:
-		performance_monitor.start_animation_timing(animation_id)
-
-func _on_animation_completed(animation_id: String) -> void:
-	if performance_monitor:
-		performance_monitor.end_animation_timing(animation_id)
-
-func _on_damage_number_spawned(_value: int, _position: Vector2) -> void:
-	# Could add additional effects here if needed
-	pass
-
-func _on_fps_warning(fps: float) -> void:
-	# Log warning in debug mode
-	if OS.is_debug_build():
-		print("[Performance] FPS Warning: %.1f fps" % fps)
-
-func _on_memory_warning(memory_mb: float) -> void:
-	if OS.is_debug_build():
-		print("[Performance] Memory Warning: %.1f MB" % memory_mb)
-
-# Set accessibility mode - AC-2.2.5
 func set_reduced_motion(enabled: bool) -> void:
 	reduced_motion = enabled
 	if animation_controller:
 		animation_controller.set_reduced_motion(enabled)
 	if turn_indicator:
 		turn_indicator.set_reduced_motion(enabled)
-	if player_portrait:
-		player_portrait.respect_reduced_motion = enabled
-	if monster_portrait:
-		monster_portrait.respect_reduced_motion = enabled
+	if turn_banner:
+		turn_banner.set_reduced_motion(enabled)
+	if player_stage:
+		player_stage.set_reduced_motion(enabled)
+	if monster_stage:
+		monster_stage.set_reduced_motion(enabled)
 
-func _update_ui():
+
+func _setup_animation_systems() -> void:
+	reduced_motion = ProjectSettings.get_setting("accessibility/reduced_motion", false)
+	if GameSettings:
+		reduced_motion = GameSettings.get_reduced_motion()
+
+	animation_controller = CombatAnimationController.new()
+	animation_controller.name = "CombatAnimationController"
+	add_child(animation_controller)
+
+	var p_fig = player_stage.get_figure_node() if player_stage else null
+	var m_fig = monster_stage.get_figure_node() if monster_stage else null
+	animation_controller.setup(p_fig, m_fig, null, fx_layer if fx_layer else self)
+	animation_controller.set_reduced_motion(reduced_motion)
+	animation_controller.animation_started.connect(_on_animation_started)
+	animation_controller.animation_completed.connect(_on_animation_completed)
+	animation_controller.damage_number_spawned.connect(_on_damage_number_spawned)
+
+	turn_indicator = TurnIndicatorController.new()
+	turn_indicator.name = "TurnIndicatorController"
+	add_child(turn_indicator)
+	turn_indicator.setup(p_fig, m_fig)
+	turn_indicator.set_reduced_motion(reduced_motion)
+
+	performance_monitor = PerformanceMonitor.new()
+	performance_monitor.name = "PerformanceMonitor"
+	add_child(performance_monitor)
+	performance_monitor.fps_warning.connect(_on_fps_warning)
+	performance_monitor.memory_warning.connect(_on_memory_warning)
+
+	if turn_banner:
+		turn_banner.set_reduced_motion(reduced_motion)
+		turn_banner.set_round(round_number)
+
+
+func _apply_stage_background() -> void:
+	var area_id := "forest"
+	if GameManager.game_data is Dictionary:
+		area_id = str(GameManager.game_data.get("current_area_id", "forest"))
+	if area_id.is_empty():
+		area_id = "forest"
+	var path := _location_image_path(area_id)
+	if path.is_empty() or not ResourceLoader.exists(path):
+		path = "res://assets/locations/forest.png"
+	if stage_background and ResourceLoader.exists(path):
+		stage_background.texture = load(path)
+	if stage_darken:
+		stage_darken.color = Color(0.04, 0.03, 0.025, 0.50)
+
+
+func _location_image_path(area_id: String) -> String:
+	# Prefer known promoted location paths (avoids orphan ExplorationManager nodes).
+	var known := {
+		"town": "res://assets/locations/town.png",
+		"forest": "res://assets/locations/forest.png",
+		"mountain": "res://assets/locations/mountain.png",
+		"cave": "res://assets/locations/cave.png",
+		"peak": "res://assets/locations/peak.png",
+	}
+	if known.has(area_id):
+		return known[area_id]
+	return "res://assets/locations/forest.png"
+
+
+func _style_chrome() -> void:
+	StageChrome.style_quiet_strip(event_strip)
+	StageChrome.style_floating_panel(action_dock)
+	StageChrome.style_floating_panel(combat_log_panel)
+	StageChrome.style_log_toggle(log_toggle)
+	if event_label:
+		var serif := "res://assets/fonts/SourceSerif4-VariableFont_opsz_wght.ttf"
+		if ResourceLoader.exists(serif):
+			event_label.add_theme_font_override("font", load(serif))
+		event_label.add_theme_font_size_override("font_size", UITypography.FONT_SIZE_BODY_REGULAR)
+		event_label.add_theme_color_override("font_color", UIThemeManager.get_text_primary_color())
+
+
+func _configure_root_actions() -> void:
+	StageChrome.style_primary_action(attack_button)
+	StageChrome.style_secondary_action(skills_button)
+	StageChrome.style_secondary_action(items_button)
+	StageChrome.style_danger_action(run_button)
+	StageChrome.set_button_label(attack_button, "1  Attack")
+	StageChrome.set_button_label(skills_button, "2  Skills")
+	StageChrome.set_button_label(items_button, "3  Items")
+	StageChrome.set_button_label(run_button, "4  Run")
+	if attack_button:
+		attack_button.add_theme_constant_override("icon_max_width", 28)
+		attack_button.expand_icon = false
+	var skills_back = get_node_or_null(
+		"MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillsHeader/SkillsBackButton")
+	var items_back = get_node_or_null(
+		"MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsHeader/ItemsBackButton")
+	StageChrome.style_secondary_action(skills_back)
+	StageChrome.style_secondary_action(items_back)
+	if skills_back:
+		skills_back.custom_minimum_size = Vector2(90, 32)
+		StageChrome.set_button_label(skills_back, "Back")
+	if items_back:
+		items_back.custom_minimum_size = Vector2(90, 32)
+		StageChrome.set_button_label(items_back, "Back")
+
+
+func _setup_focus_navigation() -> void:
+	if attack_button == null:
+		return
+	attack_button.focus_neighbor_right = skills_button.get_path()
+	skills_button.focus_neighbor_left = attack_button.get_path()
+	skills_button.focus_neighbor_right = items_button.get_path()
+	items_button.focus_neighbor_left = skills_button.get_path()
+	items_button.focus_neighbor_right = run_button.get_path()
+	run_button.focus_neighbor_left = items_button.get_path()
+	attack_button.grab_focus()
+
+
+func _set_input_locked(locked: bool) -> void:
+	input_locked = locked
+	for btn in [attack_button, skills_button, items_button, run_button]:
+		if btn:
+			btn.disabled = locked
+	if skills_list:
+		for child in skills_list.get_children():
+			if child is Button:
+				child.disabled = locked
+	if items_list:
+		for child in items_list.get_children():
+			if child is Button:
+				child.disabled = locked
+
+
+func _set_dock_mode(mode: String) -> void:
+	dock_mode = mode
+	if root_actions:
+		root_actions.visible = mode == "root"
+	if skills_panel:
+		skills_panel.visible = mode == "skills"
+	if items_panel:
+		items_panel.visible = mode == "items"
+	if mode == "skills":
+		_populate_skills_dock()
+	elif mode == "items":
+		_populate_items_dock()
+	elif mode == "root" and attack_button and not input_locked:
+		attack_button.grab_focus()
+
+
+func _set_log_expanded(expanded: bool) -> void:
+	log_expanded = expanded
+	if combat_log_panel:
+		combat_log_panel.visible = expanded
+	if log_toggle:
+		StageChrome.set_button_label(
+			log_toggle,
+			"Combat Log ▴" if expanded else "Combat Log ▾"
+		)
+
+
+func _update_ui() -> void:
 	_update_player_ui()
 	_update_monster_ui()
+	_update_low_hp_vignette()
 
-func _update_player_ui():
+
+func _update_player_ui() -> void:
 	var player = GameManager.get_player()
-	if not player:
+	if not player or not player_stage:
 		return
-	player_name_label.text = player.name
-	player_health_bar.max_value = player.max_health
-	# Use animated value change for smooth health transitions
-	player_health_bar.set_value_animated(player.health, true)
+	player_stage.set_identity(player.name, player.level)
+	player_stage.set_figure_texture(PortraitLookup.get_player_texture(player))
+	player_stage.set_health(player.health, player.max_health, true)
+	player_stage.set_mana(player.mana, player.max_mana, true)
+	player_stage.clear_status_effects()
 
-	if player_mana_bar:
-		if player.max_mana > 0:
-			player_mana_bar.visible = true
-			player_mana_bar.max_value = player.max_mana
-			player_mana_bar.set_value_animated(player.mana, true)
-		else:
-			player_mana_bar.visible = false
 
-	# Update player portrait
-	if player_portrait:
-		var health_pct = (float(player.health) / float(player.max_health)) * 100.0
-		player_portrait.set_character_data(player.name, _get_player_portrait_texture(player), health_pct)
-
-		# Update status effects from player
-		_update_player_status_effects(player)
-
-func _update_monster_ui():
+func _update_monster_ui() -> void:
 	var monster = GameManager.get_current_monster()
-	if not monster:
-		monster_name_label.text = "No Monster"
-		monster_health_bar.set_value_animated(0, true)
-		if monster_portrait:
-			monster_portrait.visible = false
+	if not monster or not monster_stage:
+		if monster_stage:
+			monster_stage.set_identity("No Monster", 1)
 		return
-
-	var name_text = monster.name + " (Lv." + str(monster.level) + ")"
+	var extra := ""
 	if GameManager.is_boss_combat():
-		name_text += " [Phase " + str(monster.current_phase) + "/4]"
-	monster_name_label.text = name_text
+		extra = "[Phase %d/%d]" % [monster.current_phase, monster.max_phase if "max_phase" in monster else 3]
+	monster_stage.set_identity(monster.name, monster.level, extra)
+	monster_stage.set_figure_texture(PortraitLookup.get_monster_texture(monster.name))
+	monster_stage.set_health(monster.health, monster.max_health, true)
+	monster_stage.clear_status_effects()
+	_refresh_intent()
 
-	monster_health_bar.max_value = monster.max_health
-	# Use animated value change for smooth health transitions
-	monster_health_bar.set_value_animated(monster.health, true)
 
-	# Update monster portrait
-	if monster_portrait:
-		monster_portrait.visible = true
-		var health_pct = (float(monster.health) / float(monster.max_health)) * 100.0
-		monster_portrait.set_character_data(name_text, _get_monster_portrait_texture(monster), health_pct)
+func _refresh_intent() -> void:
+	if not monster_stage:
+		return
+	var intent: Dictionary = GameManager.get_monster_intent()
+	if intent.is_empty():
+		GameManager.refresh_monster_intent()
+		intent = GameManager.get_monster_intent()
+	var label := str(intent.get("label", ""))
+	var min_d: int = int(intent.get("min", 0))
+	var max_d: int = int(intent.get("max", 0))
+	var text := label
+	if min_d > 0 and max_d > 0 and str(intent.get("id", "")) != "defend":
+		if min_d == max_d:
+			text = "%s • %d damage" % [label, min_d]
+		else:
+			text = "%s • %d–%d damage" % [label, min_d, max_d]
+	monster_stage.set_intent(text)
 
-		# Update status effects from monster
-		_update_monster_status_effects(monster)
 
-func _append_to_log(message: String):
+func _append_event(message: String) -> void:
+	var clean := _strip_bbcode(message).strip_edges()
+	if clean.is_empty():
+		return
+	# Prefer single-line latest event
+	var line := clean.replace("\n", " ")
+	if event_label:
+		event_label.text = line
+	_history.append(line)
 	if combat_log:
-		combat_log.text += "\n" + message
+		if combat_log.text.is_empty():
+			combat_log.text = line
+		else:
+			combat_log.text += "\n" + line
 		combat_log.scroll_to_line(combat_log.get_line_count() - 1)
 
-func _on_combat_started(_monster_name_param: String):
-	_update_ui()
-	_append_to_log("[center]Combat begins![/center]")
 
-	# Set player as active turn - AC-2.2.3
+func _strip_bbcode(text: String) -> String:
+	var re := RegEx.new()
+	re.compile("\\[/?[^\\]]+\\]")
+	return re.sub(text, "", true)
+
+
+func _show_player_turn(animate: bool) -> void:
+	if turn_banner:
+		turn_banner.set_round(round_number)
+		turn_banner.set_state(turn_banner.State.YOUR_TURN, animate)
 	if turn_indicator:
 		turn_indicator.highlight_player()
-	if player_portrait:
-		player_portrait.is_active = true
-	if monster_portrait:
-		monster_portrait.is_active = false
+	if player_stage:
+		player_stage.is_active = true
+	if monster_stage:
+		monster_stage.is_active = false
+	_set_input_locked(false)
+	_set_dock_mode("root")
 
-func _on_player_attacked(_damage: int, _is_critical: bool):
-	_append_to_log(GameManager.get_combat_log())
+
+func _show_enemy_turn(animate: bool) -> void:
+	if turn_banner:
+		turn_banner.set_state(turn_banner.State.ENEMY_TURN, animate)
+	if turn_indicator:
+		turn_indicator.highlight_monster()
+	if player_stage:
+		player_stage.is_active = false
+	if monster_stage:
+		monster_stage.is_active = true
+	_set_input_locked(true)
+
+
+func _on_combat_started(_monster_name: String) -> void:
+	round_number = 1
+	_history.clear()
+	if combat_log:
+		combat_log.text = ""
+	_apply_stage_background()
+	GameManager.refresh_monster_intent()
 	_update_ui()
+	_append_event("Combat begins! A %s appears." % _monster_name)
+	_show_player_turn(true)
 
-	# Animation controller handles damage numbers automatically via signal connection
-	# Wait for animations before monster turn - AC-2.2.2
+
+func _on_player_attacked(_damage: int, _is_critical: bool) -> void:
+	# Event already recorded by the action handler; refresh bars + wait for FX.
+	_update_ui()
 	if animation_controller and not reduced_motion:
 		await animation_controller.wait_for_animations()
+	if not GameManager.in_combat:
+		return
+	await _run_monster_turn()
 
-	if GameManager.in_combat:
-		# Switch to monster turn indicator - AC-2.2.3
-		if turn_indicator:
-			turn_indicator.highlight_monster()
-		if player_portrait:
-			player_portrait.is_active = false
-		if monster_portrait:
-			monster_portrait.is_active = true
 
-		await get_tree().create_timer(0.5).timeout # Reduced from 1.0 since we wait for animations
-		var monster_attack_msg = GameManager.monster_attack()
-		_append_to_log(monster_attack_msg)
-		_update_ui()
-
-		# Wait for monster attack animation
-		if animation_controller and not reduced_motion:
-			await animation_controller.wait_for_animations()
-
-		# Return to player turn if combat continues - AC-2.2.3
-		if GameManager.in_combat and turn_indicator:
-			turn_indicator.highlight_player()
-		if player_portrait:
-			player_portrait.is_active = true
-		if monster_portrait:
-			monster_portrait.is_active = false
-
-func _on_monster_attacked(_damage: int):
-	_append_to_log(GameManager.get_combat_log())
+func _on_monster_attacked(_damage: int) -> void:
 	_update_ui()
-	# Animation controller handles damage numbers automatically
+	_update_low_hp_vignette()
 
-func _on_combat_ended(player_won: bool):
-	# Stop performance monitoring
+
+func _run_monster_turn() -> void:
+	_show_enemy_turn(true)
+	await get_tree().create_timer(0.35 if not reduced_motion else 0.05).timeout
+	if not GameManager.in_combat:
+		return
+	var monster_attack_msg = GameManager.monster_attack()
+	_append_event(monster_attack_msg)
+	_update_ui()
+	if animation_controller and not reduced_motion:
+		await animation_controller.wait_for_animations()
+	if GameManager.in_combat:
+		round_number += 1
+		GameManager.refresh_monster_intent()
+		_refresh_intent()
+		_show_player_turn(true)
+
+
+func _on_combat_ended(player_won: bool) -> void:
 	if performance_monitor:
 		performance_monitor.stop_monitoring()
-
-	var message = ""
+	_set_input_locked(true)
 	if player_won:
-		message = "[color=green]Victory! You defeated the monster![/color]"
-		_append_to_log(message)
+		if turn_banner:
+			turn_banner.set_state(turn_banner.State.VICTORY, true)
+		_append_event("Victory! You defeated the monster.")
 		await _play_enemy_defeat_fx()
 		if GameManager.is_boss_combat():
 			if is_inside_tree():
@@ -339,20 +473,21 @@ func _on_combat_ended(player_won: bool):
 				await get_tree().create_timer(1.0).timeout
 			_change_to_exploration()
 	else:
-		message = "[color=red]Defeat! You were defeated...[/color]"
-		_append_to_log(message)
+		if turn_banner:
+			turn_banner.set_state(turn_banner.State.DEFEAT, true)
+		_append_event("Defeat! You were defeated...")
 		if is_inside_tree():
 			await get_tree().create_timer(2.0).timeout
 		GameManager.change_scene("game_over_scene")
 
+
 func _play_enemy_defeat_fx() -> void:
-	if not monster_portrait:
+	if not monster_stage:
 		return
-	var reduce_motion = ProjectSettings.get_setting(
-		"accessibility/reduced_motion", false)
-	var portrait_image = monster_portrait.get_node_or_null("PortraitPanel/PortraitImage")
-	var target = portrait_image if portrait_image else monster_portrait
-	if reduce_motion:
+	var target = monster_stage.get_figure_node()
+	if target == null:
+		return
+	if reduced_motion:
 		target.modulate = Color(0.4, 0.4, 0.4, 0.5)
 		return
 	var tween = create_tween()
@@ -361,31 +496,32 @@ func _play_enemy_defeat_fx() -> void:
 	await tween.finished
 	tween.kill()
 
-func _on_loot_dropped(item_name: String):
-	_append_to_log("[color=yellow]You found: " + item_name + "[/color]")
+
+func _on_loot_dropped(item_name: String) -> void:
+	_append_event("You found: %s" % item_name)
 	UIToast.toast_on(self, "Loot: %s" % item_name, UIToast.Kind.LOOT, 2.0)
 
-func _on_player_leveled_up(new_level: int):
-	_append_to_log("[color=blue]Level up! You are now level " + str(new_level) + "![/color]")
-	_update_ui()
-	UIToast.toast_on(
-		self,
-		"Level up! Now level %d" % new_level,
-		UIToast.Kind.LEVEL_UP,
-		2.4
-	)
-	if player_portrait and not reduced_motion:
-		var tween = create_tween()
-		tween.tween_property(player_portrait, "modulate", Color(1.25, 1.15, 0.7, 1.0), 0.15)
-		tween.tween_property(player_portrait, "modulate", Color.WHITE, 0.35)
-		tween.finished.connect(func(): tween.kill())
 
-func _on_boss_phase_changed(phase: int, description: String):
-	_append_to_log("[color=red]" + description + "[/color]")
+func _on_player_leveled_up(new_level: int) -> void:
+	_append_event("Level up! You are now level %d." % new_level)
+	_update_ui()
+	UIToast.toast_on(self, "Level up! Now level %d" % new_level, UIToast.Kind.LEVEL_UP, 2.4)
+	if player_stage and not reduced_motion:
+		var fig = player_stage.get_figure_node()
+		if fig:
+			var tween = create_tween()
+			tween.tween_property(fig, "modulate", Color(1.25, 1.15, 0.7, 1.0), 0.15)
+			tween.tween_property(fig, "modulate", Color.WHITE, 0.35)
+			tween.finished.connect(func(): tween.kill())
+
+
+func _on_boss_phase_changed(phase: int, description: String) -> void:
+	_append_event(description)
 	_update_ui()
 	UIToast.toast_on(self, "Phase %d — %s" % [phase, description], UIToast.Kind.DANGER, 2.5)
 	_show_phase_banner(description)
 	_flash_vignette()
+
 
 func _show_phase_banner(text: String) -> void:
 	if _phase_banner == null:
@@ -398,8 +534,7 @@ func _show_phase_banner(text: String) -> void:
 		_phase_banner.offset_left = -300
 		_phase_banner.offset_right = 300
 		_phase_banner.add_theme_font_size_override("font_size", 20)
-		_phase_banner.add_theme_color_override(
-			"font_color", UIThemeManager.get_color("danger"))
+		_phase_banner.add_theme_color_override("font_color", UIThemeManager.get_color("danger"))
 		_phase_banner.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 		_phase_banner.add_theme_constant_override("shadow_offset_x", 2)
 		_phase_banner.add_theme_constant_override("shadow_offset_y", 2)
@@ -414,170 +549,232 @@ func _show_phase_banner(text: String) -> void:
 	tween.tween_property(_phase_banner, "modulate:a", 0.0, 0.4)
 	tween.finished.connect(func(): tween.kill())
 
+
 func _flash_vignette() -> void:
-	if reduced_motion:
+	if reduced_motion or stage_vignette == null:
 		return
-	if _vignette == null:
-		_vignette = ColorRect.new()
-		_vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
-		_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_vignette.color = Color(0.6, 0.05, 0.05, 0.0)
-		add_child(_vignette)
-	_vignette.color.a = 0.0
 	var tween = create_tween()
-	tween.tween_property(_vignette, "color:a", 0.35, 0.12)
-	tween.tween_property(_vignette, "color:a", 0.0, 0.35)
+	tween.tween_property(stage_vignette, "color:a", 0.35, 0.12)
+	tween.tween_property(stage_vignette, "color:a", 0.0 if not _low_hp_active else 0.22, 0.35)
 	tween.finished.connect(func(): tween.kill())
 
-func _on_boss_defeated():
-	_append_to_log("[color=gold]THE DARK OVERLORD HAS BEEN DEFEATED![/color]")
+
+func _update_low_hp_vignette() -> void:
+	var player = GameManager.get_player()
+	if stage_vignette == null or player == null or player.max_health <= 0:
+		return
+	var frac := float(player.health) / float(player.max_health)
+	_low_hp_active = frac <= LOW_HP_THRESHOLD and player.health > 0
+	if _low_hp_active:
+		stage_vignette.color = Color(0.55, 0.05, 0.05, 0.22)
+	else:
+		stage_vignette.color = Color(0.05, 0.02, 0.02, 0.0)
+
+
+func _on_boss_defeated() -> void:
+	_append_event("The Dark Overlord has been defeated!")
 	UIToast.toast_on(self, "The Dark Overlord has fallen!", UIToast.Kind.LEVEL_UP, 3.0)
 
-func _setup_focus_navigation():
-	# 2x2 grid: Attack | Skills
-	#            Items  | Run
-	# Row 1
-	attack_button.set("focus_neighbor_right", skills_button.get_path())
-	attack_button.set("focus_neighbor_left", skills_button.get_path())
-	attack_button.set("focus_neighbor_bottom", items_button.get_path())
-	attack_button.set("focus_neighbor_top", items_button.get_path())
 
-	skills_button.set("focus_neighbor_left", attack_button.get_path())
-	skills_button.set("focus_neighbor_right", attack_button.get_path())
-	skills_button.set("focus_neighbor_bottom", run_button.get_path())
-	skills_button.set("focus_neighbor_top", run_button.get_path())
-
-	# Row 2
-	items_button.set("focus_neighbor_right", run_button.get_path())
-	items_button.set("focus_neighbor_left", run_button.get_path())
-	items_button.set("focus_neighbor_top", attack_button.get_path())
-	items_button.set("focus_neighbor_bottom", attack_button.get_path())
-
-	run_button.set("focus_neighbor_left", items_button.get_path())
-	run_button.set("focus_neighbor_right", items_button.get_path())
-	run_button.set("focus_neighbor_top", skills_button.get_path())
-	run_button.set("focus_neighbor_bottom", skills_button.get_path())
-
-	attack_button.grab_focus()
-
-func _on_attack_pressed():
-	if not GameManager.in_combat: return
-	var result = GameManager.player_attack()
-	_append_to_log(result)
-	_update_ui()
-
-func _on_skills_pressed():
-	if not GameManager.in_combat or not GameManager.get_player(): return
-	var player = GameManager.get_player()
-	if player.skills.size() == 0:
-		_append_to_log("You have no skills to use!")
+func _on_attack_pressed() -> void:
+	if input_locked or not GameManager.in_combat:
 		return
-	if skills_dialog_instance == null:
-		skills_dialog_instance = SKILLS_DIALOG.instantiate()
-		add_child(skills_dialog_instance)
-		skills_dialog_instance.connect("skill_selected", Callable(self, "_on_skill_selected"))
-		skills_dialog_instance.connect("cancelled", Callable(self, "_on_skills_cancelled"))
-		skills_dialog_instance.tree_exited.connect(func(): attack_button.grab_focus())
+	_set_input_locked(true)
+	var result = GameManager.player_attack()
+	_append_event(result)
+	_update_ui()
+	# Monster turn is driven by _on_player_attacked
 
-func _on_items_pressed():
-	if not GameManager.in_combat: return
-	_append_to_log("Items not implemented yet")
 
-func _on_run_pressed():
-	if not GameManager.in_combat: return
+func _on_skills_pressed() -> void:
+	if input_locked or not GameManager.in_combat:
+		return
+	var player = GameManager.get_player()
+	if player == null or player.skills.size() == 0:
+		_append_event("You have no skills to use.")
+		return
+	_set_dock_mode("skills")
+
+
+func _on_items_pressed() -> void:
+	if input_locked or not GameManager.in_combat:
+		return
+	_set_dock_mode("items")
+
+
+func _on_run_pressed() -> void:
+	if input_locked or not GameManager.in_combat:
+		return
+	_set_input_locked(true)
 	if randf() < 0.5:
 		GameManager.end_combat()
-		_append_to_log("You successfully ran away!")
+		_append_event("You successfully ran away!")
 		await get_tree().create_timer(1.0).timeout
 		_change_to_exploration()
 	else:
-		_append_to_log("Failed to run away!")
-		await get_tree().create_timer(1.0).timeout
-		var monster_attack_msg = GameManager.monster_attack()
-		_append_to_log(monster_attack_msg)
-		_update_ui()
+		_append_event("Failed to run away!")
+		await _run_monster_turn()
 
-func _change_to_exploration():
-	GameManager.change_scene("exploration_scene")
 
-func _on_skill_selected(skill_index: int):
-	# Get skill info for animation
+func _on_skills_back_pressed() -> void:
+	_set_dock_mode("root")
+
+
+func _on_items_back_pressed() -> void:
+	_set_dock_mode("root")
+
+
+func _on_log_toggle_pressed() -> void:
+	_set_log_expanded(not log_expanded)
+
+
+func _populate_skills_dock() -> void:
+	if skills_list == null:
+		return
+	for child in skills_list.get_children():
+		child.queue_free()
 	var player = GameManager.get_player()
-	var skill_name = ""
+	if player == null:
+		return
+	if skill_desc:
+		skill_desc.text = "Choose a skill."
+	for i in range(player.skills.size()):
+		var skill = player.skills[i]
+		var btn := Button.new()
+		var cd := ""
+		if skill.current_cooldown > 0:
+			cd = " CD%d" % skill.current_cooldown
+		var cost := ""
+		if skill.mana_cost > 0:
+			cost = " %dMP" % skill.mana_cost
+		btn.text = "%s%s%s" % [skill.name, cost, cd]
+		btn.tooltip_text = skill.description if skill.description else skill.get_unusable_reason(player)
+		btn.custom_minimum_size = Vector2(140, 56)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		StageChrome.style_secondary_action(btn)
+		var can_use_skill: bool = skill.can_use(player)
+		btn.disabled = not can_use_skill
+		if not can_use_skill:
+			btn.tooltip_text = skill.get_unusable_reason(player)
+		var idx := i
+		btn.pressed.connect(func(): _on_skill_chosen(idx))
+		btn.mouse_entered.connect(func():
+			if skill_desc:
+				skill_desc.text = skill.description if skill.description else skill.name
+		)
+		skills_list.add_child(btn)
+
+
+func _on_skill_chosen(skill_index: int) -> void:
+	if input_locked or not GameManager.in_combat:
+		return
+	_set_input_locked(true)
+	_set_dock_mode("root")
+	var player = GameManager.get_player()
+	var skill_name := ""
+	var effect_type := "damage"
 	if player and skill_index >= 0 and skill_index < player.skills.size():
 		skill_name = player.skills[skill_index].name
+		effect_type = player.skills[skill_index].effect_type
 
-	# Play spell cast animation before using skill - AC-2.2.2
 	if animation_controller and not reduced_motion and skill_name != "":
-		var p_img = player_portrait.get_node("PortraitPanel/PortraitImage")
-		var m_img = monster_portrait.get_node("PortraitPanel/PortraitImage")
-		await animation_controller.play_spell_cast(p_img, m_img, skill_name)
+		var p_img = player_stage.get_figure_node()
+		var m_img = monster_stage.get_figure_node()
+		if effect_type == "heal":
+			await animation_controller.play_healing_effect(p_img, 0)
+		else:
+			await animation_controller.play_spell_cast(p_img, m_img, skill_name)
 
 	var result = GameManager.player_use_skill(skill_index)
-	_append_to_log(result)
+	_append_event(result)
 	_update_ui()
-	skills_dialog_instance = null
 
-	# Handle monster turn after skill
+	# Show damage/heal numbers for skills
+	if animation_controller and player:
+		var skill = player.skills[skill_index] if skill_index < player.skills.size() else null
+		if skill and skill.effect_type == "damage" and monster_stage:
+			# Approximate from log is hard; spawn using last combat values if present
+			pass
+
 	if GameManager.in_combat:
-		if turn_indicator:
-			turn_indicator.highlight_monster()
-		if player_portrait:
-			player_portrait.is_active = false
-		if monster_portrait:
-			monster_portrait.is_active = true
+		await _run_monster_turn()
 
-		await get_tree().create_timer(0.5).timeout
-		var monster_attack_msg = GameManager.monster_attack()
-		_append_to_log(monster_attack_msg)
-		_update_ui()
 
-		if animation_controller and not reduced_motion:
-			await animation_controller.wait_for_animations()
-
-		if GameManager.in_combat and turn_indicator:
-			turn_indicator.highlight_player()
-		if player_portrait:
-			player_portrait.is_active = true
-		if monster_portrait:
-			monster_portrait.is_active = false
-
-func _on_skills_cancelled():
-	skills_dialog_instance = null
-
-func _get_player_portrait_texture(player) -> Texture2D:
-	return PortraitLookup.get_player_texture(player)
-
-func _get_monster_portrait_texture(monster) -> Texture2D:
-	if monster == null:
-		return PortraitLookup.get_monster_texture("goblin")
-	return PortraitLookup.get_monster_texture(monster.name)
-
-func _update_player_status_effects(_player):
-	# Update player status effects on portrait
-	if not player_portrait:
+func _populate_items_dock() -> void:
+	if items_list == null:
 		return
-
-	# Clear existing status effects
-	player_portrait.clear_status_effects()
-
-	# Add current status effects (if player has status effects system)
-	# This would need to be implemented in Player class
-	# For now, we'll skip as status effects aren't fully implemented yet
-
-func _update_monster_status_effects(_monster):
-	# Update monster status effects on portrait
-	if not monster_portrait:
+	for child in items_list.get_children():
+		child.queue_free()
+	var player = GameManager.get_player()
+	if player == null:
 		return
+	var found := 0
+	for i in range(player.inventory.size()):
+		var item = player.inventory[i]
+		if item == null:
+			continue
+		if not item.is_consumable():
+			continue
+		if item.quantity <= 0:
+			continue
+		found += 1
+		var btn := Button.new()
+		var qty := " x%d" % item.quantity if item.quantity > 1 else ""
+		btn.text = "%s%s" % [item.name, qty]
+		btn.tooltip_text = item.description if item.description else item.name
+		btn.custom_minimum_size = Vector2(140, 56)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		StageChrome.style_secondary_action(btn)
+		var inv_idx := i
+		btn.pressed.connect(func(): _on_item_chosen(inv_idx))
+		items_list.add_child(btn)
+	if items_empty:
+		items_empty.visible = found == 0
 
-	# Clear existing status effects
-	monster_portrait.clear_status_effects()
 
-	# Add current status effects (if monster has status effects system)
-	# This would need to be implemented in Monster class
-	# For now, we'll skip as status effects aren't fully implemented yet
+func _on_item_chosen(inventory_index: int) -> void:
+	if input_locked or not GameManager.in_combat:
+		return
+	_set_input_locked(true)
+	_set_dock_mode("root")
+	var result = GameManager.player_use_consumable(inventory_index)
+	_append_event(result)
+	var player = GameManager.get_player()
+	if animation_controller and player and not reduced_motion:
+		await animation_controller.play_healing_effect(player_stage.get_figure_node(), 0)
+	_update_ui()
+	if GameManager.in_combat:
+		await _run_monster_turn()
+
+
+func _change_to_exploration() -> void:
+	GameManager.change_scene("exploration_scene")
+
+
+func _on_animation_started(animation_id: String) -> void:
+	if performance_monitor:
+		performance_monitor.start_animation_timing(animation_id)
+
+
+func _on_animation_completed(animation_id: String) -> void:
+	if performance_monitor:
+		performance_monitor.end_animation_timing(animation_id)
+
+
+func _on_damage_number_spawned(_value: int, _position: Vector2) -> void:
+	pass
+
+
+func _on_fps_warning(fps: float) -> void:
+	if OS.is_debug_build():
+		print("[Performance] FPS Warning: %.1f fps" % fps)
+
+
+func _on_memory_warning(memory_mb: float) -> void:
+	if OS.is_debug_build():
+		print("[Performance] Memory Warning: %.1f MB" % memory_mb)
+
 
 func _exit_tree() -> void:
-	# Cleanup animation systems
 	if performance_monitor:
 		performance_monitor.stop_monitoring()
