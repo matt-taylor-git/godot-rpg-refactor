@@ -604,7 +604,6 @@ func _get_area_entry_text() -> String:
 		return "[color=#948d84]A quiet moment to prepare.[/color]"
 	return "[color=#948d84]Keep your guard up.[/color]"
 
-
 func _on_primary_action_pressed() -> void:
 	match _primary_kind:
 		PrimaryKind.REST:
@@ -749,7 +748,6 @@ func _apply_rewards(rewards: Dictionary):
 		_append_narrative("  " + " | ".join(msg_parts))
 	_update_ui()
 
-
 func _make_runtime_button(label: String) -> Button:
 	var btn = UI_BUTTON_SCENE.instantiate()
 	btn.text = label
@@ -779,7 +777,7 @@ func _show_choice_buttons(choices: Array):
 		choice_buttons.append(btn)
 
 	if choice_buttons.size() > 0:
-		choice_buttons[0].grab_focus()
+		_restore_focus(choice_buttons[0])
 	_update_action_hierarchy()
 
 func _on_choice_selected(choice_data: Dictionary):
@@ -795,8 +793,7 @@ func _on_choice_selected(choice_data: Dictionary):
 	_apply_rewards(rewards)
 	_save_exploration_state()
 	_update_ui()
-	if primary_action:
-		primary_action.grab_focus()
+	_restore_focus(primary_action)
 
 func _clear_context_actions() -> void:
 	for btn in choice_buttons:
@@ -806,7 +803,6 @@ func _clear_context_actions() -> void:
 	if context_actions:
 		for child in context_actions.get_children():
 			child.queue_free()
-
 
 func _on_travel_confirm_pressed():
 	if showing_choices:
@@ -838,9 +834,7 @@ func _enter_area(area_id: String):
 	_update_ui()
 	_append_narrative(_get_area_entry_text())
 	_save_exploration_state()
-	if primary_action:
-		primary_action.grab_focus()
-
+	_restore_focus(primary_action)
 
 func _on_rest_pressed():
 	if showing_choices:
@@ -903,13 +897,20 @@ func _on_rest_pressed():
 	_save_exploration_state()
 	_update_ui()
 
+func _restore_focus(btn: Control) -> void:
+	# Dialogs may exit because the hub itself is freeing (e.g. Game Menu → main menu).
+	if btn == null or not is_instance_valid(btn):
+		return
+	if not btn.is_inside_tree():
+		return
+	btn.grab_focus()
 
 func _on_inventory_pressed():
 	if showing_choices:
 		return
 	var dialog = InventoryDialog.instantiate()
 	add_child(dialog)
-	dialog.tree_exited.connect(func(): inventory_button.grab_focus())
+	dialog.tree_exited.connect(func(): _restore_focus(inventory_button))
 
 func _on_shop_pressed():
 	if showing_choices:
@@ -918,21 +919,21 @@ func _on_shop_pressed():
 		return
 	var dialog = ShopDialog.instantiate()
 	add_child(dialog)
-	dialog.tree_exited.connect(func(): shop_button.grab_focus())
+	dialog.tree_exited.connect(func(): _restore_focus(shop_button))
 
 func _on_quest_log_pressed():
 	if showing_choices:
 		return
 	var dialog = QuestLogDialog.instantiate()
 	add_child(dialog)
-	dialog.tree_exited.connect(func(): quest_log_button.grab_focus())
+	dialog.tree_exited.connect(func(): _restore_focus(quest_log_button))
 
 func _on_menu_pressed():
 	if showing_choices:
 		return
 	var dialog = GameMenuDialog.instantiate()
 	add_child(dialog)
-	dialog.tree_exited.connect(func(): menu_button.grab_focus())
+	dialog.tree_exited.connect(func(): _restore_focus(menu_button))
 
 func _set_primary_actions_enabled(enabled: bool) -> void:
 	var buttons = [
@@ -964,9 +965,7 @@ func _setup_focus_navigation():
 		row[i].set("focus_neighbor_top", row[prev].get_path())
 		row[i].set("focus_neighbor_bottom", row[next].get_path())
 
-	if primary_action:
-		primary_action.grab_focus()
-
+	_restore_focus(primary_action)
 
 func _load_exploration_state():
 	var state = GameManager.get_exploration_state()
