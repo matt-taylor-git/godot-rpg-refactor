@@ -3,7 +3,10 @@ extends Control
 # CombatScene - Location-stage combat with dock actions and arena feedback.
 
 const StageChrome = preload("res://scripts/ui/CombatStageChrome.gd")
+const CombatActionCardScript = preload("res://scripts/components/CombatActionCard.gd")
 const LOW_HP_THRESHOLD := 0.25
+const FLEE_CHANCE := 0.5
+const SWORD_ICON := "res://assets/icon_sword.png"
 
 var animation_controller: CombatAnimationController = null
 var turn_indicator: TurnIndicatorController = null
@@ -19,6 +22,10 @@ var monster_portrait = null
 var player_health_bar = null
 var player_mana_bar = null
 var monster_health_bar = null
+var attack_card = null
+var skills_card = null
+var items_card = null
+var run_card = null
 var _low_hp_active: bool = false
 var _phase_banner: Label = null
 var _history: PackedStringArray = PackedStringArray()
@@ -31,7 +38,7 @@ var _history: PackedStringArray = PackedStringArray()
 @onready var monster_stage = $MainColumn/ArenaLayer/Combatants/MonsterStage
 @onready var fx_layer: Control = $MainColumn/ArenaLayer/FXLayer
 @onready var event_strip: PanelContainer = $MainColumn/DockLayer/EventStrip
-@onready var event_label: Label = $MainColumn/DockLayer/EventStrip/EventMargin/EventLabel
+@onready var event_label: RichTextLabel = $MainColumn/DockLayer/EventStrip/EventMargin/EventLabel
 @onready var action_dock: PanelContainer = $MainColumn/DockLayer/ActionDock
 @onready var root_actions: HBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions
 @onready var attack_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/AttackButton
@@ -218,29 +225,47 @@ func _location_image_path(area_id: String) -> String:
 
 func _style_chrome() -> void:
 	StageChrome.style_quiet_strip(event_strip)
-	StageChrome.style_floating_panel(action_dock)
+	StageChrome.style_borderless_dock(action_dock)
 	StageChrome.style_floating_panel(combat_log_panel)
 	StageChrome.style_log_toggle(log_toggle)
 	if event_label:
 		var serif := "res://assets/fonts/SourceSerif4-VariableFont_opsz_wght.ttf"
 		if ResourceLoader.exists(serif):
-			event_label.add_theme_font_override("font", load(serif))
-		event_label.add_theme_font_size_override("font_size", UITypography.FONT_SIZE_BODY_REGULAR)
-		event_label.add_theme_color_override("font_color", UIThemeManager.get_text_primary_color())
+			event_label.add_theme_font_override("normal_font", load(serif))
+		event_label.add_theme_font_size_override("normal_font_size", UITypography.FONT_SIZE_BODY_REGULAR)
+		event_label.add_theme_color_override("default_color", UIThemeManager.get_text_primary_color())
+		event_label.bbcode_enabled = true
+		event_label.scroll_active = false
+		event_label.fit_content = true
 
 
 func _configure_root_actions() -> void:
-	StageChrome.style_primary_action(attack_button)
-	StageChrome.style_secondary_action(skills_button)
-	StageChrome.style_secondary_action(items_button)
-	StageChrome.style_danger_action(run_button)
-	StageChrome.set_button_label(attack_button, "1  Attack")
-	StageChrome.set_button_label(skills_button, "2  Skills")
-	StageChrome.set_button_label(items_button, "3  Items")
-	StageChrome.set_button_label(run_button, "4  Run")
-	if attack_button:
-		attack_button.add_theme_constant_override("icon_max_width", 28)
-		attack_button.expand_icon = false
+	attack_card = _upgrade_to_action_card(attack_button)
+	skills_card = _upgrade_to_action_card(skills_button)
+	items_card = _upgrade_to_action_card(items_button)
+	run_card = _upgrade_to_action_card(run_button)
+	var sword_tex: Texture2D = null
+	if ResourceLoader.exists(SWORD_ICON):
+		sword_tex = load(SWORD_ICON)
+	if attack_card:
+		attack_card.setup(
+			"ATTACK",
+			"1 · — damage",
+			CombatActionCardScript.Kind.PRIMARY,
+			sword_tex
+		)
+	if skills_card:
+		skills_card.setup("SKILLS", "2 · — ready", CombatActionCardScript.Kind.SECONDARY, null)
+	if items_card:
+		items_card.setup("ITEMS", "3 · — usable", CombatActionCardScript.Kind.SECONDARY, null)
+	if run_card:
+		run_card.setup(
+			"RUN",
+			"4 · ~%d%% chance" % int(FLEE_CHANCE * 100),
+			CombatActionCardScript.Kind.DANGER,
+			null
+		)
+	_refresh_action_subtitles()
 	var skills_back = get_node_or_null(
 		"MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillsHeader/SkillsBackButton")
 	var items_back = get_node_or_null(
@@ -253,6 +278,54 @@ func _configure_root_actions() -> void:
 	if items_back:
 		items_back.custom_minimum_size = Vector2(90, 32)
 		StageChrome.set_button_label(items_back, "Back")
+
+
+func _upgrade_to_action_card(btn: Button):
+	if btn == null:
+		return null
+	if btn.get_script() == CombatActionCardScript:
+		return btn
+	btn.set_script(CombatActionCardScript)
+	if btn.has_method("_build_if_needed"):
+		btn._build_if_needed()
+	return btn
+
+
+func _refresh_action_subtitles() -> void:
+	var player = GameManager.get_player()
+	var monster = GameManager.get_current_monster()
+	if attack_card and player and monster:
+		var dmg: Dictionary = GameManager.estimate_damage_range(
+			player.get_attack_power(),
+			player.level,
+			monster.defense
+		)
+		var dmin: int = int(dmg.get("min", 1))
+		var dmax: int = int(dmg.get("max", 1))
+		if dmin == dmax:
+			attack_card.set_subtitle("1 · %d damage" % dmin)
+		else:
+			attack_card.set_subtitle("1 · %d–%d damage" % [dmin, dmax])
+	elif attack_card:
+		attack_card.set_subtitle("1 · Attack")
+	if skills_card and player:
+		var ready := 0
+		for skill in player.skills:
+			if skill and skill.can_use(player):
+				ready += 1
+		skills_card.set_subtitle("2 · %d ready" % ready)
+	elif skills_card:
+		skills_card.set_subtitle("2 · Skills")
+	if items_card and player:
+		var count := 0
+		for item in player.inventory:
+			if item and item.is_consumable() and item.quantity > 0:
+				count += item.quantity
+		items_card.set_subtitle("3 · %d usable" % count)
+	elif items_card:
+		items_card.set_subtitle("3 · Items")
+	if run_card:
+		run_card.set_subtitle("4 · ~%d%% chance" % int(FLEE_CHANCE * 100))
 
 
 func _setup_focus_navigation() -> void:
@@ -272,6 +345,8 @@ func _set_input_locked(locked: bool) -> void:
 	for btn in [attack_button, skills_button, items_button, run_button]:
 		if btn:
 			btn.disabled = locked
+			if btn.has_method("set_card_disabled"):
+				btn.set_card_disabled(locked)
 	if skills_list:
 		for child in skills_list.get_children():
 			if child is Button:
@@ -313,6 +388,7 @@ func _update_ui() -> void:
 	_update_player_ui()
 	_update_monster_ui()
 	_update_low_hp_vignette()
+	_refresh_action_subtitles()
 
 
 func _update_player_ui() -> void:
@@ -361,20 +437,20 @@ func _refresh_intent() -> void:
 	monster_stage.set_intent(text)
 
 
-func _append_event(message: String) -> void:
+func _append_event(message: String, kind: String = "auto") -> void:
 	var clean := _strip_bbcode(message).strip_edges()
 	if clean.is_empty():
 		return
-	# Prefer single-line latest event
 	var line := clean.replace("\n", " ")
+	var bb := _colorize_event(line, kind)
 	if event_label:
-		event_label.text = line
+		event_label.text = bb
 	_history.append(line)
 	if combat_log:
 		if combat_log.text.is_empty():
-			combat_log.text = line
+			combat_log.text = bb
 		else:
-			combat_log.text += "\n" + line
+			combat_log.text += "\n" + bb
 		combat_log.scroll_to_line(combat_log.get_line_count() - 1)
 
 
@@ -382,6 +458,46 @@ func _strip_bbcode(text: String) -> String:
 	var re := RegEx.new()
 	re.compile("\\[/?[^\\]]+\\]")
 	return re.sub(text, "", true)
+
+
+func _colorize_event(line: String, kind: String) -> String:
+	var gold := UIThemeManager.get_color("title_gold").to_html(false)
+	var danger := UIThemeManager.get_color("danger").to_html(false)
+	var success := UIThemeManager.get_color("success").to_html(false)
+	var resolved := kind
+	if resolved == "auto":
+		var lower := line.to_lower()
+		if "heal" in lower or "restores" in lower or "use " in lower and "potion" in lower:
+			resolved = "heal"
+		elif "strikes" in lower or "critical" in lower or "deals" in lower:
+			resolved = "player"
+		elif "attacks for" in lower or "hits for" in lower or "damage!" in lower:
+			# Enemy messages often end with damage!
+			if "you strike" in lower or "strikes" in lower:
+				resolved = "player"
+			else:
+				resolved = "enemy"
+		else:
+			resolved = "neutral"
+	# Tint numbers and key verbs by kind
+	var out := line
+	var num_re := RegEx.new()
+	num_re.compile("\\b(\\d+)\\b")
+	match resolved:
+		"player":
+			out = num_re.sub(out, "[color=#%s]$1[/color]" % gold, true)
+			out = out.replace("strikes", "[color=#%s]strikes[/color]" % gold)
+			out = out.replace("Critical hit", "[color=#%s]Critical hit[/color]" % gold)
+		"enemy":
+			out = num_re.sub(out, "[color=#%s]$1[/color]" % danger, true)
+			out = out.replace("damage", "[color=#%s]damage[/color]" % danger)
+		"heal":
+			out = num_re.sub(out, "[color=#%s]$1[/color]" % success, true)
+			out = out.replace("Healed", "[color=#%s]Healed[/color]" % success)
+			out = out.replace("restores", "[color=#%s]restores[/color]" % success)
+		_:
+			pass
+	return out
 
 
 func _show_player_turn(animate: bool) -> void:
@@ -606,13 +722,13 @@ func _on_run_pressed() -> void:
 	if input_locked or not GameManager.in_combat:
 		return
 	_set_input_locked(true)
-	if randf() < 0.5:
+	if randf() < FLEE_CHANCE:
 		GameManager.end_combat()
-		_append_event("You successfully ran away!")
+		_append_event("You successfully ran away!", "neutral")
 		await get_tree().create_timer(1.0).timeout
 		_change_to_exploration()
 	else:
-		_append_event("Failed to run away!")
+		_append_event("Failed to run away!", "enemy")
 		await _run_monster_turn()
 
 

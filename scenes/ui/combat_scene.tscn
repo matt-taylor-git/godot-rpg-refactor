@@ -128,31 +128,33 @@ size_flags_stretch_ratio = 1.0
 theme_override_constants/separation = 6
 
 [node name="EventStrip" type="PanelContainer" parent="MainColumn/DockLayer"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 
 [node name="EventMargin" type="MarginContainer" parent="MainColumn/DockLayer/EventStrip"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 6
+theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 6
+theme_override_constants/margin_bottom = 4
 
-[node name="EventLabel" type="Label" parent="MainColumn/DockLayer/EventStrip/EventMargin"]
+[node name="EventLabel" type="RichTextLabel" parent="MainColumn/DockLayer/EventStrip/EventMargin"]
 layout_mode = 2
-text = "Combat begins."
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
 autowrap_mode = 2
-vertical_alignment = 1
+text = "Combat begins."
 
 [node name="ActionDock" type="PanelContainer" parent="MainColumn/DockLayer"]
 layout_mode = 2
 
 [node name="ActionMargin" type="MarginContainer" parent="MainColumn/DockLayer/ActionDock"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
 [node name="DockStack" type="VBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin"]
 layout_mode = 2
@@ -160,34 +162,32 @@ theme_override_constants/separation = 6
 
 [node name="RootActions" type="HBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 14
 alignment = 1
 
-[node name="AttackButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions" instance=ExtResource("3")]
-custom_minimum_size = Vector2(180, 76)
+[node name="AttackButton" type="Button" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions"]
+custom_minimum_size = Vector2(180, 88)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "1  Attack"
-icon = ExtResource("6")
-expand_icon = false
+text = ""
 
-[node name="SkillsButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions" instance=ExtResource("3")]
-custom_minimum_size = Vector2(180, 76)
+[node name="SkillsButton" type="Button" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions"]
+custom_minimum_size = Vector2(180, 88)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "2  Skills"
+text = ""
 
-[node name="ItemsButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions" instance=ExtResource("3")]
-custom_minimum_size = Vector2(180, 76)
+[node name="ItemsButton" type="Button" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions"]
+custom_minimum_size = Vector2(180, 88)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "3  Items"
+text = ""
 
-[node name="RunButton" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions" instance=ExtResource("3")]
-custom_minimum_size = Vector2(180, 76)
+[node name="RunButton" type="Button" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions"]
+custom_minimum_size = Vector2(180, 88)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "4  Run"
+text = ""
 
 [node name="SkillsPanel" type="VBoxContainer" parent="MainColumn/DockLayer/ActionDock/ActionMargin/DockStack"]
 visible = false

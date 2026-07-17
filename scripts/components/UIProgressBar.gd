@@ -33,9 +33,17 @@ const ANIMATION_TRANS = Tween.TRANS_QUAD
 @export var respect_reduced_motion: bool = true  # Disable animations if reduced motion is enabled
 ## "health" uses green/yellow/red thresholds; "mana" uses a steady blue fill.
 @export var bar_kind: String = "health"
+## When true, damage animates as a fast fill drop plus a slower trailing segment.
+@export var enable_damage_trail: bool = false
+## Primary fill tween duration for damage trail mode.
+@export var trail_primary_duration: float = 0.15
+## Ghost trail drain duration after primary fill drops.
+@export var trail_ghost_duration: float = 0.4
 
 # Internal state
 var active_tween: Tween = null
+var ghost_tween: Tween = null
+var delay_bar: ProgressBar = null
 var current_gradient: Gradient = null
 var status_effects: Dictionary = {}  # effect_type -> StatusEffectIcon
 var original_modulate: Color = Color.WHITE
@@ -91,6 +99,24 @@ func _exit_tree():
 		active_tween = null
 
 func _create_child_nodes():
+	# Delayed damage trail sits behind the main fill
+	if not has_node("DelayBar"):
+		delay_bar = ProgressBar.new()
+		delay_bar.name = "DelayBar"
+		delay_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
+		delay_bar.mouse_filter = MOUSE_FILTER_IGNORE
+		delay_bar.show_percentage = false
+		delay_bar.min_value = min_value
+		delay_bar.max_value = max_value
+		delay_bar.value = value
+		delay_bar.visible = false
+		add_child(delay_bar)
+		move_child(delay_bar, 0)
+		_style_delay_bar()
+	else:
+		delay_bar = $DelayBar
+		_style_delay_bar()
+
 	# Create gradient texture for fill visualization (hidden by default)
 	if not has_node("GradientTexture"):
 		gradient_texture = TextureRect.new()
@@ -383,18 +409,84 @@ func set_value_animated(new_value: float, animate: bool = true) -> void:
 	var should_animate = animate and animate_value_changes and not (respect_reduced_motion and reduced_motion)
 
 	if should_animate and abs(old_value - target_value) > 0.5:
-		# Only animate if value actually changes significantly
-		_animate_value_change(target_value)
+		if enable_damage_trail and target_value < old_value:
+			_animate_damage_trail(old_value, target_value)
+		else:
+			_animate_value_change(target_value)
 	else:
 		value = target_value
+		if delay_bar:
+			delay_bar.max_value = max_value
+			delay_bar.value = target_value
+			delay_bar.visible = false
 		_update_visual_state()
 
 	value_changed_animated.emit(target_value, old_value)
+
+
+func _style_delay_bar() -> void:
+	if delay_bar == null:
+		return
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color(0.55, 0.18, 0.16, 0.85)
+	fill.set_corner_radius_all(2)
+	delay_bar.add_theme_stylebox_override("fill", fill)
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0, 0, 0, 0)
+	delay_bar.add_theme_stylebox_override("background", bg)
+	delay_bar.show_percentage = false
+
+
+func _animate_damage_trail(old_val: float, target_val: float) -> void:
+	if active_tween and active_tween.is_valid():
+		active_tween.kill()
+	if ghost_tween and ghost_tween.is_valid():
+		ghost_tween.kill()
+	_start_performance_monitoring()
+	if delay_bar:
+		delay_bar.visible = true
+		delay_bar.min_value = min_value
+		delay_bar.max_value = max_value
+		delay_bar.value = old_val
+	var value_changed_callable = func(_new_value): _update_visual_state()
+	if not self.value_changed.is_connected(value_changed_callable):
+		self.value_changed.connect(value_changed_callable)
+	# Fast primary drop
+	active_tween = create_tween()
+	active_tween.set_ease(Tween.EASE_OUT)
+	active_tween.set_trans(Tween.TRANS_QUAD)
+	active_tween.tween_property(self, "value", target_val, trail_primary_duration)
+	active_tween.finished.connect(func():
+		if self.value_changed.is_connected(value_changed_callable):
+			self.value_changed.disconnect(value_changed_callable)
+		active_tween = null
+		_update_visual_state()
+	)
+	# Slower ghost drain
+	if delay_bar:
+		ghost_tween = create_tween()
+		ghost_tween.set_ease(Tween.EASE_IN_OUT)
+		ghost_tween.set_trans(Tween.TRANS_QUAD)
+		ghost_tween.tween_interval(trail_primary_duration * 0.4)
+		ghost_tween.tween_property(delay_bar, "value", target_val, trail_ghost_duration)
+		ghost_tween.finished.connect(func():
+			if delay_bar:
+				delay_bar.visible = false
+			ghost_tween = null
+			_end_performance_monitoring()
+		)
+	else:
+		_end_performance_monitoring()
+
 
 func _animate_value_change(target_val: float):
 	# Kill any existing tween
 	if active_tween and active_tween.is_valid():
 		active_tween.kill()
+	if ghost_tween and ghost_tween.is_valid():
+		ghost_tween.kill()
+	if delay_bar:
+		delay_bar.visible = false
 
 	# Start performance monitoring
 	_start_performance_monitoring()
