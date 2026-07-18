@@ -13,6 +13,25 @@ const AREA_WEIGHTS = {
 	"peak": [50, 20, 15, 10, 5],
 }
 
+const BASE_COMBAT_CHANCE := {
+	"town": 0.0,
+	"forest": 30.0,
+	"mountain": 35.0,
+	"cave": 40.0,
+	"peak": 45.0,
+}
+
+const AREA_LEVEL_BANDS := {
+	"forest": Vector2i(1, 2),
+	"mountain": Vector2i(3, 4),
+	"cave": Vector2i(5, 7),
+	"peak": Vector2i(8, 10),
+}
+
+const LOW_DANGER_MONSTER_WEIGHTS := [60, 30, 10]
+const MID_DANGER_MONSTER_WEIGHTS := [35, 45, 20]
+const HIGH_DANGER_MONSTER_WEIGHTS := [20, 40, 40]
+
 const EVENT_TYPES = ["combat", "discovery", "choice", "flavor", "quest"]
 
 # -- Danger flavor text --
@@ -557,14 +576,17 @@ const QUEST_NARRATIVES = [
 static func generate_event(
 	area_id: String,
 	player_level: int,
-	_danger_level: float,
+	danger_level: float,
 ) -> Dictionary:
+	if area_id == "town":
+		return _generate_flavor_event(area_id)
+	if randf() * 100.0 < get_combat_chance(area_id, danger_level):
+		return _generate_combat_event(area_id, player_level, danger_level)
 	var weights = AREA_WEIGHTS.get(area_id, AREA_WEIGHTS["forest"])
+	weights = [0, weights[1], weights[2], weights[3], weights[4]]
 	var event_type = _pick_weighted(weights)
 
 	match event_type:
-		"combat":
-			return _generate_combat_event(area_id, player_level)
 		"discovery":
 			return _generate_discovery_event(area_id, player_level)
 		"choice":
@@ -575,6 +597,77 @@ static func generate_event(
 			return _generate_quest_event(area_id, player_level)
 
 	return _generate_flavor_event(area_id)
+
+
+static func get_combat_chance(area_id: String, danger_level: float) -> float:
+	var chance: float = float(BASE_COMBAT_CHANCE.get(area_id, 30.0))
+	if danger_level >= 10.0:
+		chance += 5.0
+	if danger_level >= 20.0:
+		chance += 5.0
+	return chance
+
+
+static func get_danger_tier(danger_level: float) -> String:
+	if danger_level >= 20.0:
+		return "perilous"
+	if danger_level >= 10.0:
+		return "wary"
+	return "calm"
+
+
+static func get_reward_multiplier(danger_level: float) -> float:
+	match get_danger_tier(danger_level):
+		"perilous":
+			return 1.30
+		"wary":
+			return 1.15
+		_:
+			return 1.0
+
+
+static func get_loot_chance(danger_level: float) -> float:
+	match get_danger_tier(danger_level):
+		"perilous":
+			return 0.40
+		"wary":
+			return 0.30
+		_:
+			return 0.25
+
+
+static func get_strong_enemy_chance(danger_level: float) -> float:
+	match get_danger_tier(danger_level):
+		"perilous":
+			return 0.40
+		"wary":
+			return 0.20
+		_:
+			return 0.10
+
+
+static func get_danger_summary(
+	area_id: String, danger_level: float, danger_max: float
+) -> String:
+	var combat_chance := get_combat_chance(area_id, danger_level)
+	var reward_bonus := roundi((get_reward_multiplier(danger_level) - 1.0) * 100.0)
+	var loot_percent := roundi(get_loot_chance(danger_level) * 100.0)
+	var strong_percent := roundi(get_strong_enemy_chance(danger_level) * 100.0)
+	return (
+		"Area threat %.0f / %.0f: %.0f%% combat chance, +%d%% combat rewards, " \
+		+ "%d%% loot chance, %d%% strong enemies. %s"
+	) % [danger_level, danger_max, combat_chance, reward_bonus, loot_percent,
+		strong_percent, get_danger_flavor(danger_level)]
+
+
+static func resolve_monster_level(
+	area_id: String, player_level: int, danger_level: float
+) -> int:
+	var band: Vector2i = AREA_LEVEL_BANDS.get(area_id, Vector2i(1, 2))
+	var resolved_level := clampi(player_level, band.x, band.y)
+	if danger_level >= 20.0:
+		resolved_level = mini(resolved_level + 1, band.y)
+	return resolved_level
 
 
 static func get_danger_flavor(danger_level: float) -> String:
@@ -609,35 +702,62 @@ static func _pick_weighted(weights: Array) -> String:
 
 
 static func _generate_combat_event(
-	area_id: String, _player_level: int
+	area_id: String, player_level: int, danger_level: float = 0.0
 ) -> Dictionary:
 	var encounters: Array
 	match area_id:
 		"forest":
 			encounters = FOREST_COMBAT
 		"mountain":
-			encounters = MOUNTAIN_COMBAT
+			encounters = [MOUNTAIN_COMBAT[0], MOUNTAIN_COMBAT[2], MOUNTAIN_COMBAT[1]]
 		"cave":
-			encounters = CAVE_COMBAT
+			encounters = [CAVE_COMBAT[2], CAVE_COMBAT[1], CAVE_COMBAT[0]]
 		"peak":
 			encounters = PEAK_COMBAT
 		_:
-			encounters = [FOREST_COMBAT[0]]
+			encounters = [FOREST_COMBAT[0], FOREST_COMBAT[0], FOREST_COMBAT[0]]
 
-	var encounter: Dictionary = encounters[randi() % encounters.size()]
+	var monster_weights := LOW_DANGER_MONSTER_WEIGHTS
+	if danger_level >= 20.0:
+		monster_weights = HIGH_DANGER_MONSTER_WEIGHTS
+	elif danger_level >= 10.0:
+		monster_weights = MID_DANGER_MONSTER_WEIGHTS
+	var encounter_index := _pick_weighted_index(monster_weights)
+	var encounter: Dictionary = encounters[encounter_index]
 
 	return {
 		"type": "combat",
 		"title": encounter.title,
 		"narrative": encounter.narrative,
 		"monster_type": encounter.monster_type,
+		"monster_rank": ["weak", "medium", "strong"][encounter_index],
+		"monster_level": resolve_monster_level(area_id, player_level, danger_level),
+		"danger_tier": get_danger_tier(danger_level),
+		"reward_multiplier": get_reward_multiplier(danger_level),
+		"loot_chance": get_loot_chance(danger_level),
+		"area_id": area_id,
 		"choices": [],
 		"rewards": {},
 	}
 
 
+static func _pick_weighted_index(weights: Array) -> int:
+	var total := 0
+	for weight in weights:
+		total += int(weight)
+	if total <= 0:
+		return 0
+	var roll := randi() % total
+	var cumulative := 0
+	for index in range(weights.size()):
+		cumulative += int(weights[index])
+		if roll < cumulative:
+			return index
+	return weights.size() - 1
+
+
 static func _generate_discovery_event(
-	area_id: String, _player_level: int
+	area_id: String, player_level: int
 ) -> Dictionary:
 	var pool: Array
 	match area_id:
@@ -653,13 +773,17 @@ static func _generate_discovery_event(
 			pool = FOREST_DISCOVERY
 
 	var discovery = pool[randi() % pool.size()]
+	var rewards: Dictionary = discovery["rewards"].duplicate()
+	if int(rewards.get("exp", 0)) > 0:
+		var next_level_exp: int = 100 + 30 * (player_level - 1)
+		rewards["exp"] = roundi(float(next_level_exp) * 0.10)
 	return {
 		"type": "discovery",
 		"title": discovery["title"],
 		"narrative": discovery["narrative"],
 		"monster_type": "",
 		"choices": [],
-		"rewards": discovery["rewards"].duplicate(),
+		"rewards": rewards,
 	}
 
 

@@ -32,14 +32,14 @@ func test_value_text_display():
 func test_experience_progress_shows_total_and_next_level_threshold():
 	var player := Player.new()
 	player.level = 2
-	player.experience = 300
+	player.experience = 150
 
 	progress_bar.set_experience_progress(player)
 
 	assert_eq(progress_bar.min_value, float(player.get_exp_for_level(2)))
-	assert_eq(progress_bar.value, 300.0)
+	assert_eq(progress_bar.value, 150.0)
 	assert_eq(progress_bar.max_value, float(player.get_exp_for_level(3)))
-	assert_true(progress_bar.tooltip_text.contains("219 XP until level 3"))
+	assert_true(progress_bar.tooltip_text.contains("80 XP until level 3"))
 	assert_eq(progress_bar.bar_kind, "experience")
 
 

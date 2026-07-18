@@ -13,7 +13,7 @@ static func create_item(item_type: String) -> Item:
 			item.description = "A sturdy iron sword"
 			item.type = Item.ItemType.WEAPON
 			item.rarity = Item.Rarity.COMMON
-			item.value = 50
+			item.value = 75
 			item.attack_bonus = 5
 
 		"shield":
@@ -21,26 +21,28 @@ static func create_item(item_type: String) -> Item:
 			item.description = "Basic protection"
 			item.type = Item.ItemType.ARMOR
 			item.rarity = Item.Rarity.COMMON
-			item.value = 30
-			item.defense_bonus = 3
+			item.value = 60
+			item.defense_bonus = 5
 
 		"health_potion":
 			item.name = "Health Potion"
-			item.description = "Restores 50 HP"
+			item.description = "Restores 35% of maximum HP"
 			item.type = Item.ItemType.CONSUMABLE
 			item.rarity = Item.Rarity.UNCOMMON
-			item.value = 20
-			item.heal_amount = 50
+			item.value = 30
+			item.heal_amount = 35
+			item.restore_percent = 0.35
 			item.stackable = true
 			item.max_stack = 5
 
 		"mana_potion":
 			item.name = "Mana Potion"
-			item.description = "Restores 30 MP"
+			item.description = "Restores 40% of maximum MP"
 			item.type = Item.ItemType.CONSUMABLE
 			item.rarity = Item.Rarity.UNCOMMON
 			item.value = 25
-			item.heal_amount = 30  # MP restore amount (via effect)
+			item.heal_amount = 40
+			item.restore_percent = 0.40
 			item.effect = "restore_mana"
 			item.stackable = true
 			item.max_stack = 5
@@ -63,43 +65,35 @@ static func create_item(item_type: String) -> Item:
 	return item
 
 static func create_random_weapon(level: int = 1) -> Item:
-	var weapons = ["sword", "axe", "dagger", "staff"]
-	var weapon_type = weapons[randi() % weapons.size()]
-	var item = create_item(weapon_type)
-
-	# Scale by level
-	item.attack_bonus += level * 2
-	item.value += level * 10
+	var item = create_item("sword")
+	item.attack_bonus = clampi(level + 4, 5, 8)
+	item.value += (item.attack_bonus - 5) * 20
 	item.name = "Level %d %s" % [level, item.name]
 
 	return item
 
 static func create_random_armor(level: int = 1) -> Item:
-	var armors = ["shield", "helmet", "chestplate", "boots"]
-	var armor_type = armors[randi() % armors.size()]
-	var item = create_item(armor_type)
-
-	# Scale by level
-	item.defense_bonus += level
-	item.value += level * 8
+	var item = create_item("shield")
+	item.defense_bonus = clampi(level + 4, 5, 8)
+	item.value += (item.defense_bonus - 5) * 20
 	item.name = "Level %d %s" % [level, item.name]
 
 	return item
 
 static func create_random_item(level: int = 1) -> Item:
-	var item_types = ["weapon", "armor", "consumable"]
-	var item_type = item_types[randi() % item_types.size()]
+	if randf() < 0.7:
+		return create_item("health_potion" if randf() < 0.5 else "mana_potion")
+	return create_random_weapon(level) if randf() < 0.5 else create_random_armor(level)
 
-	match item_type:
-		"weapon":
-			return create_random_weapon(level)
-		"armor":
-			return create_random_armor(level)
-		"consumable":
-			var consumables = ["health_potion", "mana_potion"]
-			return create_item(consumables[randi() % consumables.size()])
 
-	return create_item("health_potion")  # fallback
+static func create_random_item_for_area(area_id: String) -> Item:
+	var tiers := {"forest": 1, "mountain": 2, "cave": 3, "peak": 4}
+	var tier: int = int(tiers.get(area_id, 1))
+	var item := create_random_item(tier)
+	if item.can_equip():
+		var base_name := "Iron Sword" if item.item_id == "sword" else "Wooden Shield"
+		item.name = "%s %s" % [area_id.capitalize(), base_name]
+	return item
 
 static func get_all_items() -> Array:
 	var items = []

@@ -5,7 +5,6 @@ extends Control
 const StageChrome = preload("res://scripts/ui/CombatStageChrome.gd")
 const CombatActionCardScript = preload("res://scripts/components/CombatActionCard.gd")
 const LOW_HP_THRESHOLD := 0.25
-const FLEE_CHANCE := 0.5
 const EVENT_IDLE_DELAY := 1.4
 const EVENT_IDLE_PROMPT := "Choose an action."
 
@@ -32,6 +31,7 @@ var _phase_banner: Label = null
 var _history: PackedStringArray = PackedStringArray()
 var _event_token: int = 0
 var _showing_idle_prompt: bool = false
+var _flee_failures: int = 0
 
 @onready var stage_background: TextureRect = $StageLayer/StageBackground
 @onready var stage_darken: ColorRect = $StageLayer/StageDarken
@@ -265,7 +265,7 @@ func _configure_root_actions() -> void:
 	if run_card:
 		run_card.setup(
 			"[4] RUN",
-			"%d%% escape chance" % int(FLEE_CHANCE * 100),
+			"%d%% escape chance" % int(CombatRules.get_escape_chance(0) * 100),
 			CombatActionCardScript.Kind.DANGER,
 			null
 		)
@@ -310,7 +310,8 @@ func _refresh_action_subtitles() -> void:
 		var dmg: Dictionary = GameManager.estimate_damage_range(
 			player.get_attack_power(),
 			player.level,
-			monster.defense
+			monster.defense,
+			player.get_outgoing_damage_multiplier(),
 		)
 		var dmin: int = int(dmg.get("min", 1))
 		var dmax: int = int(dmg.get("max", 1))
@@ -337,7 +338,13 @@ func _refresh_action_subtitles() -> void:
 	elif items_card:
 		items_card.set_subtitle("Items")
 	if run_card:
-		run_card.set_subtitle("%d%% escape chance" % int(FLEE_CHANCE * 100))
+		if GameManager.is_boss_combat():
+			run_card.set_subtitle("Unavailable against bosses")
+		elif _flee_failures > 0:
+			run_card.set_subtitle("100% escape chance")
+		else:
+			run_card.set_subtitle(
+				"%d%% escape chance" % int(CombatRules.get_escape_chance(0) * 100))
 
 
 func _setup_focus_navigation() -> void:
@@ -356,9 +363,10 @@ func _set_input_locked(locked: bool) -> void:
 	input_locked = locked
 	for btn in [attack_button, skills_button, items_button, run_button]:
 		if btn:
-			btn.disabled = locked
+			var boss_run_blocked: bool = btn == run_button and GameManager.is_boss_combat()
+			btn.disabled = locked or boss_run_blocked
 			if btn.has_method("set_card_disabled"):
-				btn.set_card_disabled(locked)
+				btn.set_card_disabled(locked or boss_run_blocked)
 	if skills_list:
 		for child in skills_list.get_children():
 			if child is Button:
@@ -571,6 +579,7 @@ func _show_enemy_turn(animate: bool) -> void:
 
 func _on_combat_started(_monster_name: String) -> void:
 	round_number = 1
+	_flee_failures = 0
 	_history.clear()
 	if combat_log:
 		combat_log.text = ""
@@ -608,7 +617,6 @@ func _run_monster_turn() -> void:
 		await animation_controller.wait_for_animations()
 	if GameManager.in_combat:
 		round_number += 1
-		GameManager.refresh_monster_intent()
 		_refresh_intent()
 		_show_player_turn(true)
 
@@ -617,6 +625,9 @@ func _on_combat_ended(player_won: bool) -> void:
 	if performance_monitor:
 		performance_monitor.stop_monitoring()
 	_set_input_locked(true)
+	var player = GameManager.get_player()
+	if not player_won and player and player.health > 0:
+		return
 	if player_won:
 		if turn_banner:
 			turn_banner.set_state(turn_banner.State.VICTORY, true)
@@ -634,10 +645,12 @@ func _on_combat_ended(player_won: bool) -> void:
 	else:
 		if turn_banner:
 			turn_banner.set_state(turn_banner.State.DEFEAT, true)
-		_append_event("Defeat! You were defeated...")
+		var result: Dictionary = GameManager.resolve_defeat()
+		_append_event(
+			"Defeat. You recover in town and lose %d gold." % int(result.gold_lost))
 		if is_inside_tree():
 			await get_tree().create_timer(2.0).timeout
-		GameManager.change_scene("game_over_scene")
+		GameManager.change_scene(str(result.return_scene))
 
 
 func _play_enemy_defeat_fx() -> void:
@@ -764,13 +777,19 @@ func _on_items_pressed() -> void:
 func _on_run_pressed() -> void:
 	if input_locked or not GameManager.in_combat:
 		return
+	if GameManager.is_boss_combat():
+		_append_event("There is no escape from the final battle.", "enemy")
+		return
 	_set_input_locked(true)
-	if randf() < FLEE_CHANCE:
+	GameManager.tick_player_action_status_effects()
+	var flee_chance := CombatRules.get_escape_chance(_flee_failures)
+	if randf() < flee_chance:
 		GameManager.end_combat()
 		_append_event("You successfully ran away!", "neutral")
 		await get_tree().create_timer(1.0).timeout
 		_change_to_exploration()
 	else:
+		_flee_failures += 1
 		_append_event("Failed to run away!", "enemy")
 		await _run_monster_turn()
 

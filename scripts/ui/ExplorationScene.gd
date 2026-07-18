@@ -41,6 +41,7 @@ var gold_label: Label
 var danger_bar: ProgressBar
 var threat_tag: Label
 var threat_icon: TextureRect
+var danger_details: Label
 var map_texture: TextureRect
 var markers_layer: Control
 var map_content: Control
@@ -155,6 +156,7 @@ func _bind_nodes() -> void:
 	threat_icon = left.get_node("ThreatRow/ThreatIcon")
 	threat_tag = left.get_node("ThreatRow/ThreatTag")
 	danger_bar = left.get_node("ThreatRow/DangerBar")
+	danger_details = left.get_node("DangerDetails")
 	var art: Node = $RightDock/RightVBox/LocationCard/LocationCardVBox/ArtFrame
 	location_art = art.get_node("LocationArt")
 	location_name = art.get_node("LocationName")
@@ -184,14 +186,16 @@ func _load_fonts() -> void:
 func _apply_typography() -> void:
 	var body_c := UIThemeManager.get_text_primary_color()
 	for node in [level_label, gold_label, location_description, location_status,
-			narrative_log, hp_tag, mp_tag, threat_tag, event_eyebrow, event_title]:
+			narrative_log, hp_tag, mp_tag, threat_tag, danger_details,
+			event_eyebrow, event_title]:
 		if node == null:
 			continue
 		if body_font:
 			node.add_theme_font_override("font", body_font)
 		if node is Label:
 			var size := UITypography.FONT_SIZE_BODY_REGULAR
-			if node in [location_status, hp_tag, mp_tag, threat_tag, event_eyebrow]:
+			if node in [location_status, hp_tag, mp_tag, threat_tag,
+					danger_details, event_eyebrow]:
 				size = UITypography.FONT_SIZE_CAPTION
 			node.add_theme_font_size_override("font_size", size)
 			node.add_theme_color_override("font_color", body_c)
@@ -523,7 +527,6 @@ func _danger_color(level: float) -> Color:
 	return warn_color.lerp(danger_color, (t - 0.4) / 0.6)
 func _restrained_threat_color(level: float) -> Color:
 	var c := _danger_color(level)
-	# Soften so the row never competes with combat/danger UI.
 	c.a = 0.88
 	return c.lerp(UIThemeManager.get_text_primary_color(), 0.18)
 func _style_fill_bar(bar: ProgressBar, color: Color) -> void:
@@ -540,10 +543,10 @@ func _style_fill_bar(bar: ProgressBar, color: Color) -> void:
 func _update_danger_visuals():
 	var word := _threat_level_word(danger_level)
 	var color := _restrained_threat_color(danger_level)
-	var tip := (
-		"Area threat (%.0f / %.0f). Higher threat raises combat odds while exploring. %s"
-		% [danger_level, DANGER_MAX, ExplorationEventFactory.get_danger_flavor(danger_level)]
-	)
+	var tip := ExplorationEventFactory.get_danger_summary(current_area_id, danger_level, DANGER_MAX)
+	var combat_chance := ExplorationEventFactory.get_combat_chance(current_area_id, danger_level)
+	var reward_bonus := roundi((ExplorationEventFactory.get_reward_multiplier(danger_level) - 1.0) * 100.0)
+	var strong_chance := roundi(ExplorationEventFactory.get_strong_enemy_chance(danger_level) * 100.0)
 	if threat_tag:
 		threat_tag.text = "Threat: %s" % word
 		threat_tag.add_theme_color_override("font_color", color)
@@ -559,13 +562,15 @@ func _update_danger_visuals():
 		threat_icon.modulate = color
 		threat_icon.tooltip_text = tip
 	if danger_bar:
-		danger_bar.max_value = DANGER_MAX
 		danger_bar.value = danger_level
-		danger_bar.show_percentage = false
 		var bar_color := color
 		bar_color.a = 0.65
 		_style_fill_bar(danger_bar, bar_color)
 		danger_bar.tooltip_text = tip
+	if danger_details:
+		danger_details.text = "%.0f%% encounters · +%d%% rewards\nStrong foes: %d%%" % [
+			combat_chance, reward_bonus, strong_chance]
+		danger_details.tooltip_text = tip
 func _set_event_card_expanded(expanded: bool) -> void:
 	_event_expanded = expanded
 	if event_margin:
@@ -702,7 +707,7 @@ func _handle_combat_event(event: Dictionary):
 	await _play_encounter_pulse()
 	var monster_type = event.get("monster_type", "")
 	if monster_type != "":
-		GameManager.start_combat_with_type(monster_type)
+		await GameManager.start_combat_from_event(event, current_area_id)
 	else:
 		GameManager.start_combat()
 func _play_encounter_pulse() -> void:
@@ -886,6 +891,7 @@ func _on_rest_pressed():
 		var ambush_chance = exploration_manager.get_rest_ambush_chance(current_area_id)
 		var ambushed = randf() < ambush_chance
 		if ambushed:
+			var danger_before_rest := danger_level
 			var heal_amount = int(player.max_health * 0.15)
 			var mana_restored = int(player.max_mana * 0.15)
 			player.health = min(player.health + heal_amount, player.max_health)
@@ -897,10 +903,9 @@ func _on_rest_pressed():
 			_save_exploration_state()
 			_update_ui()
 			await _play_encounter_pulse()
-			var area_info = exploration_manager.get_current_area_info()
-			var monster_types = area_info.get("monster_types", ["goblin"])
-			var monster = monster_types[randi() % monster_types.size()]
-			GameManager.start_combat_with_type(monster)
+			var event := ExplorationEventFactory._generate_combat_event(
+				current_area_id, player.level, danger_before_rest)
+			await GameManager.start_combat_from_event(event, current_area_id)
 			return
 		var heal_amount = int(player.max_health * 0.30)
 		var mana_restored = int(player.max_mana * 0.30)

@@ -33,7 +33,7 @@ static func create_skill(skill_type: String) -> Skill:
 
 		"stealth":
 			skill.name = "Stealth"
-			skill.description = "Become harder to hit (+5 defense for 2 turns)"
+			skill.description = "Become harder to hit (+20 defense for 2 enemy attacks)"
 			skill.required_level = 1  # Starting Rogue skill
 			skill.required_class = "Rogue"
 			skill.cooldown = 5

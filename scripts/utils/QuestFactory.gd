@@ -25,6 +25,7 @@ class Quest extends Resource:
 static func create_quest(quest_type: String, level: int = 1) -> Quest:
 	var quest = Quest.new()
 	quest.id = quest_type
+	var next_level_exp := 100 + 30 * (level - 1)
 
 	match quest_type:
 		"kill_goblins":
@@ -32,7 +33,7 @@ static func create_quest(quest_type: String, level: int = 1) -> Quest:
 			quest.description = "Kill 5 goblins in the forest"
 			quest.type = "kill"
 			quest.target_count = 5
-			quest.reward_exp = 50 + level * 10
+			quest.reward_exp = roundi(float(next_level_exp) * 0.30)
 			quest.reward_gold = 25 + level * 5
 
 		"collect_herbs":
@@ -40,7 +41,7 @@ static func create_quest(quest_type: String, level: int = 1) -> Quest:
 			quest.description = "Collect 3 healing herbs"
 			quest.type = "collect"
 			quest.target_count = 3
-			quest.reward_exp = 30 + level * 5
+			quest.reward_exp = roundi(float(next_level_exp) * 0.25)
 			quest.reward_gold = 15 + level * 3
 
 		"explore_cave":
@@ -49,7 +50,7 @@ static func create_quest(quest_type: String, level: int = 1) -> Quest:
 			quest.type = "exploration"
 			quest.target_area = "cave"
 			quest.target_count = 1
-			quest.reward_exp = 75 + level * 15
+			quest.reward_exp = roundi(float(next_level_exp) * 0.40)
 			quest.reward_gold = 40 + level * 8
 
 		_:

@@ -51,9 +51,9 @@ func test_mana_potion_restores_mana():
 	player.mana = 10
 	var potion = ItemFactory.create_item("mana_potion")
 	assert_eq(potion.effect, "restore_mana")
-	assert_eq(potion.heal_amount, 30)
+	assert_eq(potion.restore_percent, 0.40)
 	assert_true(potion.use(player), "Potion use should succeed")
-	assert_eq(player.mana, 40, "Should restore 30 MP (10 + 30)")
+	assert_eq(player.mana, 30, "Should restore 40% max MP (10 + 20)")
 	assert_eq(potion.quantity, 0, "Quantity should decrement")
 
 
@@ -72,7 +72,7 @@ func test_health_potion_still_heals_hp():
 	player.health = 20
 	var potion = ItemFactory.create_item("health_potion")
 	assert_true(potion.use(player))
-	assert_eq(player.health, 70, "Health potion should restore 50 HP")
+	assert_eq(player.health, 55, "Health potion should restore 35% max HP")
 
 
 func test_level_up_increases_max_mana():
@@ -156,4 +156,4 @@ func test_stealth_buff_raises_defense():
 	var result = stealth.use(player, null)
 	assert_true(result.success)
 	assert_true(player.has_status_effect("stealth"))
-	assert_eq(player.get_defense_power(), base_def + 5)
+	assert_eq(player.get_defense_power(), base_def + 20)

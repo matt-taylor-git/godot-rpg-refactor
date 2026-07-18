@@ -19,7 +19,7 @@ extends Resource
 @export var equipment: Dictionary = {}  # weapon, armor, etc.
 @export var skills: Array = []  # Array of Skill resources
 
-@export var gold: int = 300
+@export var gold: int = 100
 
 # Status effects: effect_type -> {duration: int, data: Dictionary}
 @export var status_effects: Dictionary = {}
@@ -40,6 +40,14 @@ func get_attack_power() -> int:
 			total += item.attack_bonus
 	return total
 
+
+func get_outgoing_damage_multiplier() -> float:
+	if not has_status_effect("weakened"):
+		return 1.0
+	var effect: Dictionary = status_effects.get("weakened", {})
+	var data: Dictionary = effect.get("data", {})
+	return clampf(float(data.get("damage_multiplier", 0.8)), 0.0, 1.0)
+
 func get_defense_power() -> int:
 	var total: int = defense
 	for slot in equipment.keys():
@@ -49,7 +57,7 @@ func get_defense_power() -> int:
 	if has_status_effect("stealth"):
 		var effect = status_effects.get("stealth", {})
 		var data = effect.get("data", {}) if effect is Dictionary else {}
-		total += int(data.get("defense_bonus", 5))
+		total += int(data.get("defense_bonus", 20))
 	return total
 
 func take_damage(amount: int) -> void:
@@ -101,8 +109,14 @@ func _check_level_up() -> void:
 		exp_needed = get_exp_for_level(level + 1)
 
 func get_exp_for_level(target_level: int) -> int:
-	# Simple exponential formula: 100 * level^1.5
-	return int(100 * pow(target_level, 1.5))
+	if target_level <= 1:
+		return 0
+	var completed_levels := target_level - 1
+	return 100 * completed_levels + 15 * completed_levels * (completed_levels - 1)
+
+
+func get_exp_to_next_level() -> int:
+	return 100 + 30 * (level - 1)
 
 func add_item(item: Resource) -> bool:
 	for i in range(inventory.size()):
@@ -178,6 +192,9 @@ func tick_status_effects() -> Array:
 
 	for effect_type in status_effects.keys():
 		var effect = status_effects[effect_type]
+		var data: Dictionary = effect.get("data", {})
+		if data.get("tick_mode", "enemy_turn") == "player_action":
+			continue
 		effect.duration -= 1
 
 		if effect.duration <= 0:
@@ -187,6 +204,21 @@ func tick_status_effects() -> Array:
 	for effect_type in expired_effects:
 		status_effects.erase(effect_type)
 
+	return expired_effects
+
+
+func tick_player_action_status_effects() -> Array:
+	var expired_effects := []
+	for effect_type in status_effects.keys():
+		var effect: Dictionary = status_effects[effect_type]
+		var data: Dictionary = effect.get("data", {})
+		if data.get("tick_mode", "enemy_turn") != "player_action":
+			continue
+		effect.duration -= 1
+		if effect.duration <= 0:
+			expired_effects.append(effect_type)
+	for effect_type in expired_effects:
+		status_effects.erase(effect_type)
 	return expired_effects
 
 func _serialize_equipment() -> Dictionary:

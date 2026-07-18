@@ -20,12 +20,12 @@ func _init():
 func set_stats_for_level(level: int) -> void:
 	name = "Final Boss"
 	self.level = level
-	max_health = 200 + (level * 20)
+	max_health = 170 + (level * 10)
 	health = max_health
-	attack = 15 + (level * 2)
-	defense = 8 + (level * 1)
+	attack = 14 + level
+	defense = 8 + level
 	dexterity = 5 + level
-	experience_reward = 100 + (level * 10)
+	experience_reward = 100 + (level * 12)
 	gold_reward = 50 + (level * 5)
 
 func update_phase() -> void:
@@ -39,7 +39,12 @@ func update_phase() -> void:
 
 	if new_phase != current_phase:
 		current_phase = new_phase
-		print("Boss entering Phase %d!" % current_phase)
+
+
+func check_phase_transition() -> bool:
+	var previous_phase := current_phase
+	update_phase()
+	return current_phase != previous_phase
 
 func get_phase_description() -> String:
 	if current_phase >= 1 and current_phase <= phase_descriptions.size():
@@ -48,8 +53,7 @@ func get_phase_description() -> String:
 
 func get_ai_action() -> String:
 	update_phase()
-
-	var health_percent = int((float(health) / float(max_health)) * 100)
+	var roll := randf()
 
 	# Phase-based behavior
 	match current_phase:
@@ -57,15 +61,13 @@ func get_ai_action() -> String:
 			# Phase 1: Standard attacks
 			return "attack"
 		2:
-			# Phase 2: Mix of attacks and special abilities
-			if randf() < 0.3:
+			if roll < 0.3:
 				return "power_strike"
 			return "attack"
 		3:
-			# Phase 3: Mostly special abilities
-			if randf() < 0.4:
+			if roll < 0.3:
 				return "dark_curse"
-			if randf() < 0.4:
+			if roll < 0.7:
 				return "power_strike"
 			return "attack"
 

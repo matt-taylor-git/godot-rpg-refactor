@@ -61,16 +61,28 @@ func use(user, target) -> Dictionary:
 
 	match effect_type:
 		"damage":
-			var damage = int(user.get_attack_power() * damage_multiplier)
+			var defense_power: int = target.defense
+			if target.has_method("get_defense_power"):
+				defense_power = target.get_defense_power()
+			var outgoing_multiplier := 1.0
+			if user.has_method("get_outgoing_damage_multiplier"):
+				outgoing_multiplier = user.get_outgoing_damage_multiplier()
+			var damage := CombatRules.roll_damage(
+				user.get_attack_power(),
+				defense_power,
+				damage_multiplier * outgoing_multiplier,
+			)
 			target.take_damage(damage)
 			result.damage = damage
 		"heal":
-			user.heal(healing_amount)
-			result.healing = healing_amount
+			var scaled_healing := maxi(30, roundi(float(user.max_health) * 0.25))
+			var old_health: int = user.health
+			user.heal(scaled_healing)
+			result.healing = user.health - old_health
 		"buff":
 			# Stealth / generic self-buff: temporary defense boost
 			if user.has_method("add_status_effect"):
-				user.add_status_effect("stealth", 2, {"defense_bonus": 5})
+				user.add_status_effect("stealth", 2, {"defense_bonus": 20})
 			result.effects.append("stealth")
 		_:
 			pass

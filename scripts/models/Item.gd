@@ -20,6 +20,7 @@ enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY }
 
 # For consumables
 @export var heal_amount: int = 0
+@export var restore_percent: float = 0.0
 @export var effect: String = ""  # buff, debuff, etc.
 
 @export var stackable: bool = false
@@ -34,12 +35,18 @@ func use(target) -> bool:
 		ItemType.CONSUMABLE:
 			if effect == "restore_mana":
 				if target.has_method("restore_mana"):
-					target.restore_mana(heal_amount)
+					var mana_amount := heal_amount
+					if restore_percent > 0.0 and "max_mana" in target:
+						mana_amount = roundi(float(target.max_mana) * restore_percent)
+					target.restore_mana(mana_amount)
 					quantity -= 1
 					return true
 				return false
 			if target.has_method("heal"):
-				target.heal(heal_amount)
+				var health_amount := heal_amount
+				if restore_percent > 0.0 and "max_health" in target:
+					health_amount = roundi(float(target.max_health) * restore_percent)
+				target.heal(health_amount)
 				quantity -= 1
 				return true
 		_:
@@ -95,6 +102,7 @@ func to_dict() -> Dictionary:
 		"defense_bonus": defense_bonus,
 		"health_bonus": health_bonus,
 		"heal_amount": heal_amount,
+		"restore_percent": restore_percent,
 		"effect": effect,
 		"stackable": stackable,
 		"max_stack": max_stack,
@@ -112,6 +120,7 @@ func from_dict(data: Dictionary) -> void:
 	defense_bonus = data.get("defense_bonus", 0)
 	health_bonus = data.get("health_bonus", 0)
 	heal_amount = data.get("heal_amount", 0)
+	restore_percent = data.get("restore_percent", 0.0)
 	effect = data.get("effect", "")
 	stackable = data.get("stackable", false)
 	max_stack = data.get("max_stack", 1)
