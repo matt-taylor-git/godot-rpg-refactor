@@ -46,6 +46,7 @@ func set_title(title: String) -> void:
 	_build_if_needed()
 	if _title_label:
 		_title_label.text = title
+		_title_label.visible = true
 	text = ""
 	if get("button_text") != null:
 		set("button_text", "")
@@ -92,6 +93,7 @@ func _build_if_needed() -> void:
 
 	_title_label = Label.new()
 	_title_label.name = "Title"
+	_title_label.custom_minimum_size.y = 28.0
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -99,6 +101,7 @@ func _build_if_needed() -> void:
 
 	_sub_label = Label.new()
 	_sub_label.name = "Subtitle"
+	_sub_label.custom_minimum_size.y = 18.0
 	_sub_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_sub_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_sub_label.mouse_filter = Control.MOUSE_FILTER_IGNORE

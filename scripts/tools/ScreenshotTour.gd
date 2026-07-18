@@ -28,11 +28,30 @@ const TOUR: Array = [
 		"combat_ui": "skills",
 	},
 	{
+		"id": "combat_items",
+		"start_combat": true,
+		"combat_monster": "skeleton",
+		"combat_area": "forest",
+		"combat_ui": "items",
+	},
+	{
+		"id": "combat_history",
+		"start_combat": true,
+		"combat_monster": "spider",
+		"combat_area": "cave",
+		"combat_ui": "log_open",
+	},
+	{
 		"id": "combat_low_hp",
 		"start_combat": true,
 		"combat_monster": "orc",
 		"combat_area": "mountain",
 		"combat_seed": {"player_hp_frac": 0.2},
+	},
+	{
+		"id": "combat_boss",
+		"start_combat": true,
+		"boss_combat": true,
 	},
 	{"id": "victory", "scene": "victory_scene"},
 	{"id": "game_over", "scene": "game_over_scene"},
@@ -154,12 +173,13 @@ func _execute_step(step: Dictionary) -> String:
 		if not GameManager.get_player():
 			return "no player for combat"
 		var area_id: String = str(step.get("combat_area", ""))
-		if not area_id.is_empty() and GameManager.game_data is Dictionary:
-			GameManager.game_data["current_area_id"] = area_id
 		var monster_type: String = str(step.get("combat_monster", ""))
 		var combat_msg
-		if not monster_type.is_empty():
-			combat_msg = await GameManager.start_combat_with_type(monster_type)
+		if bool(step.get("boss_combat", false)):
+			combat_msg = await GameManager.start_boss_combat()
+		elif not monster_type.is_empty():
+			combat_msg = await GameManager.start_combat_with_type(
+				monster_type, -1, 1.0, 0.25, area_id)
 		else:
 			combat_msg = await GameManager.start_combat()
 		if typeof(combat_msg) == TYPE_STRING and str(combat_msg).begins_with("No player"):

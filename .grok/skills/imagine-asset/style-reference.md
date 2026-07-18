@@ -32,6 +32,27 @@ rose/magenta instead, `process_asset.py` auto-samples corner pixels as the key.
 4. **Shading**: Cell-shaded, not smooth airbrush gradients
 5. **Mood**: Dark fantasy, adventurous — not grimdark
 
+## Combat Battlefield Backgrounds (`combat_bg`)
+
+Exploration location art is a **postcard establishing shot** for the hub card.
+Combat needs a separate **side-view battle arena**:
+
+- Solid continuous ground plane in the **lower 35–45%** (dirt, moss, stone, rock)
+- Horizon near mid-frame; open left/right zones for player vs monster figures
+- Environment frames the edges; dramatic light/fog/embers OK
+- **Not** vanishing-path postcards, cliff trails over void, or floating peaks in clouds
+- Peak/mountain: fighters stand on a **plateau/ledge**; clouds only beyond the far rim
+- No characters, creatures, UI, or text
+- Town is a safe hub — no town combat BG; dangerous areas only (forest, mountain, cave, peak)
+
+Prompt template:
+
+> A dark fantasy [area] RPG battle arena background. Stylized cartoon graphic-novel
+> illustration with clean bold outlines and cell-shaded coloring. Side-view combat
+> stage with a solid continuous ground plane filling the lower third so fighters
+> can stand on solid [dirt/stone]. Horizon near mid-frame, open center, trees or
+> rock framing the sides. Dramatic atmosphere. No characters, creatures, or text.
+
 ## Imagine Prompt Template (items)
 
 Compose 2–5 sentences of prose:

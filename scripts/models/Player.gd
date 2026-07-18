@@ -277,7 +277,20 @@ func from_dict(data: Dictionary) -> void:
 	inventory.resize(20)
 
 	# Load equipment
-	equipment = data.get("equipment", {})
+	var equipment_data: Dictionary = data.get("equipment", {})
+	equipment = {
+		"weapon": null,
+		"armor": null,
+		"accessory": null
+	}
+	for slot in equipment_data.keys():
+		var item_data = equipment_data[slot]
+		if item_data is Item:
+			equipment[slot] = item_data
+		elif item_data is Dictionary:
+			var equipped_item = Item.new()
+			equipped_item.from_dict(item_data)
+			equipment[slot] = equipped_item
 
 	# Load skills
 	skills = data.get("skills", []).map(func(skill_data):

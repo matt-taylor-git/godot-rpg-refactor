@@ -2,7 +2,7 @@ class_name CombatStageChrome
 extends RefCounted
 # Shared StyleBox helpers for the combat stage (mirrors ExplorationHubChrome).
 
-const ACTION_MIN_SIZE := Vector2(180, 88)
+const ACTION_MIN_SIZE := Vector2(180, 80)
 const TITLE_SIZE_PRIMARY := 24
 const TITLE_SIZE_SECONDARY := 20
 const SUBTITLE_SIZE := 12
@@ -63,6 +63,43 @@ static func style_hud_plate(node: Control) -> void:
 	style.shadow_size = 5
 	style.shadow_offset = Vector2(0, 2)
 	style.set_content_margin_all(10)
+	if node is PanelContainer or node is Panel:
+		node.add_theme_stylebox_override("panel", style)
+
+
+static func style_status_plate(node: Control, active: bool = false, danger: bool = false) -> void:
+	if node == null:
+		return
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.05, 0.04, 0.86)
+	style.border_color = Color(0.55, 0.42, 0.22, 0.34)
+	if active:
+		style.border_color = Color(0.78, 0.60, 0.28, 0.78)
+	if danger:
+		style.bg_color = Color(0.10, 0.045, 0.04, 0.90)
+		style.border_color = Color(0.76, 0.24, 0.20, 0.82)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.shadow_color = Color(0, 0, 0, 0.32)
+	style.shadow_size = 3
+	style.shadow_offset = Vector2(0, 1)
+	style.set_content_margin_all(4)
+	if node is PanelContainer or node is Panel:
+		node.add_theme_stylebox_override("panel", style)
+
+
+static func style_history_overlay(node: Control) -> void:
+	if node == null:
+		return
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.045, 0.035, 0.97)
+	style.border_color = Color(0.66, 0.49, 0.24, 0.72)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.shadow_color = Color(0, 0, 0, 0.55)
+	style.shadow_size = 8
+	style.shadow_offset = Vector2(0, 3)
+	style.set_content_margin_all(6)
 	if node is PanelContainer or node is Panel:
 		node.add_theme_stylebox_override("panel", style)
 

@@ -159,7 +159,8 @@ func _is_item_equipped(item) -> bool:
 	if not player or not item:
 		return false
 	for slot in player.equipment.keys():
-		if player.equipment[slot] == item:
+		var equipped_item = player.equipment[slot]
+		if typeof(equipped_item) == typeof(item) and equipped_item == item:
 			return true
 	return false
 

@@ -4,9 +4,14 @@ extends Control
 
 const StageChrome = preload("res://scripts/ui/CombatStageChrome.gd")
 const CombatActionCardScript = preload("res://scripts/components/CombatActionCard.gd")
+const SceneLayout = preload("res://scripts/ui/CombatSceneLayout.gd")
 const LOW_HP_THRESHOLD := 0.25
 const EVENT_IDLE_DELAY := 1.4
 const EVENT_IDLE_PROMPT := "Choose an action."
+const NORMAL_DOCK_HEIGHT := 162.0
+const COMPACT_DOCK_HEIGHT := 142.0
+const NORMAL_ACTION_HEIGHT := 80.0
+const COMPACT_ACTION_HEIGHT := 64.0
 
 var animation_controller: CombatAnimationController = null
 var turn_indicator: TurnIndicatorController = null
@@ -32,52 +37,88 @@ var _history: PackedStringArray = PackedStringArray()
 var _event_token: int = 0
 var _showing_idle_prompt: bool = false
 var _flee_failures: int = 0
+var _compact_layout: bool = false
 
 @onready var stage_background: TextureRect = $StageLayer/StageBackground
 @onready var stage_darken: ColorRect = $StageLayer/StageDarken
 @onready var stage_vignette: ColorRect = $StageLayer/StageVignette
+@onready var arena_layer: Control = $MainColumn/ArenaLayer
 @onready var turn_banner = $MainColumn/ArenaLayer/TurnBanner
 @onready var player_stage = $MainColumn/ArenaLayer/Combatants/PlayerStage
 @onready var monster_stage = $MainColumn/ArenaLayer/Combatants/MonsterStage
+@onready var enemy_intent_panel: PanelContainer = $MainColumn/ArenaLayer/EnemyIntentPanel
+@onready var enemy_intent_icon: TextureRect = (
+	$MainColumn/ArenaLayer/EnemyIntentPanel/IntentMargin/IntentRow/IntentIcon
+)
+@onready var enemy_intent_label: Label = (
+	$MainColumn/ArenaLayer/EnemyIntentPanel/IntentMargin/IntentRow/IntentLabel
+)
 @onready var fx_layer: Control = $MainColumn/ArenaLayer/FXLayer
-@onready var event_strip: PanelContainer = $MainColumn/DockLayer/EventStrip
+@onready var dock_layer: VBoxContainer = $MainColumn/DockLayer
+@onready var status_rail: HBoxContainer = $MainColumn/DockLayer/StatusRail
+@onready var player_status: CombatantStatusView = $MainColumn/DockLayer/StatusRail/PlayerStatus
+@onready var monster_status: CombatantStatusView = $MainColumn/DockLayer/StatusRail/MonsterStatus
+@onready var event_strip: PanelContainer = $MainColumn/DockLayer/StatusRail/EventStrip
 @onready var event_label: RichTextLabel = (
-	$MainColumn/DockLayer/EventStrip/EventMargin/EventRow/EventLabel
+	$MainColumn/DockLayer/StatusRail/EventStrip/EventMargin/EventRow/EventLabel
 )
 @onready var history_toggle: Button = (
-	$MainColumn/DockLayer/EventStrip/EventMargin/EventRow/HistoryToggle
+	$MainColumn/DockLayer/StatusRail/EventStrip/EventMargin/EventRow/HistoryToggle
 )
 @onready var action_dock: PanelContainer = $MainColumn/DockLayer/ActionDock
-@onready var root_actions: HBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions
-@onready var attack_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/AttackButton
-@onready var skills_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/SkillsButton
-@onready var items_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/ItemsButton
-@onready var run_button: Button = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/RootActions/RunButton
-@onready var skills_panel: VBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel
-@onready var skills_list: HBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillsList
-@onready var skill_desc: Label = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillDesc
-@onready var items_panel: VBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel
-@onready var items_list: HBoxContainer = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsList
-@onready var items_empty: Label = $MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsEmpty
-@onready var combat_log_panel: PanelContainer = $MainColumn/DockLayer/LogSection/CombatLogPanel
-@onready var combat_log: RichTextLabel = (
-	$MainColumn/DockLayer/LogSection/CombatLogPanel/LogMargin/CombatLog
+@onready var action_pages: Control = $MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages
+@onready var root_actions: HBoxContainer = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/RootActions
 )
+@onready var attack_button: Button = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/RootActions/AttackButton
+)
+@onready var skills_button: Button = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/RootActions/SkillsButton
+)
+@onready var items_button: Button = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/RootActions/ItemsButton
+)
+@onready var run_button: Button = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/RootActions/RunButton
+)
+@onready var skills_panel: HBoxContainer = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/SkillsPanel
+)
+@onready var skills_list: HBoxContainer = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/SkillsPanel/SkillsList
+)
+@onready var skill_desc: Label = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/SkillsPanel/SkillsMeta/SkillDesc
+)
+@onready var items_panel: HBoxContainer = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/ItemsPanel
+)
+@onready var items_list: HBoxContainer = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/ItemsPanel/ItemsList
+)
+@onready var items_empty: Label = (
+	$MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/ItemsPanel/ItemsMeta/ItemsEmpty
+)
+@onready var combat_log_panel: PanelContainer = $HistoryOverlay
+@onready var combat_log: RichTextLabel = $HistoryOverlay/LogMargin/CombatLog
 
 
 func _ready() -> void:
 	print("CombatScene ready")
 	player_portrait = player_stage
 	monster_portrait = monster_stage
-	if player_stage:
-		player_health_bar = player_stage.health_bar
-		player_mana_bar = player_stage.mana_bar
-	if monster_stage:
-		monster_health_bar = monster_stage.health_bar
+	if player_status:
+		player_health_bar = player_status.health_bar
+		player_mana_bar = player_status.mana_bar
+	if monster_status:
+		monster_health_bar = monster_status.health_bar
 	_setup_animation_systems()
 	_apply_stage_background()
 	_style_chrome()
 	_configure_root_actions()
+	resized.connect(_apply_responsive_layout)
+	_apply_responsive_layout()
 	_set_dock_mode("root")
 	_set_log_expanded(false)
 
@@ -106,14 +147,17 @@ func _ready() -> void:
 	_setup_focus_navigation()
 	if performance_monitor:
 		performance_monitor.start_monitoring()
-
-
 func _unhandled_input(event: InputEvent) -> void:
-	if input_locked or not GameManager.in_combat:
-		return
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
 	var key := event as InputEventKey
+	if log_expanded and (key.keycode == KEY_ESCAPE or key.keycode == KEY_BACKSPACE):
+		_set_log_expanded(false)
+		history_toggle.grab_focus()
+		get_viewport().set_input_as_handled()
+		return
+	if input_locked or not GameManager.in_combat:
+		return
 	if dock_mode != "root":
 		if key.keycode == KEY_ESCAPE or key.keycode == KEY_BACKSPACE:
 			_set_dock_mode("root")
@@ -132,8 +176,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_4, KEY_KP_4:
 			_on_run_pressed()
 			get_viewport().set_input_as_handled()
-
-
 func apply_screenshot_state(state: Dictionary) -> void:
 	# Tour / test helper — seed HP, open dock modes, expand log.
 	var player = GameManager.get_player()
@@ -141,20 +183,19 @@ func apply_screenshot_state(state: Dictionary) -> void:
 		var frac: float = clampf(float(state["player_hp_frac"]), 0.01, 1.0)
 		player.health = maxi(1, int(player.max_health * frac))
 	var ui_mode := str(state.get("combat_ui", "root"))
+	_set_log_expanded(ui_mode == "log_open")
 	match ui_mode:
 		"skills":
 			_set_dock_mode("skills")
 		"items":
 			_set_dock_mode("items")
 		"log_open":
-			_set_log_expanded(true)
+			_set_dock_mode("root")
 		_:
 			_set_dock_mode("root")
 	_update_ui()
 	_update_low_hp_vignette()
 	_refresh_intent()
-
-
 func set_reduced_motion(enabled: bool) -> void:
 	reduced_motion = enabled
 	if animation_controller:
@@ -167,8 +208,10 @@ func set_reduced_motion(enabled: bool) -> void:
 		player_stage.set_reduced_motion(enabled)
 	if monster_stage:
 		monster_stage.set_reduced_motion(enabled)
-
-
+	if player_status:
+		player_status.set_reduced_motion(enabled)
+	if monster_status:
+		monster_status.set_reduced_motion(enabled)
 func _setup_animation_systems() -> void:
 	reduced_motion = ProjectSettings.get_setting("accessibility/reduced_motion", false)
 	if GameSettings:
@@ -201,56 +244,21 @@ func _setup_animation_systems() -> void:
 	if turn_banner:
 		turn_banner.set_reduced_motion(reduced_motion)
 		turn_banner.set_round(round_number)
-
-
 func _apply_stage_background() -> void:
-	var area_id := "forest"
-	if GameManager.game_data is Dictionary:
-		area_id = str(GameManager.game_data.get("current_area_id", "forest"))
+	var area_id := str(GameManager.combat_area_id)
 	if area_id.is_empty():
 		area_id = "forest"
-	var path := _location_image_path(area_id)
+	var path := _combat_background_path(area_id)
 	if path.is_empty() or not ResourceLoader.exists(path):
-		path = "res://assets/locations/forest.png"
+		path = "res://assets/combat/forest.png"
 	if stage_background and ResourceLoader.exists(path):
 		stage_background.texture = load(path)
 	if stage_darken:
-		stage_darken.color = Color(0.04, 0.03, 0.025, 0.50)
-
-
-func _location_image_path(area_id: String) -> String:
-	# Prefer known promoted location paths (avoids orphan ExplorationManager nodes).
-	var known := {
-		"town": "res://assets/locations/town.png",
-		"forest": "res://assets/locations/forest.png",
-		"mountain": "res://assets/locations/mountain.png",
-		"cave": "res://assets/locations/cave.png",
-		"peak": "res://assets/locations/peak.png",
-	}
-	if known.has(area_id):
-		return known[area_id]
-	return "res://assets/locations/forest.png"
-
-
+		stage_darken.color = Color(0.04, 0.03, 0.025, 0.34)
+func _combat_background_path(area_id: String) -> String:
+	return SceneLayout.background_path(area_id)
 func _style_chrome() -> void:
-	StageChrome.style_quiet_strip(event_strip)
-	StageChrome.style_borderless_dock(action_dock)
-	StageChrome.style_floating_panel(combat_log_panel)
-	StageChrome.style_log_toggle(history_toggle)
-	if history_toggle:
-		StageChrome.set_button_label(history_toggle, "History ▾")
-		history_toggle.custom_minimum_size = Vector2(96, 28)
-	if event_label:
-		var serif := "res://assets/fonts/SourceSerif4-VariableFont_opsz_wght.ttf"
-		if ResourceLoader.exists(serif):
-			event_label.add_theme_font_override("normal_font", load(serif))
-		event_label.add_theme_font_size_override("normal_font_size", UITypography.FONT_SIZE_BODY_REGULAR)
-		event_label.add_theme_color_override("default_color", UIThemeManager.get_text_primary_color())
-		event_label.bbcode_enabled = true
-		event_label.scroll_active = false
-		event_label.fit_content = true
-
-
+	SceneLayout.style_chrome(self)
 func _configure_root_actions() -> void:
 	attack_card = _upgrade_to_action_card(attack_button)
 	skills_card = _upgrade_to_action_card(skills_button)
@@ -271,19 +279,17 @@ func _configure_root_actions() -> void:
 		)
 	_refresh_action_subtitles()
 	var skills_back = get_node_or_null(
-		"MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/SkillsPanel/SkillsHeader/SkillsBackButton")
+		"MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/SkillsPanel/SkillsMeta/SkillsBackButton")
 	var items_back = get_node_or_null(
-		"MainColumn/DockLayer/ActionDock/ActionMargin/DockStack/ItemsPanel/ItemsHeader/ItemsBackButton")
+		"MainColumn/DockLayer/ActionDock/ActionMargin/ActionPages/ItemsPanel/ItemsMeta/ItemsBackButton")
 	StageChrome.style_secondary_action(skills_back)
 	StageChrome.style_secondary_action(items_back)
 	if skills_back:
-		skills_back.custom_minimum_size = Vector2(90, 32)
+		skills_back.custom_minimum_size = Vector2(110, 30)
 		StageChrome.set_button_label(skills_back, "Back")
 	if items_back:
-		items_back.custom_minimum_size = Vector2(90, 32)
+		items_back.custom_minimum_size = Vector2(110, 30)
 		StageChrome.set_button_label(items_back, "Back")
-
-
 func _upgrade_to_action_card(btn: Button):
 	if btn == null:
 		return null
@@ -293,8 +299,13 @@ func _upgrade_to_action_card(btn: Button):
 	if btn.has_method("_build_if_needed"):
 		btn._build_if_needed()
 	return btn
-
-
+func _apply_responsive_layout() -> void:
+	if not is_node_ready():
+		return
+	_compact_layout = size.x < 1100.0 or size.y < 650.0
+	var dock_height := COMPACT_DOCK_HEIGHT if _compact_layout else NORMAL_DOCK_HEIGHT
+	var action_height := COMPACT_ACTION_HEIGHT if _compact_layout else NORMAL_ACTION_HEIGHT
+	SceneLayout.apply_responsive(self, _compact_layout, dock_height, action_height)
 func _refresh_action_subtitles() -> void:
 	var player = GameManager.get_player()
 	var monster = GameManager.get_current_monster()
@@ -345,8 +356,6 @@ func _refresh_action_subtitles() -> void:
 		else:
 			run_card.set_subtitle(
 				"%d%% escape chance" % int(CombatRules.get_escape_chance(0) * 100))
-
-
 func _setup_focus_navigation() -> void:
 	if attack_button == null:
 		return
@@ -357,8 +366,6 @@ func _setup_focus_navigation() -> void:
 	items_button.focus_neighbor_right = run_button.get_path()
 	run_button.focus_neighbor_left = items_button.get_path()
 	attack_button.grab_focus()
-
-
 func _set_input_locked(locked: bool) -> void:
 	input_locked = locked
 	for btn in [attack_button, skills_button, items_button, run_button]:
@@ -375,8 +382,6 @@ func _set_input_locked(locked: bool) -> void:
 		for child in items_list.get_children():
 			if child is Button:
 				child.disabled = locked
-
-
 func _set_dock_mode(mode: String) -> void:
 	dock_mode = mode
 	if root_actions:
@@ -391,8 +396,6 @@ func _set_dock_mode(mode: String) -> void:
 		_populate_items_dock()
 	elif mode == "root" and attack_button and not input_locked:
 		attack_button.grab_focus()
-
-
 func _set_log_expanded(expanded: bool) -> void:
 	log_expanded = expanded
 	if combat_log_panel:
@@ -402,6 +405,8 @@ func _set_log_expanded(expanded: bool) -> void:
 			history_toggle,
 			"History ▴" if expanded else "History ▾"
 		)
+	if expanded and combat_log:
+		combat_log.scroll_to_line(maxi(0, combat_log.get_line_count() - 1))
 
 
 func _update_ui() -> void:
@@ -413,33 +418,41 @@ func _update_ui() -> void:
 
 func _update_player_ui() -> void:
 	var player = GameManager.get_player()
-	if not player or not player_stage:
+	if not player or not player_stage or not player_status:
 		return
-	player_stage.set_identity(player.name, player.level)
 	player_stage.set_figure_texture(PortraitLookup.get_player_texture(player))
-	player_stage.set_health(player.health, player.max_health, true)
-	player_stage.set_mana(player.mana, player.max_mana, true)
-	player_stage.clear_status_effects()
+	player_stage.set_boss_scale(false)
+	player_status.set_identity(player.name, player.level)
+	player_status.set_health(player.health, player.max_health, true)
+	player_status.set_mana(player.mana, player.max_mana, true)
+	player_status.clear_status_effects()
+	for effect_type in player.status_effects:
+		var effect: Dictionary = player.status_effects[effect_type]
+		player_status.add_status_effect(str(effect_type), int(effect.get("duration", 0)))
 
 
 func _update_monster_ui() -> void:
 	var monster = GameManager.get_current_monster()
-	if not monster or not monster_stage:
-		if monster_stage:
-			monster_stage.set_identity("No Monster", 1)
+	if not monster or not monster_stage or not monster_status:
+		if monster_status:
+			monster_status.set_identity("No Monster", 1)
 		return
 	var extra := ""
 	if GameManager.is_boss_combat():
 		extra = "[Phase %d/%d]" % [monster.current_phase, monster.max_phase if "max_phase" in monster else 3]
-	monster_stage.set_identity(monster.name, monster.level, extra)
 	monster_stage.set_figure_texture(PortraitLookup.get_monster_texture(monster.name))
-	monster_stage.set_health(monster.health, monster.max_health, true)
-	monster_stage.clear_status_effects()
+	monster_stage.set_boss_scale(GameManager.is_boss_combat())
+	monster_status.set_identity(monster.name, monster.level, extra)
+	monster_status.set_health(monster.health, monster.max_health, true)
+	monster_status.clear_status_effects()
+	for effect_type in monster.status_effects:
+		var effect: Dictionary = monster.status_effects[effect_type]
+		monster_status.add_status_effect(str(effect_type), int(effect.get("duration", 0)))
 	_refresh_intent()
 
 
 func _refresh_intent() -> void:
-	if not monster_stage:
+	if not enemy_intent_panel or not enemy_intent_label:
 		return
 	var intent: Dictionary = GameManager.get_monster_intent()
 	if intent.is_empty():
@@ -455,7 +468,9 @@ func _refresh_intent() -> void:
 			text = "%s • %d damage" % [label, min_d]
 		else:
 			text = "%s • %d–%d damage" % [label, min_d, max_d]
-	monster_stage.set_intent(text, show_icon)
+	enemy_intent_label.text = text
+	enemy_intent_icon.visible = show_icon and not text.is_empty()
+	enemy_intent_panel.visible = not text.is_empty()
 
 
 func _append_event(message: String, kind: String = "auto", idle_after: bool = true) -> void:
@@ -557,6 +572,10 @@ func _show_player_turn(animate: bool) -> void:
 		player_stage.is_active = true
 	if monster_stage:
 		monster_stage.is_active = false
+	if player_status:
+		player_status.set_active(true)
+	if monster_status:
+		monster_status.set_active(false)
 	_set_input_locked(false)
 	_set_dock_mode("root")
 	# If last message was an enemy hit, schedule idle prompt so it does not fight the banner
@@ -574,6 +593,10 @@ func _show_enemy_turn(animate: bool) -> void:
 		player_stage.is_active = false
 	if monster_stage:
 		monster_stage.is_active = true
+	if player_status:
+		player_status.set_active(false)
+	if monster_status:
+		monster_status.set_active(true)
 	_set_input_locked(true)
 
 
@@ -581,6 +604,8 @@ func _on_combat_started(_monster_name: String) -> void:
 	round_number = 1
 	_flee_failures = 0
 	_history.clear()
+	_set_log_expanded(false)
+	_set_dock_mode("root")
 	if combat_log:
 		combat_log.text = ""
 	_apply_stage_background()
@@ -830,6 +855,7 @@ func _populate_skills_dock() -> void:
 		btn.custom_minimum_size = Vector2(140, 56)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		StageChrome.style_secondary_action(btn)
+		btn.custom_minimum_size = Vector2(130 if _compact_layout else 140, 52 if _compact_layout else 56)
 		var can_use_skill: bool = skill.can_use(player)
 		btn.disabled = not can_use_skill
 		if not can_use_skill:
@@ -903,6 +929,7 @@ func _populate_items_dock() -> void:
 		btn.custom_minimum_size = Vector2(140, 56)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		StageChrome.style_secondary_action(btn)
+		btn.custom_minimum_size = Vector2(130 if _compact_layout else 140, 52 if _compact_layout else 56)
 		var inv_idx := i
 		btn.pressed.connect(func(): _on_item_chosen(inv_idx))
 		items_list.add_child(btn)

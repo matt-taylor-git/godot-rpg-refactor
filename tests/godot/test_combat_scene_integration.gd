@@ -19,6 +19,7 @@ func after_each():
 	# Clean up any combat state
 	if GameManager.in_combat:
 		GameManager.end_combat()
+	GameManager.combat_area_id = "forest"
 
 # ===== Integration Tests =====
 
@@ -66,6 +67,31 @@ func test_combat_start_initializes_turn():
 
 	# Turn indicator should show player turn
 	assert_true(combat_scene.turn_indicator.is_player_turn(), "Player should be active at combat start")
+
+func test_standard_combat_uses_current_exploration_area():
+	GameManager.new_game("Area Tester", "Warrior")
+	var exploration_state := GameManager.get_exploration_state().duplicate(true)
+	exploration_state["current_area_id"] = "mountain"
+	GameManager.set_exploration_state(exploration_state)
+	GameManager.start_combat()
+	assert_eq(GameManager.combat_area_id, "mountain")
+
+func test_typed_combat_uses_explicit_area():
+	GameManager.new_game("Area Tester", "Warrior")
+	GameManager.start_combat_with_type("spider", 5, 1.0, 0.25, "cave")
+	assert_eq(GameManager.combat_area_id, "cave")
+
+func test_event_combat_uses_event_area():
+	GameManager.new_game("Area Tester", "Warrior")
+	var event := ExplorationEventFactory._generate_combat_event("peak", 8, 0.0)
+	GameManager.start_combat_from_event(event, "forest")
+	assert_eq(GameManager.combat_area_id, "peak")
+
+func test_boss_combat_uses_peak_area():
+	GameManager.new_game("Area Tester", "Warrior")
+	GameManager.get_player().level = 8
+	GameManager.start_boss_combat()
+	assert_eq(GameManager.combat_area_id, "peak")
 
 func test_performance_monitoring_starts_with_combat():
 	# Monitoring should start when scene is ready
@@ -123,6 +149,34 @@ func test_stage_background_exists():
 	var bg = combat_scene.get_node_or_null("StageLayer/StageBackground")
 	assert_not_null(bg, "Stage background TextureRect should exist")
 
+func test_stage_background_matches_combat_area_for_every_known_area():
+	var expected_paths := {
+		"forest": "res://assets/combat/forest.png",
+		"mountain": "res://assets/combat/mountain.png",
+		"cave": "res://assets/combat/cave.png",
+		"peak": "res://assets/combat/peak.png",
+		# Town is safe — no dedicated combat art; uses forest arena.
+		"town": "res://assets/combat/forest.png",
+	}
+	for area_id in expected_paths:
+		GameManager.combat_area_id = area_id
+		combat_scene._apply_stage_background()
+		assert_eq(
+			combat_scene.stage_background.texture.resource_path,
+			expected_paths[area_id],
+			"%s combat should use its combat battlefield background" % area_id,
+		)
+
+func test_stage_background_falls_back_to_forest_for_invalid_combat_area():
+	for area_id in ["", "nonexistent"]:
+		GameManager.combat_area_id = area_id
+		combat_scene._apply_stage_background()
+		assert_eq(
+			combat_scene.stage_background.texture.resource_path,
+			"res://assets/combat/forest.png",
+			"Invalid combat areas should safely use the forest combat background",
+		)
+
 func test_action_dock_is_horizontal():
 	assert_not_null(combat_scene.root_actions, "Root actions row should exist")
 	assert_true(combat_scene.root_actions is HBoxContainer, "Actions should be horizontal dock")
@@ -133,11 +187,106 @@ func test_event_strip_exists():
 func test_turn_banner_exists():
 	assert_not_null(combat_scene.turn_banner, "Turn banner should exist")
 
+func test_bottom_hud_stays_inside_persistent_ui_budget():
+	var dock = combat_scene.get_node("MainColumn/DockLayer")
+	assert_lte(dock.custom_minimum_size.y / 720.0, 0.23, "persistent HUD should stay within 23%")
+	assert_eq(dock.custom_minimum_size.y, 162.0, "base combat dock uses the fixed layout budget")
+
+func test_visible_figures_are_grounded_below_clear_playfield():
+	combat_scene.player_stage.set_figure_texture(PortraitLookup.get_class_texture("Warrior"))
+	combat_scene.monster_stage.set_figure_texture(PortraitLookup.get_monster_texture("wolf"))
+	await get_tree().process_frame
+	for stage in [combat_scene.player_stage, combat_scene.monster_stage]:
+		var expected_ground: float = stage.global_position.y + stage.size.y
+		assert_almost_eq(
+			stage.get_ground_contact_y(),
+			expected_ground,
+			2.0,
+			"opaque feet should meet the shared arena ground line",
+		)
+	var player_rect: Rect2 = combat_scene.player_stage.get_visible_figure_rect()
+	var monster_rect: Rect2 = combat_scene.monster_stage.get_visible_figure_rect()
+	var player_status_rect := Rect2(
+		combat_scene.player_status.global_position,
+		combat_scene.player_status.size,
+	)
+	var monster_status_rect := Rect2(
+		combat_scene.monster_status.global_position,
+		combat_scene.monster_status.size,
+	)
+	assert_false(player_rect.intersects(player_status_rect), "player HUD must not cover the player")
+	assert_false(monster_rect.intersects(monster_status_rect), "enemy HUD must not cover the enemy")
+
+func test_all_character_shapes_keep_the_same_ground_contact():
+	var textures := [
+		PortraitLookup.get_class_texture("Mage"),
+		PortraitLookup.get_monster_texture("slime"),
+		PortraitLookup.get_monster_texture("dragon"),
+		PortraitLookup.get_monster_texture("final boss"),
+	]
+	for texture in textures:
+		combat_scene.monster_stage.set_figure_texture(texture)
+		await get_tree().process_frame
+		var stage = combat_scene.monster_stage
+		var expected_ground: float = stage.global_position.y + stage.size.y
+		assert_almost_eq(
+			stage.get_ground_contact_y(),
+			expected_ground,
+			2.0,
+			"transparent padding and silhouette shape must not change grounding",
+		)
+
+func test_action_and_history_modes_do_not_move_the_battlefield():
+	combat_scene.player_stage.set_figure_texture(PortraitLookup.get_class_texture("Warrior"))
+	await get_tree().process_frame
+	var arena_size: Vector2 = combat_scene.arena_layer.size
+	var ground_y: float = combat_scene.player_stage.get_ground_contact_y()
+	for mode in ["skills", "items", "root"]:
+		combat_scene._set_dock_mode(mode)
+		await get_tree().process_frame
+		assert_eq(combat_scene.arena_layer.size, arena_size, "%s must not resize the arena" % mode)
+		assert_almost_eq(
+			combat_scene.player_stage.get_ground_contact_y(),
+			ground_y,
+			2.0,
+			"%s must not move the ground line" % mode,
+		)
+	combat_scene._set_log_expanded(true)
+	await get_tree().process_frame
+	assert_eq(combat_scene.arena_layer.size, arena_size, "History overlay must not resize the arena")
+	assert_almost_eq(
+		combat_scene.player_stage.get_ground_contact_y(),
+		ground_y,
+		2.0,
+		"History overlay must not move the ground line",
+	)
+
+func test_compact_layout_keeps_critical_status_surfaces_visible():
+	combat_scene.size = Vector2(1000, 600)
+	combat_scene._apply_responsive_layout()
+	assert_true(combat_scene._compact_layout, "small windows should use compact combat layout")
+	assert_eq(combat_scene.dock_layer.custom_minimum_size.y, 142.0)
+	assert_true(combat_scene.player_status.visible, "player status remains visible in compact mode")
+	assert_true(combat_scene.monster_status.visible, "enemy status remains visible in compact mode")
+	assert_true(combat_scene.player_status.hp_value.visible, "numeric HP remains visible in compact mode")
+
 func test_input_lock_disables_actions():
 	combat_scene._set_input_locked(true)
 	assert_true(combat_scene.attack_button.disabled, "Attack should disable when locked")
 	combat_scene._set_input_locked(false)
 	assert_false(combat_scene.attack_button.disabled, "Attack should enable when unlocked")
+
+func test_boss_combat_keeps_root_action_labels_visible():
+	GameManager.new_game("Boss UI", "Warrior")
+	await GameManager.start_boss_combat(8)
+	await get_tree().process_frame
+	assert_eq(combat_scene.attack_card._title_label.text, "[1] ATTACK")
+	assert_eq(combat_scene.skills_card._title_label.text, "[2] SKILLS")
+	assert_eq(combat_scene.items_card._title_label.text, "[3] ITEMS")
+	assert_eq(combat_scene.run_card._title_label.text, "[4] RUN")
+	assert_true(combat_scene.attack_card._title_label.visible)
+	assert_true(combat_scene.skills_card._title_label.visible)
+	assert_true(combat_scene.items_card._title_label.visible)
 
 # ===== UIProgressBar Integration (from Story 2.1) =====
 
@@ -157,7 +306,7 @@ func test_health_bars_can_animate():
 
 # ===== Save/Load Compatibility =====
 
-func test_animation_state_not_saved():
+func test_animation_state_and_combat_area_are_save_compatible():
 	# Animation state should not affect saves
 	# This is a sanity check - animation controllers should not persist
 
@@ -166,13 +315,15 @@ func test_animation_state_not_saved():
 
 	# Start some animations
 	combat_scene.animation_controller.set_reduced_motion(false)
+	GameManager.combat_area_id = "cave"
 
 	# Save game
-	GameManager.save_game(99) # Use slot 99 for test
+	assert_true(GameManager.save_game(99)) # Use slot 99 for test
+	GameManager.combat_area_id = "forest"
+	assert_true(GameManager.load_game(99))
 
-	# Animation state in controller shouldn't crash save
-	# If we get here without error, save is compatible
-	assert_true(true, "Save should succeed with active animation systems")
+	# Animation state is ignored while encounter context survives a resumed save.
+	assert_eq(GameManager.combat_area_id, "cave")
 
 	# Clean up test save
 	var save_path = "user://save_slot_99.json"

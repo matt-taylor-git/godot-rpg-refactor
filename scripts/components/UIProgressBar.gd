@@ -31,6 +31,8 @@ const ANIMATION_TRANS = Tween.TRANS_QUAD
 @export var connect_to_gamemanager: bool = true  # Auto-connect to GameManager signals
 @export var colorblind_friendly: bool = false  # Use patterns/text instead of color-only indicators
 @export var respect_reduced_motion: bool = true  # Disable animations if reduced motion is enabled
+## Non-interactive HUD bars may opt out of the 44px touch-target minimum.
+@export var compact_noninteractive: bool = false
 ## "health" uses green/yellow/red thresholds; mana and experience use steady fills.
 @export var bar_kind: String = "health"
 ## When true, damage animates as a fast fill drop plus a slower trailing segment.
@@ -734,7 +736,7 @@ func _on_monster_status_effect_removed(effect_type: String) -> void:
 
 func _get_minimum_size() -> Vector2:
 	# Ensure minimum touch target size (44px minimum for accessibility)
-	var min_size = Vector2(44, 44)
+	var min_size := Vector2(44, 18) if compact_noninteractive else Vector2(44, 44)
 
 	# Account for value label if visible
 	if value_label and show_value_text:
@@ -743,7 +745,7 @@ func _get_minimum_size() -> Vector2:
 		min_size.y = max(min_size.y, label_size.y + 10)
 
 	# Apply responsive scaling minimums
-	if responsive_scaling:
+	if responsive_scaling and not compact_noninteractive:
 		var responsive_size = _get_responsive_bar_size()
 		min_size.x = max(min_size.x, responsive_size.x)
 		min_size.y = max(min_size.y, responsive_size.y)

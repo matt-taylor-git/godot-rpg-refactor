@@ -48,6 +48,18 @@ func test_item_from_dict_missing_item_id_defaults_empty():
 	assert_eq(loaded.item_id, "", "old saves without item_id default to empty")
 
 
+func test_player_round_trip_restores_equipment_as_item_resources():
+	var player = Player.new()
+	player.equipment["weapon"] = ItemFactory.create_item("sword")
+	var loaded = Player.new()
+	loaded.from_dict(player.to_dict())
+
+	assert_true(loaded.equipment["weapon"] is Item)
+	assert_eq(loaded.equipment["weapon"].item_id, "sword")
+	assert_null(loaded.equipment["armor"])
+	assert_null(loaded.equipment["accessory"])
+
+
 func test_lookup_by_id_returns_texture_or_null_safely():
 	var tex = ItemLookup.get_texture_by_id("sword")
 	# Texture may be null only if assets missing; should not crash
