@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1280px;
+        height: 720px;
+        margin: 0;
+        overflow: hidden;
+        background: #141210;
+      }
+
+      #root,
+      .scene,
+      .scene-frame,
+      .art {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #root {
+        overflow: hidden;
+        background: #141210;
+      }
+
+      .scene {
+        overflow: hidden;
+        transform-origin: center center;
+        background-color: #141210;
+      }
+
+      #scene-map {
+        z-index: 1;
+      }
+
+      #scene-forest,
+      #scene-peak,
+      #scene-gateway {
+        opacity: 0;
+      }
+
+      #scene-forest {
+        z-index: 2;
+      }
+
+      #scene-peak {
+        z-index: 3;
+      }
+
+      #scene-gateway {
+        z-index: 4;
+      }
+
+      .scene-frame {
+        overflow: hidden;
+      }
+
+      .art {
+        object-fit: cover;
+        will-change: transform, opacity, filter;
+      }
+
+      .vignette {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 50% 48%, rgba(20, 18, 16, 0) 36%, rgba(20, 18, 16, 0.45) 82%),
+          radial-gradient(circle at 50% 50%, rgba(217, 179, 89, 0.04), rgba(20, 18, 16, 0) 62%);
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      .edge-frame {
+        position: absolute;
+        inset: 24px;
+        border: 1px solid rgba(153, 115, 51, 0.38);
+        box-shadow: inset 0 0 32px rgba(20, 18, 16, 0.72);
+        pointer-events: none;
+      }
+
+      .edge-frame::before,
+      .edge-frame::after {
+        content: "";
+        position: absolute;
+        top: -1px;
+        width: 96px;
+        height: 1px;
+        background: #d9b359;
+        opacity: 0.56;
+      }
+
+      .edge-frame::before {
+        left: 0;
+      }
+
+      .edge-frame::after {
+        right: 0;
+      }
+
+      .map-light {
+        position: absolute;
+        width: 520px;
+        height: 520px;
+        left: 385px;
+        top: 92px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(217, 179, 89, 0.24), rgba(217, 179, 89, 0) 68%);
+        mix-blend-mode: soft-light;
+        will-change: transform, opacity;
+      }
+
+      .map-compass-ring {
+        position: absolute;
+        width: 178px;
+        height: 178px;
+        right: 90px;
+        top: 52px;
+        border: 1px solid rgba(89, 64, 26, 0.62);
+        border-radius: 50%;
+        box-shadow:
+          0 0 0 8px rgba(153, 115, 51, 0.08),
+          0 0 36px rgba(217, 179, 89, 0.12);
+        will-change: transform, opacity;
+      }
+
+      .map-compass-ring::before,
+      .map-compass-ring::after {
+        content: "";
+        position: absolute;
+        background: #59401a;
+        opacity: 0.58;
+      }
+
+      .map-compass-ring::before {
+        width: 1px;
+        height: 212px;
+        left: 88px;
+        top: -18px;
+      }
+
+      .map-compass-ring::after {
+        width: 212px;
+        height: 1px;
+        left: -18px;
+        top: 88px;
+      }
+
+      .forest-shade {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 74% 24%, rgba(242, 235, 217, 0.2), rgba(242, 235, 217, 0) 25%),
+          radial-gradient(circle at 50% 72%, rgba(89, 64, 26, 0) 28%, rgba(20, 18, 16, 0.38) 88%);
+        mix-blend-mode: screen;
+        will-change: transform, opacity;
+        opacity: 0;
+      }
+
+      .mist {
+        position: absolute;
+        width: 650px;
+        height: 170px;
+        bottom: 24px;
+        border-radius: 50%;
+        filter: blur(24px);
+        background: radial-gradient(ellipse, rgba(242, 235, 217, 0.2), rgba(242, 235, 217, 0) 70%);
+        opacity: 0.7;
+        will-change: transform, opacity;
+      }
+
+      .mist-left {
+        left: -190px;
+      }
+
+      .mist-right {
+        right: -220px;
+        bottom: 72px;
+      }
+
+      .storm-glow {
+        position: absolute;
+        width: 820px;
+        height: 380px;
+        left: 250px;
+        top: -130px;
+        border-radius: 50%;
+        background: radial-gradient(ellipse, rgba(217, 179, 89, 0.32), rgba(200, 103, 42, 0.08) 48%, rgba(200, 103, 42, 0) 72%);
+        filter: blur(18px);
+        mix-blend-mode: screen;
+        will-change: transform, opacity;
+      }
+
+      .ember-field {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .ember {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #d9b359;
+        box-shadow: 0 0 8px #c8672a;
+        will-change: transform, opacity;
+      }
+
+      .ember:nth-child(1) { left: 8%; top: 74%; }
+      .ember:nth-child(2) { left: 15%; top: 61%; width: 3px; height: 3px; }
+      .ember:nth-child(3) { left: 22%; top: 82%; }
+      .ember:nth-child(4) { left: 31%; top: 69%; width: 2px; height: 2px; }
+      .ember:nth-child(5) { left: 39%; top: 88%; }
+      .ember:nth-child(6) { left: 47%; top: 64%; width: 3px; height: 3px; }
+      .ember:nth-child(7) { left: 55%; top: 79%; }
+      .ember:nth-child(8) { left: 63%; top: 58%; width: 2px; height: 2px; }
+      .ember:nth-child(9) { left: 71%; top: 84%; }
+      .ember:nth-child(10) { left: 78%; top: 67%; width: 3px; height: 3px; }
+      .ember:nth-child(11) { left: 86%; top: 77%; }
+      .ember:nth-child(12) { left: 92%; top: 55%; width: 2px; height: 2px; }
+
+      .gateway-shade {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 57% 48%, rgba(217, 179, 89, 0.18), rgba(217, 179, 89, 0) 24%),
+          radial-gradient(circle at 50% 50%, rgba(20, 18, 16, 0) 38%, rgba(20, 18, 16, 0.58) 90%);
+        will-change: opacity;
+        opacity: 0;
+      }
+
+      .torch-bloom {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        left: 555px;
+        top: 160px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(242, 235, 217, 0.36), rgba(217, 179, 89, 0.22) 24%, rgba(200, 103, 42, 0) 68%);
+        mix-blend-mode: screen;
+        will-change: transform, opacity;
+      }
+
+      .rune-ring {
+        position: absolute;
+        width: 238px;
+        height: 238px;
+        left: 715px;
+        top: 136px;
+        border: 1px solid rgba(217, 179, 89, 0.26);
+        border-radius: 50%;
+        box-shadow:
+          inset 0 0 30px rgba(217, 179, 89, 0.08),
+          0 0 26px rgba(200, 103, 42, 0.1);
+        will-change: transform, opacity;
+      }
+
+      .rune-ring::before,
+      .rune-ring::after {
+        content: "";
+        position: absolute;
+        inset: 20px;
+        border: 1px solid rgba(153, 115, 51, 0.32);
+        transform: rotate(45deg);
+      }
+
+      .rune-ring::after {
+        inset: 55px;
+        border-color: rgba(217, 179, 89, 0.24);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="opening-cinematic"
+      data-start="0"
+      data-duration="10.4"
+      data-width="1280"
+      data-height="720"
+      aria-label="A title-neutral dark fantasy opening cinematic"
+    >
+      <section id="scene-map" class="scene">
+        <div class="scene-frame">
+          <img class="art map-image" src="assets/world_map.png" alt="" />
+          <div class="map-light" data-layout-ignore></div>
+          <div class="map-compass-ring" data-layout-ignore></div>
+          <div class="vignette" data-layout-ignore></div>
+          <div class="edge-frame" data-layout-ignore></div>
+        </div>
+      </section>
+
+      <section id="scene-forest" class="scene">
+        <div class="scene-frame">
+          <img class="art forest-image" src="assets/forest.png" alt="" />
+          <div class="forest-shade" data-layout-ignore></div>
+          <div class="mist mist-left" data-layout-ignore></div>
+          <div class="mist mist-right" data-layout-ignore></div>
+          <div class="vignette" data-layout-ignore></div>
+          <div class="edge-frame" data-layout-ignore></div>
+        </div>
+      </section>
+
+      <section id="scene-peak" class="scene">
+        <div class="scene-frame">
+          <img class="art peak-image" src="assets/peak.png" alt="" />
+          <div class="storm-glow" data-layout-ignore></div>
+          <div class="ember-field" data-layout-ignore>
+            <span class="ember"></span><span class="ember"></span><span class="ember"></span>
+            <span class="ember"></span><span class="ember"></span><span class="ember"></span>
+            <span class="ember"></span><span class="ember"></span><span class="ember"></span>
+            <span class="ember"></span><span class="ember"></span><span class="ember"></span>
+          </div>
+          <div class="vignette" data-layout-ignore></div>
+          <div class="edge-frame" data-layout-ignore></div>
+        </div>
+      </section>
+
+      <section id="scene-gateway" class="scene">
+        <div class="scene-frame">
+          <img class="art gateway-image" src="assets/gateway.png" alt="" />
+          <div class="gateway-shade" data-layout-ignore></div>
+          <div class="torch-bloom" data-layout-ignore></div>
+          <div class="rune-ring" data-layout-ignore></div>
+          <div class="vignette" data-layout-ignore></div>
+          <div class="edge-frame" data-layout-ignore></div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+
+      const tl = gsap.timeline({ paused: true });
+
+      // Scene 1: the world awakens under a slow pool of warm light.
+      tl.from("#scene-map .map-image", { opacity: 0, filter: "blur(12px)", duration: 1.15, ease: "power1.out" }, 0.2);
+      tl.from("#scene-map .map-light", { opacity: 0, scale: 0.72, duration: 1.45, ease: "sine.out" }, 0.38);
+      tl.from("#scene-map .map-compass-ring", { opacity: 0, rotation: -24, scale: 0.84, duration: 1.1, ease: "circ.out" }, 0.56);
+      tl.fromTo("#scene-map .vignette", { opacity: 0 }, { opacity: 1, duration: 0.72, ease: "expo.out" }, 0.3);
+      tl.from("#scene-map .edge-frame", { opacity: 0, scale: 0.97, duration: 0.86, ease: "power3.out" }, 0.7);
+      tl.to("#scene-map .map-image", { scale: 1.07, x: -18, y: 8, duration: 2.15, ease: "sine.inOut" }, 0.25);
+      tl.to("#scene-map .map-light", { scale: 1.12, opacity: 0.78, duration: 0.48, ease: "sine.inOut" }, 1.84);
+
+      // Transition 1: blur-crossfade from parchment into the living forest.
+      tl.to("#scene-map", { filter: "blur(18px)", scale: 1.04, opacity: 0, duration: 0.65, ease: "power1.inOut" }, 2.35);
+      tl.fromTo("#scene-forest", { filter: "blur(18px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.65, ease: "sine.inOut" }, 2.46);
+
+      // Scene 2: moonlight and ground mist pull the eye deeper into the road.
+      tl.from("#scene-forest .forest-image", { opacity: 0, x: 32, scale: 1.06, duration: 0.92, ease: "expo.out" }, 2.68);
+      tl.fromTo("#scene-forest .forest-shade", { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: 1.18, ease: "sine.out" }, 2.82);
+      tl.from("#scene-forest .mist-left", { opacity: 0, x: -120, duration: 1.05, ease: "power2.out" }, 2.96);
+      tl.from("#scene-forest .mist-right", { opacity: 0, x: 130, duration: 1.28, ease: "circ.out" }, 3.08);
+      tl.fromTo("#scene-forest .vignette", { opacity: 0 }, { opacity: 1, duration: 0.62, ease: "power4.out" }, 2.76);
+      tl.from("#scene-forest .edge-frame", { opacity: 0, y: 10, duration: 0.82, ease: "back.out(1.2)" }, 3.16);
+      tl.to("#scene-forest .forest-image", { scale: 1.045, x: -12, duration: 1.08, ease: "sine.inOut" }, 3.62);
+      tl.to("#scene-forest .mist-left", { x: 94, duration: 0.7, ease: "sine.inOut" }, 4.02);
+      tl.to("#scene-forest .mist-right", { x: -72, duration: 0.37, ease: "power1.inOut" }, 4.37);
+
+      // Transition 2: the same visual language carries the journey upward.
+      tl.to("#scene-forest", { filter: "blur(16px)", scale: 1.04, opacity: 0, duration: 0.62, ease: "power1.inOut" }, 4.75);
+      tl.fromTo("#scene-peak", { filter: "blur(16px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.62, ease: "sine.inOut" }, 4.86);
+
+      // Scene 3: the peak answers with light, heat, and rising embers.
+      tl.from("#scene-peak .peak-image", { opacity: 0, scale: 1.09, y: 24, duration: 0.78, ease: "power4.out" }, 5.02);
+      tl.from("#scene-peak .storm-glow", { opacity: 0, scale: 0.58, duration: 1.12, ease: "expo.out" }, 5.12);
+      tl.from("#scene-peak .ember", { opacity: 0, y: 26, scale: 0.2, duration: 0.54, stagger: 0.035, ease: "back.out(1.7)" }, 5.28);
+      tl.fromTo("#scene-peak .vignette", { opacity: 0 }, { opacity: 1, duration: 0.68, ease: "circ.out" }, 5.08);
+      tl.from("#scene-peak .edge-frame", { opacity: 0, scale: 1.025, duration: 0.74, ease: "power2.out" }, 5.36);
+      tl.to("#scene-peak .peak-image", { scale: 1.055, y: -8, duration: 1.25, ease: "sine.inOut" }, 5.82);
+      tl.to("#scene-peak .storm-glow", { scale: 1.18, opacity: 0.72, duration: 0.86, ease: "power1.inOut" }, 6.25);
+      tl.to("#scene-peak .ember", { y: -86, x: 10, duration: 0.42, stagger: 0.025, ease: "sine.inOut", repeat: 1 }, 6.22);
+
+      // Transition 3: a final blur resolves into the ancient gateway.
+      tl.to("#scene-peak", { filter: "blur(18px)", scale: 1.04, opacity: 0, duration: 0.68, ease: "power1.inOut" }, 7.15);
+      tl.fromTo("#scene-gateway", { filter: "blur(18px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.68, ease: "sine.inOut" }, 7.27);
+
+      // Scene 4: a title-neutral hold on the same artwork used by the main menu.
+      tl.from("#scene-gateway .gateway-image", { opacity: 0, x: -26, scale: 1.07, duration: 1.05, ease: "expo.out" }, 7.42);
+      tl.fromTo("#scene-gateway .gateway-shade", { opacity: 0 }, { opacity: 1, duration: 0.88, ease: "power3.out" }, 7.54);
+      tl.from("#scene-gateway .torch-bloom", { opacity: 0, scale: 0.34, duration: 1.14, ease: "circ.out" }, 7.66);
+      tl.from("#scene-gateway .rune-ring", { opacity: 0, rotation: -32, scale: 0.72, duration: 1.28, ease: "power2.out" }, 7.8);
+      tl.fromTo("#scene-gateway .vignette", { opacity: 0 }, { opacity: 1, duration: 0.72, ease: "sine.out" }, 7.5);
+      tl.from("#scene-gateway .edge-frame", { opacity: 0, scale: 0.975, duration: 0.9, ease: "back.out(1.15)" }, 7.92);
+      tl.to("#scene-gateway .gateway-image", { scale: 1.035, x: 8, duration: 1.9, ease: "sine.inOut" }, 8.48);
+      tl.to("#scene-gateway .torch-bloom", { scale: 1.16, opacity: 0.72, duration: 1.15, ease: "sine.inOut", repeat: 1, yoyo: true }, 8.82);
+      tl.to("#scene-gateway .rune-ring", { rotation: 8, opacity: 0.38, duration: 1.25, ease: "power1.inOut" }, 9.1);
+
+      window.__timelines["opening-cinematic"] = tl;
+    </script>
+  </body>
+</html>
